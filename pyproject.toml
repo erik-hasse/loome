@@ -1,0 +1,17 @@
+[project]
+name = "loome"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Erik Hasse", email = "erik.g.hasse@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+loome = "loome:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
