@@ -1,16 +1,36 @@
 [project]
 name = "loome"
 version = "0.1.0"
-description = "Add your description here"
+description = "Python framework for describing and visualizing wiring harnesses"
 readme = "README.md"
 authors = [
     { name = "Erik Hasse", email = "erik.g.hasse@gmail.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "svgwrite>=1.4.3",
+]
 
 [project.scripts]
-loome = "loome:main"
+loome = "loome.cli:main"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    # Pyflakes + pycodestyle = flake8
+    "E", "W",  # Pycodestyle
+    "F",  # Pyflakes
+    "PL",  # Pylint
+    "I",  # Isort
+]
+ignore = [
+    "PLR",  # Pylint refactor
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Unused import
 
 [build-system]
 requires = ["hatchling"]

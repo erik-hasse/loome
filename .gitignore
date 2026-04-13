@@ -8,3 +8,11 @@ wheels/
 
 # Virtual environments
 .venv
+
+# IDE / OS
+.idea/
+.DS_Store
+
+# Generated outputs
+out.svg
+out.png
