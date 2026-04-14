@@ -25,10 +25,29 @@ from ..model import (
     WireSegment,
 )
 
-WIRE_COLORS: dict[str, str] = {
-    "N": "#888888",
-    "W": "#d0d0d0",
-    "": "#222222",
+# Wire color palette
+_POWER_STROKE = "#dc2626"  # red — connected to fuse or CB
+_GROUND_STROKE = "#111111"  # black — connected to ground
+_WHITE_STROKE = "#9ca3af"  # medium gray — represents "white" wire
+# Shielded pairs cycle through: White (gray), White-Blue (dashed), White-Orange (dashed)
+_SHIELD_PALETTE: list[tuple[str, str | None]] = [
+    (_WHITE_STROKE, None),
+    ("#3b82f6", "5,3"),
+    ("#f97316", "5,3"),
+]
+# Explicit WireColor code → SVG stroke value
+_EXPLICIT_COLORS: dict[str, str] = {
+    "W": _WHITE_STROKE,
+    "R": _POWER_STROKE,
+    "B": _GROUND_STROKE,
+    "N": _GROUND_STROKE,
+    "BL": "#3b82f6",
+    "OR": "#f97316",
+    "Y": "#eab308",
+    "GN": "#16a34a",
+    "GR": "#6b7280",
+    "PK": "#ec4899",
+    "VT": "#8b5cf6",
 }
 
 # X offsets within the wire column (relative to wire_start_x)
@@ -44,18 +63,119 @@ _REMOTE_BOX_X = 148  # left edge of box, relative to wire_start_x
 _REMOTE_BOX_W = 140  # box width  (ends at 288 / 300)
 _REMOTE_BOX_PIN_NUM_W = 26  # width of the pin-number column inside box
 
+# Splice symbol position (relative to wire_start_x)
+_SPLICE_CX = 50  # center x of the X symbol
+_SPLICE_FAN_X = 70  # x where fan diagonals end and outward horizontals begin
 
-def _wire_color(seg: WireSegment) -> str:
-    return WIRE_COLORS.get(seg.color, "#222222")
+
+def _wire_attrs(
+    seg: WireSegment,
+    pin_shield_palette: dict[int, tuple[str, str | None]],
+    colored: bool,
+) -> dict:
+    """Return SVG stroke keyword args for a wire segment.
+
+    Priority: uncolored → explicit color → power (fuse/CB) → ground → shielded → white.
+    """
+    if not colored:
+        return {"stroke": "#222222", "stroke_width": 1.5}
+
+    # Explicit WireColor set by the user always wins
+    if seg.color and seg.color in _EXPLICIT_COLORS:
+        return {"stroke": _EXPLICIT_COLORS[seg.color], "stroke_width": 1.5}
+
+    if isinstance(seg.end_a, (Fuse, CircuitBreaker)) or isinstance(seg.end_b, (Fuse, CircuitBreaker)):
+        return {"stroke": _POWER_STROKE, "stroke_width": 1.5}
+
+    if isinstance(seg.end_a, GroundSymbol) or isinstance(seg.end_b, GroundSymbol):
+        return {"stroke": _GROUND_STROKE, "stroke_width": 1.5}
+
+    for endpoint in (seg.end_a, seg.end_b):
+        if isinstance(endpoint, Pin):
+            palette = pin_shield_palette.get(id(endpoint))
+            if palette is not None:
+                stroke, dash = palette
+                attrs: dict = {"stroke": stroke, "stroke_width": 1.5}
+                if dash:
+                    attrs["stroke_dasharray"] = dash
+                return attrs
+
+    return {"stroke": _WHITE_STROKE, "stroke_width": 1.5}
+
+
+def _incoming_splice_attrs(
+    seg: WireSegment,
+    splice: SpliceNode,
+    out_segs: list[WireSegment | None],
+    psp: dict,
+    colored: bool,
+) -> dict:
+    """Color for the wire leading INTO a splice, propagated from outward connections.
+
+    Explicit color on the incoming segment is still honored. Otherwise the
+    highest-priority outward destination wins: fuse/CB > ground > auto.
+    """
+    if not colored:
+        return {"stroke": "#222222", "stroke_width": 1.5}
+
+    if seg.color and seg.color in _EXPLICIT_COLORS:
+        return {"stroke": _EXPLICIT_COLORS[seg.color], "stroke_width": 1.5}
+
+    for out_seg in out_segs:
+        if out_seg is None:
+            continue
+        remote = out_seg.end_b if out_seg.end_a is splice else out_seg.end_a
+        if isinstance(remote, (Fuse, CircuitBreaker)):
+            return {"stroke": _POWER_STROKE, "stroke_width": 1.5}
+
+    for out_seg in out_segs:
+        if out_seg is None:
+            continue
+        remote = out_seg.end_b if out_seg.end_a is splice else out_seg.end_a
+        if isinstance(remote, GroundSymbol):
+            return {"stroke": _GROUND_STROKE, "stroke_width": 1.5}
+
+    return _wire_attrs(seg, psp, colored)
+
+
+def _expand_connections(
+    connections: list[WireSegment], pin: Pin, class_pin: Pin
+) -> list[tuple[WireSegment, SpliceNode | None, WireSegment | None]]:
+    """Expand splice connections into (incoming_seg, splice_or_None, outward_seg_or_None) tuples.
+
+    Direct connections become [(seg, None, None)].
+    A splice with N outward wires becomes N tuples [(seg, splice, out_seg), ...].
+    A dead-end splice becomes [(seg, splice, None)].
+    """
+    result = []
+    for seg in connections:
+        remote = seg.end_b if (seg.end_a is pin or seg.end_a is class_pin) else seg.end_a
+        if isinstance(remote, SpliceNode):
+            outward = [s for s in remote._connections if s is not seg]
+            if outward:
+                for out_seg in outward:
+                    result.append((seg, remote, out_seg))
+            else:
+                result.append((seg, remote, None))
+        else:
+            result.append((seg, None, None))
+    return result
 
 
 def _compute_min_term_cx(layout: LayoutResult, harness: Harness) -> float:
     """Return the smallest terminal-symbol cx across all terminal connections.
 
-    Using the minimum means every wire is as short as the one with the longest
-    label, keeping all symbols and labels in a single aligned column.
+    Scans both direct pin→terminal connections and pin→splice→terminal paths
+    so all symbols align to the same column regardless of how they're reached.
     """
     min_cx = float("inf")
+
+    def _check(label_text: str, wire_start_x: float) -> None:
+        nonlocal min_cx
+        cx = wire_start_x + WIRE_AREA_W - 4 - len(label_text) * _MONO_CHAR_W - _TERM_SYMBOL_W
+        min_cx = min(min_cx, cx)
+
+    # Direct pin → terminal
     for group in layout.pin_groups:
         if group.target_key[0] != "terminal":
             continue
@@ -64,23 +184,44 @@ def _compute_min_term_cx(layout: LayoutResult, harness: Harness) -> float:
             if not use_pin._connections:
                 continue
             seg = use_pin._connections[0]
-            if seg.end_a is use_pin or seg.end_a is row.pin or seg.end_a is row.class_pin:
-                remote = seg.end_b
-            else:
-                remote = seg.end_a
+            remote = (
+                seg.end_b if (seg.end_a is use_pin or seg.end_a is row.pin or seg.end_a is row.class_pin) else seg.end_a
+            )
             if not isinstance(remote, (GroundSymbol, OffPageReference, Fuse, CircuitBreaker)):
                 continue
-            label_text = _remote_label(remote, row.class_pin, harness)
-            label_right = row.wire_start_x + WIRE_AREA_W - 4
-            cx = label_right - len(label_text) * _MONO_CHAR_W - _TERM_SYMBOL_W
-            min_cx = min(min_cx, cx)
+            _check(_remote_label(remote, row.class_pin, harness), row.wire_start_x)
+
+    # Pin → splice → terminal
+    if layout.pin_rows:
+        wire_start_x = next(iter(layout.pin_rows.values())).wire_start_x
+        for splice in harness.splice_nodes:
+            for seg in splice._connections:
+                remote = seg.end_b if seg.end_a is splice else seg.end_a
+                if isinstance(remote, GroundSymbol):
+                    _check(remote.label, wire_start_x)
+                elif isinstance(remote, OffPageReference):
+                    _check(remote.label or remote.id, wire_start_x)
+                elif isinstance(remote, (Fuse, CircuitBreaker)):
+                    _check(f"{remote.name} {remote.amps}A", wire_start_x)
+
     return min_cx if min_cx != float("inf") else 0
 
 
-def render(harness: Harness, layout: LayoutResult, output_path: str | Path) -> None:
+def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colored: bool = True) -> None:
+    # Build shield palette lookup: pin id → (stroke, dasharray or None)
+    pin_shield_palette: dict[int, tuple[str, str | None]] = {}
+    for sg in harness.shield_groups:
+        for idx, p in enumerate(sg.pins):
+            pin_shield_palette[id(p)] = _SHIELD_PALETTE[min(idx, len(_SHIELD_PALETTE) - 1)]
+
     # Two pin→row lookups: by class-pin ID and by instance-pin ID.
+    # class_pin_to_row maps to the LAST row seen for that class pin; use
+    # class_pin_to_rows (plural) when you need all instances sharing a class pin.
     class_pin_to_row: dict[int, PinRowInfo] = {id(ri.class_pin): ri for ri in layout.pin_rows.values()}
     inst_pin_to_row: dict[int, PinRowInfo] = {id(ri.pin): ri for ri in layout.pin_rows.values()}
+    class_pin_to_rows: dict[int, list[PinRowInfo]] = {}
+    for ri in layout.pin_rows.values():
+        class_pin_to_rows.setdefault(id(ri.class_pin), []).append(ri)
 
     def _find_row(pin: Pin) -> PinRowInfo | None:
         return class_pin_to_row.get(id(pin)) or inst_pin_to_row.get(id(pin))
@@ -123,7 +264,7 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path) -> N
             if row_info is None:
                 continue
             shield = shield_by_pin.get(id(row_info.class_pin))
-            _draw_pin_row(dwg, row_info, harness, shield, min_term_cx)
+            _draw_pin_row(dwg, row_info, harness, shield, min_term_cx, colored, pin_shield_palette)
 
         for conn_name, conn in comp._connectors.items():
             conn_rect = layout.connector_rects[id(conn)]
@@ -136,7 +277,7 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path) -> N
                 if row_info is None:
                     continue
                 shield = shield_by_pin.get(id(row_info.class_pin))
-                _draw_pin_row(dwg, row_info, harness, shield, min_term_cx)
+                _draw_pin_row(dwg, row_info, harness, shield, min_term_cx, colored, pin_shield_palette)
 
         # Draw the section border stroke AFTER content so it sits on top
         # of the pin row fills, keeping the rounded corners clean.
@@ -154,22 +295,38 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path) -> N
 
     # ── shield ovals (drawn after all rows, on top of wire lines) ──────────
     for sg in harness.shield_groups:
-        source_rows = [class_pin_to_row[id(p)] for p in sg.pins if id(p) in class_pin_to_row]
-        if source_rows:
-            _draw_shield_ovals(dwg, source_rows, sg.label)
-
-        # Discover remote pins grouped by their component class
-        remote_rows_by_comp: dict[int, list[PinRowInfo]] = {}
+        # Source-side ovals: group by component instance so that multiple
+        # instances sharing the same class pin each get their own oval pair.
+        source_by_inst: dict[int, list[PinRowInfo]] = {}
         for p in sg.pins:
-            for seg in p._connections:
-                remote = seg.end_b if seg.end_a is p else seg.end_a
-                if isinstance(remote, Pin) and remote._component_class is not None:
-                    row = _find_row(remote)
-                    if row is not None:
-                        key = id(remote._component_class)
-                        remote_rows_by_comp.setdefault(key, []).append(row)
+            for ri in class_pin_to_rows.get(id(p), []):
+                inst_key = id(ri.pin._component) if ri.pin._component is not None else id(ri.pin)
+                source_by_inst.setdefault(inst_key, []).append(ri)
+        for inst_rows in source_by_inst.values():
+            _draw_shield_ovals(dwg, inst_rows, sg.label)
 
-        for rows in remote_rows_by_comp.values():
+        # Remote-side ovals: group by SOURCE instance (not the remote component)
+        # so that two instances of the same component (e.g. roll_trim / pitch_trim)
+        # that both connect into the same remote component (GEA24) each get their
+        # own oval covering only their own subset of pins.
+        remote_rows_by_source: dict[int, list[PinRowInfo]] = {}
+
+        def _add_remote_for_source(src_pin: Pin, source_key: int) -> None:
+            for seg in src_pin._connections:
+                remote = seg.end_b if seg.end_a is src_pin else seg.end_a
+                if not isinstance(remote, Pin):
+                    continue
+                row = _find_row(remote)
+                if row is not None:
+                    remote_rows_by_source.setdefault(source_key, []).append(row)
+
+        for p in sg.pins:
+            _add_remote_for_source(p, id(sg))  # class-level: all sg pins share one key
+            for ri in class_pin_to_rows.get(id(p), []):
+                source_key = id(ri.pin._component) if ri.pin._component is not None else id(ri.pin)
+                _add_remote_for_source(ri.pin, source_key)  # instance-level: one key per instance
+
+        for rows in remote_rows_by_source.values():
             _draw_shield_ovals(dwg, rows, sg.label)
 
     # ── remote component boxes ──────────────────────────────────────────────
@@ -266,6 +423,8 @@ def _draw_pin_row(
     harness: Harness,
     shield: ShieldGroup | None,
     min_term_cx: float = 0,
+    colored: bool = True,
+    pin_shield_palette: dict | None = None,
 ) -> None:
     rect = row_info.rect
     pin = row_info.pin
@@ -325,11 +484,238 @@ def _draw_pin_row(
         _draw_unconnected(dwg, wire_x, cy)
         return
 
-    row_h = rect.h / max(len(connections), 1)
-    for i, seg in enumerate(connections):
-        line_y = rect.y + row_h * (i + 0.5)
-        remote = seg.end_b if (seg.end_a is class_pin or seg.end_a is pin) else seg.end_a
-        _draw_connection(dwg, seg, remote, wire_x, line_y, class_pin, harness, shield, min_term_cx)
+    psp = pin_shield_palette or {}
+    expanded = _expand_connections(connections, pin, class_pin)
+
+    # When every expanded entry goes through the same splice, draw a single
+    # junction with fan lines.  Fall back to per-row drawing for mixed cases.
+    first_splice = expanded[0][1] if expanded else None
+    if first_splice is not None and all(sp is first_splice for _, sp, _ in expanded):
+        _draw_splice_fan(dwg, expanded, wire_x, rect, class_pin, harness, min_term_cx, colored, psp)
+    else:
+        row_h = rect.h / max(len(expanded), 1)
+        for i, (seg, splice, out_seg) in enumerate(expanded):
+            line_y = rect.y + row_h * (i + 0.5)
+            if splice is not None:
+                _draw_splice_connection(
+                    dwg, seg, splice, out_seg, wire_x, line_y, class_pin, harness, min_term_cx, colored, psp
+                )
+            else:
+                remote = seg.end_b if (seg.end_a is class_pin or seg.end_a is pin) else seg.end_a
+                _draw_connection(
+                    dwg, seg, remote, wire_x, line_y, class_pin, harness, shield, min_term_cx, colored, psp
+                )
+
+
+def _draw_splice_fan(
+    dwg: svgwrite.Drawing,
+    expanded: list[tuple],
+    wx: float,
+    rect,
+    class_pin: Pin,
+    harness: Harness,
+    min_term_cx: float = 0,
+    colored: bool = True,
+    pin_shield_palette: dict | None = None,
+) -> None:
+    """Draw a splice as one incoming wire → X junction → diagonal fan legs."""
+    psp = pin_shield_palette or {}
+    n = len(expanded)
+    row_h = rect.h / n
+    center_y = rect.y + rect.h / 2
+    splice_cx = wx + _SPLICE_CX
+    fan_x = wx + _SPLICE_FAN_X
+
+    incoming_seg, splice, _ = expanded[0]
+    out_segs = [out_seg for _, _, out_seg in expanded]
+    # One dominant color for every wire in this splice node: if any outward leg
+    # reaches a fuse/CB or ground, ALL legs inherit that color.
+    splice_attrs = _incoming_splice_attrs(incoming_seg, splice, out_segs, psp, colored)
+
+    # Single incoming wire to the junction
+    dwg.add(
+        dwg.line(
+            start=(wx + _WIRE_PAD, center_y),
+            end=(splice_cx - 6, center_y),
+            **splice_attrs,
+        )
+    )
+    _draw_wire_label(dwg, incoming_seg, wx + _WIRE_PAD, splice_cx - 6, center_y)
+
+    _draw_splice_symbol(dwg, splice_cx, center_y)
+
+    # Fan: one diagonal leg per outward connection
+    for i, (seg, sp, out_seg) in enumerate(expanded):
+        sub_y = rect.y + row_h * (i + 0.5)
+        leg_attrs = splice_attrs  # all legs share the splice's dominant color
+
+        # Diagonal from junction to fan_x at sub_y — uses the outward leg's color
+        dwg.add(
+            dwg.line(
+                start=(splice_cx + 5, center_y),
+                end=(fan_x, sub_y),
+                **leg_attrs,
+            )
+        )
+
+        if out_seg is None:
+            label = sp.label or sp.id
+            dwg.add(
+                dwg.text(
+                    label,
+                    insert=(fan_x + 4, sub_y + 4),
+                    fill="#94a3b8",
+                    font_size="9px",
+                    font_family="ui-monospace, monospace",
+                )
+            )
+            continue
+
+        out_remote = out_seg.end_b if out_seg.end_a is splice else out_seg.end_a
+
+        if isinstance(out_remote, (GroundSymbol, OffPageReference, Fuse, CircuitBreaker)):
+            label_text = _remote_label(out_remote, class_pin, harness)
+            term_cx = (
+                min_term_cx
+                if min_term_cx > 0
+                else (wx + WIRE_AREA_W - 4 - len(label_text) * _MONO_CHAR_W - _TERM_SYMBOL_W)
+            )
+            term_cx = max(term_cx, fan_x + 20)
+            wire_end = term_cx - 12
+            dwg.add(dwg.line(start=(fan_x, sub_y), end=(wire_end, sub_y), **leg_attrs))
+            _draw_wire_label(dwg, out_seg, fan_x, wire_end, sub_y)
+            _draw_terminal(dwg, out_remote, term_cx, sub_y)
+            dwg.add(
+                dwg.text(
+                    label_text,
+                    insert=(term_cx + 12, sub_y + 4),
+                    fill="#1e293b",
+                    font_size="9px",
+                    font_family="ui-monospace, monospace",
+                )
+            )
+        elif isinstance(out_remote, Pin):
+            wire_end = wx + _REMOTE_BOX_X - 4
+            dwg.add(dwg.line(start=(fan_x, sub_y), end=(wire_end, sub_y), **leg_attrs))
+            _draw_wire_label(dwg, out_seg, fan_x, wire_end, sub_y)
+            ref = _remote_label(out_remote, class_pin, harness)
+            dwg.add(
+                dwg.text(
+                    ref,
+                    insert=(wx + _REMOTE_BOX_X + 4, sub_y + 4),
+                    fill="#1e3a5f",
+                    font_size="9px",
+                    font_family="ui-monospace, monospace",
+                )
+            )
+        else:
+            wire_end = wx + _REMOTE_BOX_X - 4
+            dwg.add(dwg.line(start=(fan_x, sub_y), end=(wire_end, sub_y), **leg_attrs))
+            _draw_wire_label(dwg, out_seg, fan_x, wire_end, sub_y)
+            dwg.add(
+                dwg.text(
+                    _remote_label(out_remote, class_pin, harness),
+                    insert=(wx + _REMOTE_BOX_X, sub_y + 4),
+                    fill="#1e293b",
+                    font_size="9px",
+                    font_family="ui-monospace, monospace",
+                )
+            )
+
+
+def _draw_splice_symbol(dwg: svgwrite.Drawing, cx: float, cy: float) -> None:
+    r = 4
+    dwg.add(dwg.line(start=(cx - r, cy - r), end=(cx + r, cy + r), stroke="#475569", stroke_width=1.5))
+    dwg.add(dwg.line(start=(cx + r, cy - r), end=(cx - r, cy + r), stroke="#475569", stroke_width=1.5))
+
+
+def _draw_splice_connection(
+    dwg: svgwrite.Drawing,
+    incoming_seg: WireSegment,
+    splice: SpliceNode,
+    out_seg: WireSegment | None,
+    wx: float,
+    cy: float,
+    class_pin: Pin,
+    harness: Harness,
+    min_term_cx: float = 0,
+    colored: bool = True,
+    pin_shield_palette: dict | None = None,
+) -> None:
+    psp = pin_shield_palette or {}
+    splice_cx = wx + _SPLICE_CX
+    in_attrs = _incoming_splice_attrs(incoming_seg, splice, [out_seg], psp, colored)
+
+    # Incoming wire from pin to splice symbol
+    dwg.add(dwg.line(start=(wx + _WIRE_PAD, cy), end=(splice_cx - 6, cy), **in_attrs))
+    _draw_wire_label(dwg, incoming_seg, wx + _WIRE_PAD, splice_cx - 6, cy)
+
+    _draw_splice_symbol(dwg, splice_cx, cy)
+
+    if out_seg is None:
+        # Dead-end splice: show splice id/label as annotation
+        label = splice.label or splice.id
+        dwg.add(
+            dwg.text(
+                label,
+                insert=(splice_cx + 10, cy + 4),
+                fill="#94a3b8",
+                font_size="9px",
+                font_family="ui-monospace, monospace",
+            )
+        )
+        return
+
+    out_start = splice_cx + 6
+    out_remote = out_seg.end_b if out_seg.end_a is splice else out_seg.end_a
+    out_attrs = in_attrs  # all legs share the splice's dominant color
+
+    if isinstance(out_remote, (GroundSymbol, OffPageReference, Fuse, CircuitBreaker)):
+        label_text = _remote_label(out_remote, class_pin, harness)
+        term_cx = (
+            min_term_cx if min_term_cx > 0 else (wx + WIRE_AREA_W - 4 - len(label_text) * _MONO_CHAR_W - _TERM_SYMBOL_W)
+        )
+        term_cx = max(term_cx, out_start + 20)
+        wire_end = term_cx - 12
+        dwg.add(dwg.line(start=(out_start, cy), end=(wire_end, cy), **out_attrs))
+        _draw_wire_label(dwg, out_seg, out_start, wire_end, cy)
+        _draw_terminal(dwg, out_remote, term_cx, cy)
+        dwg.add(
+            dwg.text(
+                label_text,
+                insert=(term_cx + 12, cy + 4),
+                fill="#1e293b",
+                font_size="9px",
+                font_family="ui-monospace, monospace",
+            )
+        )
+    elif isinstance(out_remote, Pin):
+        wire_end = wx + _REMOTE_BOX_X - 4
+        dwg.add(dwg.line(start=(out_start, cy), end=(wire_end, cy), **out_attrs))
+        _draw_wire_label(dwg, out_seg, out_start, wire_end, cy)
+        dwg.add(
+            dwg.text(
+                _remote_label(out_remote, class_pin, harness),
+                insert=(wx + _REMOTE_BOX_X + 4, cy + 4),
+                fill="#1e3a5f",
+                font_size="9px",
+                font_family="ui-monospace, monospace",
+            )
+        )
+    else:
+        # Nested splice or other unknown endpoint
+        wire_end = wx + _REMOTE_BOX_X - 4
+        dwg.add(dwg.line(start=(out_start, cy), end=(wire_end, cy), **out_attrs))
+        _draw_wire_label(dwg, out_seg, out_start, wire_end, cy)
+        dwg.add(
+            dwg.text(
+                _remote_label(out_remote, class_pin, harness),
+                insert=(wx + _REMOTE_BOX_X, cy + 4),
+                fill="#1e293b",
+                font_size="9px",
+                font_family="ui-monospace, monospace",
+            )
+        )
 
 
 def _draw_unconnected(dwg: svgwrite.Drawing, wx: float, cy: float) -> None:
@@ -363,8 +749,10 @@ def _draw_connection(
     harness: Harness,
     shield: ShieldGroup | None,
     min_term_cx: float = 0,
+    colored: bool = True,
+    pin_shield_palette: dict | None = None,
 ) -> None:
-    stroke = _wire_color(seg)
+    attrs = _wire_attrs(seg, pin_shield_palette or {}, colored)
     is_terminal = isinstance(remote, (GroundSymbol, OffPageReference, Fuse, CircuitBreaker))
 
     if is_terminal:
@@ -375,14 +763,7 @@ def _draw_connection(
         )
         term_cx = max(term_cx, wx + _WIRE_PAD + 20)
         wire_end = term_cx - 12
-        dwg.add(
-            dwg.line(
-                start=(wx + _WIRE_PAD, cy),
-                end=(wire_end, cy),
-                stroke=stroke,
-                stroke_width=1.5,
-            )
-        )
+        dwg.add(dwg.line(start=(wx + _WIRE_PAD, cy), end=(wire_end, cy), **attrs))
         _draw_wire_label(dwg, seg, wx + _WIRE_PAD, wire_end, cy)
         _draw_terminal(dwg, remote, term_cx, cy)
         dwg.add(
@@ -404,36 +785,15 @@ def _draw_connection(
             ro_right = wx + _SHIELD_RIGHT_CX + _SHIELD_RX
             for x1, x2 in [(wx + _WIRE_PAD, lo_left), (lo_right, ro_left), (ro_right, wire_end)]:
                 if x2 > x1:
-                    dwg.add(
-                        dwg.line(
-                            start=(x1, cy),
-                            end=(x2, cy),
-                            stroke=stroke,
-                            stroke_width=1.5,
-                        )
-                    )
+                    dwg.add(dwg.line(start=(x1, cy), end=(x2, cy), **attrs))
             _draw_wire_label(dwg, seg, lo_right, ro_left, cy)
         else:
-            dwg.add(
-                dwg.line(
-                    start=(wx + _WIRE_PAD, cy),
-                    end=(wire_end, cy),
-                    stroke=stroke,
-                    stroke_width=1.5,
-                )
-            )
+            dwg.add(dwg.line(start=(wx + _WIRE_PAD, cy), end=(wire_end, cy), **attrs))
             _draw_wire_label(dwg, seg, wx + _WIRE_PAD, wire_end, cy)
     else:
         # SpliceNode or other — keep text label
         label_x = wx + _REMOTE_BOX_X
-        dwg.add(
-            dwg.line(
-                start=(wx + _WIRE_PAD, cy),
-                end=(label_x - 4, cy),
-                stroke=stroke,
-                stroke_width=1.5,
-            )
-        )
+        dwg.add(dwg.line(start=(wx + _WIRE_PAD, cy), end=(label_x - 4, cy), **attrs))
         _draw_wire_label(dwg, seg, wx + _WIRE_PAD, label_x - 4, cy)
         dwg.add(
             dwg.text(
@@ -483,7 +843,7 @@ def _draw_remote_box(
             if isinstance(remote, Pin):
                 rpin = remote
                 if not comp_label:
-                    comp_label = _comp_label(remote._component_class, harness)
+                    comp_label = _pin_comp_label(remote, harness)
                 if not conn_name and remote._connector_class is not None:
                     conn_name = remote._connector_class._connector_name
         row_remotes.append(rpin)
@@ -691,7 +1051,7 @@ def _draw_terminal(dwg: svgwrite.Drawing, remote, x: float, y: float) -> None:
 
 def _remote_label(remote, class_pin: Pin, harness: Harness) -> str:
     if isinstance(remote, Pin):
-        comp_label = _comp_label(remote._component_class, harness)
+        comp_label = _pin_comp_label(remote, harness)
         if remote._connector_class is not None:
             conn_name = remote._connector_class._connector_name
             return f"{comp_label} {conn_name}.{remote.number}"
@@ -714,3 +1074,11 @@ def _comp_label(comp_cls: type | None, harness: Harness) -> str:
         if type(comp) is comp_cls:
             return comp.label
     return comp_cls.__name__
+
+
+def _pin_comp_label(pin: Pin, harness: Harness) -> str:
+    """Return the component label for a pin, using the instance reference when available."""
+    comp = getattr(pin, "_component", None)
+    if comp is not None:
+        return comp.label
+    return _comp_label(pin._component_class, harness)

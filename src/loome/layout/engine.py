@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ..model import CircuitBreaker, Fuse, GroundSymbol, Harness, OffPageReference, Pin
+from ..model import CircuitBreaker, Fuse, GroundSymbol, Harness, OffPageReference, Pin, SpliceNode
 from .geometry import Rect
 
 MARGIN = 20
@@ -48,6 +48,22 @@ class LayoutResult:
     canvas_height: float
 
 
+def _pin_display_rows(class_pin: Pin, inst_pin: Pin | None = None) -> int:
+    """Number of visual sub-rows this pin needs (> 1 when it connects through a splice)."""
+    use = inst_pin if (inst_pin is not None and inst_pin._connections) else class_pin
+    if not use._connections:
+        return 1
+    total = 0
+    for seg in use._connections:
+        remote = seg.end_b if seg.end_a is use else seg.end_a
+        if isinstance(remote, SpliceNode):
+            outward = [s for s in remote._connections if s is not seg]
+            total += max(len(outward), 1)
+        else:
+            total += 1
+    return max(total, 1)
+
+
 def _pin_target_key(class_pin: Pin, inst_pin: Pin | None = None) -> tuple:
     """Return a stable grouping key based on where this pin's first connection leads.
 
@@ -59,7 +75,9 @@ def _pin_target_key(class_pin: Pin, inst_pin: Pin | None = None) -> tuple:
     seg = use._connections[0]
     remote = seg.end_b if seg.end_a is use else seg.end_a
     if isinstance(remote, Pin):
-        return ("component", id(remote._component_class), id(remote._connector_class))
+        # Prefer instance identity so multiple instances of the same class get separate groups.
+        comp_key = id(remote._component) if remote._component is not None else id(remote._component_class)
+        return ("component", comp_key, id(remote._connector_class))
     elif isinstance(remote, (GroundSymbol, OffPageReference, Fuse, CircuitBreaker)):
         return ("terminal", id(remote))
     return ("other", id(remote))
@@ -103,7 +121,8 @@ def layout(harness: Harness) -> LayoutResult:
                 pin_groups.append(current_group)
             prev_key = key
 
-            row_rect = Rect(inner_x, y, inner_w, PIN_ROW_H)
+            row_h = _pin_display_rows(class_pin, inst_pin) * PIN_ROW_H
+            row_rect = Rect(inner_x, y, inner_w, row_h)
             row_info = PinRowInfo(
                 pin=inst_pin,
                 class_pin=class_pin,
@@ -113,7 +132,7 @@ def layout(harness: Harness) -> LayoutResult:
             )
             pin_rows[id(inst_pin)] = row_info
             current_group.rows.append(row_info)
-            y += PIN_ROW_H
+            y += row_h
 
         # ── connectors ─────────────────────────────────────────────────────
         for conn_name, conn in comp._connectors.items():
@@ -143,7 +162,8 @@ def layout(harness: Harness) -> LayoutResult:
                     pin_groups.append(current_group)
                 prev_key = key
 
-                row_rect = Rect(inner_x, y, inner_w, PIN_ROW_H)
+                row_h = _pin_display_rows(class_pin, inst_pin) * PIN_ROW_H
+                row_rect = Rect(inner_x, y, inner_w, row_h)
                 row_info = PinRowInfo(
                     pin=inst_pin,
                     class_pin=class_pin,
@@ -153,7 +173,7 @@ def layout(harness: Harness) -> LayoutResult:
                 )
                 pin_rows[id(inst_pin)] = row_info
                 current_group.rows.append(row_info)
-                y += PIN_ROW_H
+                y += row_h
 
             y += CONNECTOR_BOTTOM_PAD
             conn_rect = Rect(inner_x, conn_start_y, inner_w, y - conn_start_y)

@@ -9,6 +9,7 @@ from .model import (
     Pin,
     ShieldGroup,
     SpliceNode,
+    WireColor,
     WireSegment,
 )
 
@@ -18,6 +19,7 @@ __all__ = [
     "Connector",
     "Pin",
     "WireSegment",
+    "WireColor",
     "SpliceNode",
     "GroundSymbol",
     "OffPageReference",

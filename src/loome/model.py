@@ -3,6 +3,22 @@ from __future__ import annotations
 import copy
 import inspect
 from dataclasses import dataclass, field
+from typing import Literal
+
+WireColor = Literal[
+    "",  # auto (default)
+    "W",  # White  → medium gray
+    "R",  # Red
+    "B",  # Black
+    "N",  # Black (Noir — common in aviation docs)
+    "BL",  # Blue
+    "OR",  # Orange
+    "Y",  # Yellow
+    "GN",  # Green
+    "GR",  # Gray
+    "PK",  # Pink
+    "VT",  # Violet
+]
 
 
 @dataclass
@@ -69,6 +85,7 @@ class Pin:
     _connector_class: type | None = field(default=None, repr=False)
     _component_class: type | None = field(default=None, repr=False)
     _connector: object | None = field(default=None, repr=False)
+    _component: object | None = field(default=None, repr=False)
     _connections: list[WireSegment] = field(default_factory=list, repr=False)
     shield_group: "ShieldGroup | None" = field(default=None, repr=False)
 
@@ -81,7 +98,7 @@ class Pin:
         other: WireEndpoint,
         wire_id: str = "",
         gauge: int | str = 22,
-        color: str = "",
+        color: WireColor = "",
         *,
         length_mm: float | None = None,
         shielded: bool = False,
@@ -116,7 +133,7 @@ class SpliceNode:
         other: WireEndpoint,
         wire_id: str = "",
         gauge: int | str = 22,
-        color: str = "",
+        color: WireColor = "",
         **kwargs,
     ) -> WireSegment:
         seg = WireSegment(wire_id=wire_id, gauge=gauge, color=color, end_a=self, end_b=other, **kwargs)
@@ -219,11 +236,15 @@ class Component(metaclass=SupportsShield):
                 if isinstance(val, type) and issubclass(val, Connector) and val is not Connector:
                     conn = val()
                     conn._component = self
+                    for pin_val in vars(conn).values():
+                        if isinstance(pin_val, Pin):
+                            pin_val._component = self
                     setattr(self, attr_name, conn)
                     self._connectors[attr_name] = conn
                 elif isinstance(val, Pin):
                     pin = copy.copy(val)
                     pin._connections = []
+                    pin._component = self
                     setattr(self, attr_name, pin)
                     self._direct_pins[attr_name] = pin
 
@@ -266,6 +287,75 @@ class Harness:
                 self.circuit_breakers.append(item)
             elif isinstance(item, ShieldGroup):
                 self.shield_groups.append(item)
+
+    def autodetect(self, namespace: dict) -> None:
+        """Populate the harness from a spec-file namespace.
+
+        Scans *namespace* for instances of all harness types, then follows wire
+        connections to catch any endpoints not directly assigned to variables.
+        Skips objects already added (safe to call after manual harness.add()).
+        """
+        # Pre-populate seen set so existing content is never duplicated.
+        seen: set[int] = set()
+        seen.update(id(c) for c in self.components)
+        seen.update(id(s) for s in self.splice_nodes)
+        seen.update(id(g) for g in self.ground_symbols)
+        seen.update(id(r) for r in self.off_page_refs)
+        seen.update(id(f) for f in self.fuses)
+        seen.update(id(b) for b in self.circuit_breakers)
+
+        def _register(obj) -> None:
+            if id(obj) in seen:
+                return
+            seen.add(id(obj))
+            self.add(obj)
+
+        # ── Step 1: namespace scan ──────────────────────────────────────────
+        for val in namespace.values():
+            if isinstance(
+                val, (Component, SpliceNode, GroundSymbol, OffPageReference, Fuse, CircuitBreaker, ShieldGroup)
+            ):
+                _register(val)
+
+        # ── Step 2: connection traversal ────────────────────────────────────
+        # Build frontier from all instance pins of known components/splices
+        # and from class-level pins of Component subclasses in the namespace.
+        frontier: list = []
+
+        for comp in list(self.components):
+            frontier.extend(comp._direct_pins.values())
+            for conn in comp._connectors.values():
+                frontier.extend(p for p in vars(conn).values() if isinstance(p, Pin))
+
+        for splice in list(self.splice_nodes):
+            frontier.append(splice)
+
+        for val in namespace.values():
+            if isinstance(val, type) and issubclass(val, Component) and val is not Component:
+                for av in vars(val).values():
+                    if isinstance(av, Pin):
+                        frontier.append(av)
+                    elif isinstance(av, type) and issubclass(av, Connector) and av is not Connector:
+                        frontier.extend(pv for pv in vars(av).values() if isinstance(pv, Pin))
+
+        visited: set[int] = set()
+        while frontier:
+            item = frontier.pop()
+            if id(item) in visited:
+                continue
+            visited.add(id(item))
+
+            for seg in getattr(item, "_connections", []):
+                for ep in (seg.end_a, seg.end_b):
+                    if id(ep) in seen:
+                        continue
+                    _register(ep)
+                    if isinstance(ep, Component):
+                        frontier.extend(ep._direct_pins.values())
+                        for conn in ep._connectors.values():
+                            frontier.extend(p for p in vars(conn).values() if isinstance(p, Pin))
+                    elif isinstance(ep, SpliceNode):
+                        frontier.append(ep)
 
     def _collect_shield_groups(self, comp: "Component") -> None:
         existing_ids = {id(sg) for sg in self.shield_groups}
