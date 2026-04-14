@@ -67,6 +67,9 @@ _REMOTE_BOX_PIN_NUM_W = 26  # width of the pin-number column inside box
 _SPLICE_CX = 50  # center x of the X symbol
 _SPLICE_FAN_X = 70  # x where fan diagonals end and outward horizontals begin
 
+# Jumper connections (both pins in the same connector)
+_JUMPER_STUB_X = 40  # how far the horizontal stub extends before the vertical bar
+
 
 def _wire_attrs(
     seg: WireSegment,
@@ -254,6 +257,9 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
     )
     dwg.add(dwg.rect(insert=(0, 0), size=("100%", "100%"), fill="white"))
 
+    # jumper_stubs: id(seg) -> [seg, wire_x, [cy, ...]]
+    jumper_stubs: dict[int, list] = {}
+
     for comp in harness.components:
         sect_rect = layout.section_rects[id(comp)]
         _draw_section_bg(dwg, sect_rect, comp.label)
@@ -264,7 +270,7 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
             if row_info is None:
                 continue
             shield = shield_by_pin.get(id(row_info.class_pin))
-            _draw_pin_row(dwg, row_info, harness, shield, min_term_cx, colored, pin_shield_palette)
+            _draw_pin_row(dwg, row_info, harness, shield, min_term_cx, colored, pin_shield_palette, jumper_stubs)
 
         for conn_name, conn in comp._connectors.items():
             conn_rect = layout.connector_rects[id(conn)]
@@ -277,7 +283,7 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
                 if row_info is None:
                     continue
                 shield = shield_by_pin.get(id(row_info.class_pin))
-                _draw_pin_row(dwg, row_info, harness, shield, min_term_cx, colored, pin_shield_palette)
+                _draw_pin_row(dwg, row_info, harness, shield, min_term_cx, colored, pin_shield_palette, jumper_stubs)
 
         # Draw the section border stroke AFTER content so it sits on top
         # of the pin row fills, keeping the rounded corners clean.
@@ -300,6 +306,8 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
         source_by_inst: dict[int, list[PinRowInfo]] = {}
         for p in sg.pins:
             for ri in class_pin_to_rows.get(id(p), []):
+                if not ri.pin._connections and not p._connections:
+                    continue  # skip unconnected pins (e.g. wired but not connected GND)
                 inst_key = id(ri.pin._component) if ri.pin._component is not None else id(ri.pin)
                 source_by_inst.setdefault(inst_key, []).append(ri)
         for inst_rows in source_by_inst.values():
@@ -328,6 +336,14 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
 
         for rows in remote_rows_by_source.values():
             _draw_shield_ovals(dwg, rows, sg.label)
+
+    # ── jumper vertical bars ────────────────────────────────────────────────
+    for entry in jumper_stubs.values():
+        seg, wx, cys = entry
+        if len(cys) == 2:
+            attrs = _wire_attrs(seg, pin_shield_palette, colored)
+            bar_x = wx + _JUMPER_STUB_X
+            dwg.add(dwg.line(start=(bar_x, min(cys)), end=(bar_x, max(cys)), **attrs))
 
     # ── remote component boxes ──────────────────────────────────────────────
     for group in layout.pin_groups:
@@ -425,6 +441,7 @@ def _draw_pin_row(
     min_term_cx: float = 0,
     colored: bool = True,
     pin_shield_palette: dict | None = None,
+    jumper_stubs: dict | None = None,
 ) -> None:
     rect = row_info.rect
     pin = row_info.pin
@@ -502,9 +519,18 @@ def _draw_pin_row(
                 )
             else:
                 remote = seg.end_b if (seg.end_a is class_pin or seg.end_a is pin) else seg.end_a
-                _draw_connection(
-                    dwg, seg, remote, wire_x, line_y, class_pin, harness, shield, min_term_cx, colored, psp
-                )
+                if isinstance(remote, Pin) and _is_jumper(pin, remote):
+                    attrs = _wire_attrs(seg, psp, colored)
+                    dwg.add(
+                        dwg.line(start=(wire_x + _WIRE_PAD, line_y), end=(wire_x + _JUMPER_STUB_X, line_y), **attrs)
+                    )
+                    if jumper_stubs is not None:
+                        entry = jumper_stubs.setdefault(id(seg), [seg, wire_x, []])
+                        entry[2].append(line_y)
+                else:
+                    _draw_connection(
+                        dwg, seg, remote, wire_x, line_y, class_pin, harness, shield, min_term_cx, colored, psp
+                    )
 
 
 def _draw_splice_fan(
@@ -716,6 +742,15 @@ def _draw_splice_connection(
                 font_family="ui-monospace, monospace",
             )
         )
+
+
+def _is_jumper(pin: Pin, remote: Pin) -> bool:
+    """True when both pins live in the same connector (or same component for direct pins)."""
+    if pin._connector is not None:
+        return pin._connector is remote._connector
+    if pin._component is not None:
+        return pin._component is remote._component and remote._connector is None
+    return False
 
 
 def _draw_unconnected(dwg: svgwrite.Drawing, wx: float, cy: float) -> None:

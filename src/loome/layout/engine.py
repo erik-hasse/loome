@@ -48,6 +48,13 @@ class LayoutResult:
     canvas_height: float
 
 
+def _pin_is_connected(class_pin: Pin, inst_pin: Pin | None = None) -> bool:
+    """Return True if this pin has at least one connection at either level."""
+    if inst_pin is not None and inst_pin._connections:
+        return True
+    return bool(class_pin._connections)
+
+
 def _pin_display_rows(class_pin: Pin, inst_pin: Pin | None = None) -> int:
     """Number of visual sub-rows this pin needs (> 1 when it connects through a splice)."""
     use = inst_pin if (inst_pin is not None and inst_pin._connections) else class_pin
@@ -75,6 +82,17 @@ def _pin_target_key(class_pin: Pin, inst_pin: Pin | None = None) -> tuple:
     seg = use._connections[0]
     remote = seg.end_b if seg.end_a is use else seg.end_a
     if isinstance(remote, Pin):
+        # Jumper: both pins live in the same connector (or same direct-pin component)
+        if inst_pin is not None:
+            if inst_pin._connector is not None and inst_pin._connector is remote._connector:
+                return ("jumper",)
+            if (
+                inst_pin._component is not None
+                and inst_pin._component is remote._component
+                and inst_pin._connector is None
+                and remote._connector is None
+            ):
+                return ("jumper",)
         # Prefer instance identity so multiple instances of the same class get separate groups.
         comp_key = id(remote._component) if remote._component is not None else id(remote._component_class)
         return ("component", comp_key, id(remote._connector_class))
@@ -83,7 +101,7 @@ def _pin_target_key(class_pin: Pin, inst_pin: Pin | None = None) -> tuple:
     return ("other", id(remote))
 
 
-def layout(harness: Harness) -> LayoutResult:
+def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
     section_rects: dict[int, Rect] = {}
     connector_rects: dict[int, Rect] = {}
     pin_rows: dict[int, PinRowInfo] = {}
@@ -108,6 +126,8 @@ def layout(harness: Harness) -> LayoutResult:
             if inst_pin is None:
                 continue
             class_pin = vars(comp_cls).get(attr_name, inst_pin)
+            if not show_unconnected and not _pin_is_connected(class_pin, inst_pin):
+                continue
             key = _pin_target_key(class_pin, inst_pin)
 
             if prev_key is None:
@@ -149,6 +169,8 @@ def layout(harness: Harness) -> LayoutResult:
                 if inst_pin is None or not isinstance(inst_pin, Pin):
                     continue
                 class_pin = vars(conn_cls).get(attr_name, inst_pin)
+                if not show_unconnected and not _pin_is_connected(class_pin, inst_pin):
+                    continue
                 key = _pin_target_key(class_pin, inst_pin)
 
                 if prev_key is None:

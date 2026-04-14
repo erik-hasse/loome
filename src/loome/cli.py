@@ -19,6 +19,11 @@ def main() -> None:
     render_cmd.add_argument("spec", help="Python harness spec file")
     render_cmd.add_argument("-o", "--output", default="out.svg", help="Output SVG path")
     render_cmd.add_argument("--no-color", action="store_true", help="Render wires in monochrome")
+    render_cmd.add_argument(
+        "--show-unconnected",
+        action="store_true",
+        help="Render pins with no connections (useful while building the harness)",
+    )
 
     args = parser.parse_args()
 
@@ -41,6 +46,10 @@ def _cmd_render(args) -> None:
         sys.exit(1)
 
     harness.autodetect(namespace)
-    layout_result = layout(harness)
+    layout_result = layout(harness, show_unconnected=args.show_unconnected)
     render(harness, layout_result, args.output, colored=not args.no_color)
     print(f"Rendered {len(harness.components)} component(s) → {args.output}")
+
+
+if __name__ == "__main__":
+    main()

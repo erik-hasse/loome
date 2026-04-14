@@ -1,3 +1,4 @@
+from .helpers import GPIO, RS232, CanBus
 from .model import (
     CircuitBreaker,
     Component,
@@ -26,4 +27,7 @@ __all__ = [
     "Fuse",
     "CircuitBreaker",
     "ShieldGroup",
+    "CanBus",
+    "RS232",
+    "GPIO",
 ]
