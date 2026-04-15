@@ -115,9 +115,7 @@ class Pin:
             notes=notes,
         )
         self._connections.append(seg)
-        if isinstance(other, Pin):
-            other._connections.append(seg)
-        elif isinstance(other, SpliceNode):
+        if isinstance(other, (Pin, SpliceNode)):
             other._connections.append(seg)
         return seg
 
@@ -138,9 +136,7 @@ class SpliceNode:
     ) -> WireSegment:
         seg = WireSegment(wire_id=wire_id, gauge=gauge, color=color, end_a=self, end_b=other, **kwargs)
         self._connections.append(seg)
-        if isinstance(other, Pin):
-            other._connections.append(seg)
-        elif isinstance(other, SpliceNode):
+        if isinstance(other, (Pin, SpliceNode)):
             other._connections.append(seg)
         return seg
 
@@ -174,6 +170,10 @@ class CircuitBreaker:
 WireEndpoint = Pin | SpliceNode | GroundSymbol | OffPageReference | Fuse | CircuitBreaker
 
 
+def _default_signal_name(attr_name: str) -> str:
+    return attr_name.replace("_", " ").title()
+
+
 class Connector(metaclass=SupportsShield):
     _component_class: type | None = None
     _connector_name: str = ""
@@ -185,7 +185,7 @@ class Connector(metaclass=SupportsShield):
                 val._attr_name = attr_name
                 val._connector_class = cls
                 if not val.signal_name:
-                    val.signal_name = attr_name.replace("_", " ").title()
+                    val.signal_name = _default_signal_name(attr_name)
 
     def __init__(self):
 
@@ -218,12 +218,12 @@ class Component(metaclass=SupportsShield):
                         pin_val._connector_class = val
                         pin_val._attr_name = pin_name
                         if not pin_val.signal_name:
-                            pin_val.signal_name = pin_name.replace("_", " ").title()
+                            pin_val.signal_name = _default_signal_name(pin_name)
             elif isinstance(val, Pin) and not val._attr_name:
                 val._attr_name = attr_name
                 val._component_class = cls
                 if not val.signal_name:
-                    val.signal_name = attr_name.replace("_", " ").title()
+                    val.signal_name = _default_signal_name(attr_name)
 
     def __init__(self, label: str | None = None):
         self.label = label or type(self).__name__
@@ -247,16 +247,6 @@ class Component(metaclass=SupportsShield):
                     pin._component = self
                     setattr(self, attr_name, pin)
                     self._direct_pins[attr_name] = pin
-
-
-def _connector_classes(comp_cls: type) -> list[type]:
-    return [
-        v for v in vars(comp_cls).values() if isinstance(v, type) and issubclass(v, Connector) and v is not Connector
-    ]
-
-
-def _class_pins(conn_cls: type) -> list[Pin]:
-    return [v for v in vars(conn_cls).values() if isinstance(v, Pin)]
 
 
 @dataclass
@@ -296,13 +286,15 @@ class Harness:
         Skips objects already added (safe to call after manual harness.add()).
         """
         # Pre-populate seen set so existing content is never duplicated.
-        seen: set[int] = set()
-        seen.update(id(c) for c in self.components)
-        seen.update(id(s) for s in self.splice_nodes)
-        seen.update(id(g) for g in self.ground_symbols)
-        seen.update(id(r) for r in self.off_page_refs)
-        seen.update(id(f) for f in self.fuses)
-        seen.update(id(b) for b in self.circuit_breakers)
+        all_existing = (
+            self.components
+            + self.splice_nodes
+            + self.ground_symbols
+            + self.off_page_refs
+            + self.fuses
+            + self.circuit_breakers
+        )
+        seen: set[int] = {id(obj) for obj in all_existing}
 
         def _register(obj) -> None:
             if id(obj) in seen:

@@ -48,16 +48,19 @@ class LayoutResult:
     canvas_height: float
 
 
+def _effective_pin(class_pin: Pin, inst_pin: Pin | None) -> Pin:
+    """Return inst_pin if it has connections, else class_pin."""
+    return inst_pin if (inst_pin is not None and inst_pin._connections) else class_pin
+
+
 def _pin_is_connected(class_pin: Pin, inst_pin: Pin | None = None) -> bool:
     """Return True if this pin has at least one connection at either level."""
-    if inst_pin is not None and inst_pin._connections:
-        return True
-    return bool(class_pin._connections)
+    return bool(_effective_pin(class_pin, inst_pin)._connections)
 
 
 def _pin_display_rows(class_pin: Pin, inst_pin: Pin | None = None) -> int:
     """Number of visual sub-rows this pin needs (> 1 when it connects through a splice)."""
-    use = inst_pin if (inst_pin is not None and inst_pin._connections) else class_pin
+    use = _effective_pin(class_pin, inst_pin)
     if not use._connections:
         return 1
     total = 0
@@ -71,12 +74,64 @@ def _pin_display_rows(class_pin: Pin, inst_pin: Pin | None = None) -> int:
     return max(total, 1)
 
 
+def _pin_shield_order(class_pin: Pin, inst_pin: Pin | None = None) -> int:
+    """Sort key for shield palette ordering within a group (0=W, 1=WB, 2=WO, 999=unshielded).
+
+    For source pins (end_a), returns their position in their own shield group.
+    For remote pins (end_b), returns the source pin's position so ordering follows
+    the physical wire color after palette propagation.
+    """
+    use = _effective_pin(class_pin, inst_pin)
+    for seg in use._connections:
+        if seg.end_b is use or seg.end_b is class_pin:
+            src = seg.end_a  # this pin is end_b → source is end_a
+        else:
+            src = class_pin  # this pin is end_a → it is the source
+        if isinstance(src, Pin) and src.shield_group is not None:
+            for idx, p in enumerate(src.shield_group.pins):
+                if p is src:
+                    return idx
+    # Fallback: direct shield group position (handles unconnected shielded pins)
+    sg = class_pin.shield_group
+    if sg is not None:
+        for idx, p in enumerate(sg.pins):
+            if p is class_pin:
+                return idx
+    return 999
+
+
+def _sort_pin_attrs(
+    pin_attrs: list[str],
+    get_class_pin,
+    get_inst_pin,
+) -> list[str]:
+    """Sort pin attribute names by (group order, shield palette order, original index).
+
+    Preserves the encounter order of target groups while sorting pins within each
+    group by W→WB→WO palette order.
+    """
+    group_order: dict[tuple, int] = {}
+    keyed: list[tuple] = []
+    for orig_idx, attr_name in enumerate(pin_attrs):
+        cp = get_class_pin(attr_name)
+        ip = get_inst_pin(attr_name)
+        if cp is None:
+            keyed.append((999, 999, orig_idx, attr_name))
+            continue
+        tk = _pin_target_key(cp, ip)
+        if tk not in group_order:
+            group_order[tk] = len(group_order)
+        keyed.append((group_order[tk], _pin_shield_order(cp, ip), orig_idx, attr_name))
+    keyed.sort(key=lambda x: x[:3])
+    return [x[3] for x in keyed]
+
+
 def _pin_target_key(class_pin: Pin, inst_pin: Pin | None = None) -> tuple:
     """Return a stable grouping key based on where this pin's first connection leads.
 
     Prefers instance-pin connections (wired at instance level) over class-pin connections.
     """
-    use = inst_pin if (inst_pin is not None and inst_pin._connections) else class_pin
+    use = _effective_pin(class_pin, inst_pin)
     if not use._connections:
         return ("unconnected",)
     seg = use._connections[0]
@@ -117,7 +172,11 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
 
         # ── direct pins (no connector header) ──────────────────────────────
         comp_cls = type(comp)
-        direct_pin_attrs = [attr for attr, val in vars(comp_cls).items() if isinstance(val, Pin)]
+        direct_pin_attrs = _sort_pin_attrs(
+            [attr for attr, val in vars(comp_cls).items() if isinstance(val, Pin)],
+            get_class_pin=lambda a: vars(comp_cls).get(a),
+            get_inst_pin=comp._direct_pins.get,
+        )
         prev_key: tuple | None = None
         current_group: PinGroup | None = None
 
@@ -163,7 +222,11 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
             prev_key = None
             current_group = None
 
-            pin_attrs = [attr for attr, val in vars(conn_cls).items() if isinstance(val, Pin)]
+            pin_attrs = _sort_pin_attrs(
+                [attr for attr, val in vars(conn_cls).items() if isinstance(val, Pin)],
+                get_class_pin=lambda a: vars(conn_cls).get(a),
+                get_inst_pin=lambda a: getattr(conn, a, None) if isinstance(getattr(conn, a, None), Pin) else None,
+            )
             for attr_name in pin_attrs:
                 inst_pin = getattr(conn, attr_name, None)
                 if inst_pin is None or not isinstance(inst_pin, Pin):

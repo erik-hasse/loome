@@ -34,7 +34,7 @@ class CanBus:
             sg.pins.append(p)
         # Auto-connect at class level; all instances inherit this connection.
         self._high.connect(ref)
-        self._low.connect(ref)
+        self._seg_low = self._low.connect(ref)
         self._attr_name = ""
 
     def __set_name__(self, owner: type, name: str) -> None:
@@ -50,7 +50,12 @@ class CanBus:
         bound._attr_name = self._attr_name
         bound._high = getattr(obj, f"{self._attr_name}_high", self._high)
         bound._low = getattr(obj, f"{self._attr_name}_low", self._low)
+        bound._seg_low = self._seg_low
         return bound
+
+    def note(self, text: str) -> None:
+        """Set a note on the CAN Low wire (bottom of the shielded pair)."""
+        self._seg_low.notes = text
 
 
 class RS232:
@@ -113,12 +118,16 @@ class RS232:
         bound._gnd = getattr(obj, f"{self._attr_name}_gnd", self._gnd) if self._gnd is not None else None
         return bound
 
-    def connect(self, other: RS232, *, ground: bool = True) -> None:
+    def connect(self, other: RS232, *, ground: bool = True, notes: str = "") -> None:
         """Cross-connect: self.TX → other.RX and self.RX → other.TX."""
         self._tx.connect(other._rx)
-        self._rx.connect(other._tx)
+        seg_rx = self._rx.connect(other._tx)
         if ground and self._gnd is not None and other._gnd is not None:
-            self._gnd.connect(other._gnd)
+            seg_gnd = self._gnd.connect(other._gnd)
+            if notes:
+                seg_gnd.notes = notes
+        elif notes:
+            seg_rx.notes = notes
 
 
 class GPIO:
@@ -182,8 +191,10 @@ class GPIO:
         bound._ground = getattr(obj, f"{self._attr_name}_ground", self._ground)
         return bound
 
-    def connect(self, other: GPIO, **kwargs) -> None:
+    def connect(self, other: GPIO, notes: str = "", **kwargs) -> None:
         """Connect positive↔positive, signal↔signal, ground↔ground."""
         self._positive.connect(other._positive, **kwargs)
         self._signal.connect(other._signal, **kwargs)
-        self._ground.connect(other._ground, **kwargs)
+        seg = self._ground.connect(other._ground, **kwargs)
+        if notes:
+            seg.notes = notes

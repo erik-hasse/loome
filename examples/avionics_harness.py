@@ -3,6 +3,8 @@ from loome.model import Shielded
 
 
 class GSU25(Component):
+    """Air Data Unit"""
+
     class J251(Connector):
         ground = Pin(6, "Ground")
         power = Pin(7, "Power")
@@ -23,6 +25,8 @@ class GSU25(Component):
 
 
 class GDU460(Component):
+    """Display Unit"""
+
     class P4501(Connector):
         rs232 = RS232(4, 5, 6, name="RS-232")  # tx, rx, gnd
 
@@ -38,11 +42,15 @@ class OATProbe(Component):
 
 
 class GTX45R(Component):
+    """Remote Transponder"""
+
     class P3251(Connector):
         rs232 = RS232(9, 31, 11, name="RS-232")  # tx, rx, gnd
 
 
 class GMU11(Component):
+    """Magnetometer"""
+
     class J441(Connector):
         power = Pin(8, "Power")
         backup_power = Pin(7, "Backup Power")
@@ -51,6 +59,8 @@ class GMU11(Component):
 
 
 class GSA28(Component):
+    """Autopilot Servo"""
+
     class J281(Connector):
         can = CanBus(1, 2)
         can_term_1 = Pin(3, "Can Term 1")
@@ -72,6 +82,8 @@ class GSA28(Component):
 
 
 class GAD27(Component):
+    """Flap, Lights, Trim Controller"""
+
     class J272(Connector):
         trim_out_1 = Pin(10, "Trim Out 1")
         trim_out_2 = Pin(9, "Trim Out 2")
@@ -88,6 +100,8 @@ class Stick(Component):
 
 
 class GEA24(Component):
+    """EIS Interface"""
+
     class J244(Connector):
         gp1 = GPIO(18, 19, 20, name="GP1")  # positive, signal, ground
         gp2 = GPIO(21, 22, 23, name="GP2")  # positive, signal, ground
