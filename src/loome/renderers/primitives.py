@@ -2,15 +2,17 @@ from __future__ import annotations
 
 import svgwrite
 
+from ..harness import Harness
 from ..layout.engine import COMPONENT_HEADER_H, CONNECTOR_HEADER_H, PIN_NUM_W, PinRowInfo
 from ..model import (
+    BusBar,
     CircuitBreaker,
     Fuse,
     GroundSymbol,
-    Harness,
     OffPageReference,
     Pin,
     SpliceNode,
+    Terminal,
     WireSegment,
 )
 from .colors import _effective_color_code
@@ -62,14 +64,10 @@ def _remote_label(remote, class_pin: Pin, harness: Harness) -> str:
             conn_name = remote._connector_class._connector_name
             return f"{comp_label} {conn_name}.{remote.number}"
         return f"{comp_label}.{remote.number}"
-    elif isinstance(remote, SpliceNode):
+    if isinstance(remote, SpliceNode):
         return remote.label or remote.id
-    elif isinstance(remote, GroundSymbol):
-        return remote.label
-    elif isinstance(remote, OffPageReference):
-        return remote.label or remote.id
-    elif isinstance(remote, (Fuse, CircuitBreaker)):
-        return f"{remote.name} {remote.amps}A"
+    if isinstance(remote, Terminal):
+        return remote.display_name()
     return "[–]"
 
 
@@ -144,10 +142,25 @@ def _draw_unconnected(dwg: svgwrite.Drawing, wx: float, cy: float) -> None:
     )
 
 
-def _draw_terminal(dwg: svgwrite.Drawing, remote, x: float, y: float) -> None:
+def _draw_terminal(dwg: svgwrite.Drawing, remote: Terminal, x: float, y: float) -> None:
+    """Draw the terminal's symbol at (x, y). Dispatched on concrete subclass.
+
+    Extension point: new Terminal subclasses add a case here (and can be
+    exported from the public API without touching layout or wire drawing).
+    """
     if isinstance(remote, GroundSymbol):
         pts = [(x, y + 10), (x - 7, y - 2), (x + 7, y - 2)]
         dwg.add(dwg.polygon(points=pts, fill="#334155", stroke="#334155", stroke_width=1))
+    elif isinstance(remote, BusBar):
+        dwg.add(
+            dwg.rect(
+                insert=(x - 10, y - 3),
+                size=(20, 6),
+                fill="#1e293b",
+                stroke="#1e293b",
+                stroke_width=1,
+            )
+        )
     elif isinstance(remote, OffPageReference):
         pts = [(x - 7, y - 5), (x + 2, y - 5), (x + 8, y), (x + 2, y + 5), (x - 7, y + 5)]
         dwg.add(dwg.polygon(points=pts, fill="#dcfce7", stroke="#166534", stroke_width=1))
@@ -235,14 +248,23 @@ def _draw_connector_header(dwg: svgwrite.Drawing, rect, conn_name: str) -> None:
 # ── shield ovals ────────────────────────────────────────────────────────────
 
 
-def _draw_shield_ovals(dwg: svgwrite.Drawing, rows: list[PinRowInfo], label: str) -> None:
+def _draw_shield_ovals(
+    dwg: svgwrite.Drawing,
+    rows: list[PinRowInfo],
+    label: str,
+    drain_label: str = "",
+    drain_remote_label: str = "",
+    single_oval: bool = False,
+) -> None:
     wx = rows[0].wire_start_x
     y_top = min(r.rect.y for r in rows)
     y_bot = max(r.rect.y + r.rect.h for r in rows)
     cy = (y_top + y_bot) / 2
     ry = (y_bot - y_top) / 2 + 2
+    oval_bottom = cy + ry
 
-    for cx_off in (_SHIELD_LEFT_CX, _SHIELD_RIGHT_CX):
+    cx_offsets = [_SHIELD_LEFT_CX] if single_oval else [_SHIELD_LEFT_CX, _SHIELD_RIGHT_CX]
+    for cx_off in cx_offsets:
         dwg.add(
             dwg.ellipse(
                 center=(wx + cx_off, cy),
@@ -263,5 +285,24 @@ def _draw_shield_ovals(dwg: svgwrite.Drawing, rows: list[PinRowInfo], label: str
                 font_size="8px",
                 font_weight="bold",
                 font_family="ui-monospace, monospace",
+            )
+        )
+
+    # Ground symbol: stem + open downward triangle.
+    # drain_label → left oval (source/component-proximal side)
+    # drain_remote_label → right oval (remote/cable-exit side)
+    for cx_off, dlabel in ((_SHIELD_LEFT_CX, drain_label), (_SHIELD_RIGHT_CX, drain_remote_label)):
+        if not dlabel:
+            continue
+        tx = wx + cx_off
+        stem_end = oval_bottom + 4
+        tri_h = 8
+        dwg.add(dwg.line(start=(tx, oval_bottom), end=(tx, stem_end), stroke="#475569", stroke_width=1))
+        dwg.add(
+            dwg.polygon(
+                points=[(tx - 5, stem_end), (tx + 5, stem_end), (tx, stem_end + tri_h)],
+                fill="white",
+                stroke="#475569",
+                stroke_width=1,
             )
         )

@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ..model import CircuitBreaker, Fuse, GroundSymbol, Harness, OffPageReference, Pin, SpliceNode
+from ..harness import Harness
+from ..model import Pin, SpliceNode, Terminal
 from .geometry import Rect
 
 MARGIN = 20
@@ -14,6 +15,8 @@ GROUP_GAP = 14  # vertical gap inserted between pin groups with different remote
 FIRST_GROUP_PAD = 12  # extra top padding before the first group when it needs a label above it
 CONNECTOR_BOTTOM_PAD = 6  # breathing room after last pin row in a connector (before next header)
 SECTION_BOTTOM_PAD = 6  # breathing room between last pin row and section border bottom
+DRAIN_STUB_H = 16  # extra bottom padding when a shield group has a drain terminal
+DRAIN_GROUP_GAP = 8  # extra gap after a pin group that ends with a drained shield
 PIN_NUM_W = 36
 PIN_NAME_W = 160
 WIRE_AREA_W = 300
@@ -151,7 +154,7 @@ def _pin_target_key(class_pin: Pin, inst_pin: Pin | None = None) -> tuple:
         # Prefer instance identity so multiple instances of the same class get separate groups.
         comp_key = id(remote._component) if remote._component is not None else id(remote._component_class)
         return ("component", comp_key, id(remote._connector_class))
-    elif isinstance(remote, (GroundSymbol, OffPageReference, Fuse, CircuitBreaker)):
+    elif isinstance(remote, Terminal):
         return ("terminal", id(remote))
     return ("other", id(remote))
 
@@ -161,6 +164,28 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
     connector_rects: dict[int, Rect] = {}
     pin_rows: dict[int, PinRowInfo] = {}
     pin_groups: list[PinGroup] = []
+
+    # Pre-compute set of pin ids (class or instance) that belong to a drained shield.
+    # Used to inject extra gap after groups that end at such a pin.
+    drained_pin_ids: set[int] = set()
+    for sg in harness.shield_groups:
+        if sg.drain is None and sg.drain_remote is None:
+            continue
+        for p in sg.pins:
+            drained_pin_ids.add(id(p))
+        for seg in sg.segments:
+            for ep in (seg.end_a, seg.end_b):
+                if isinstance(ep, Pin):
+                    drained_pin_ids.add(id(ep))
+
+    def _group_drain_extra(group: PinGroup | None) -> int:
+        if group is None:
+            return 0
+        return (
+            DRAIN_GROUP_GAP
+            if any(id(ri.class_pin) in drained_pin_ids or id(ri.pin) in drained_pin_ids for ri in group.rows)
+            else 0
+        )
 
     y = MARGIN
     inner_x = MARGIN
@@ -195,7 +220,7 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
                 if key[0] == "component":
                     y += FIRST_GROUP_PAD
             elif key != prev_key:
-                y += GROUP_GAP
+                y += GROUP_GAP + _group_drain_extra(current_group)
                 current_group = PinGroup(rows=[], target_key=key)
                 pin_groups.append(current_group)
             prev_key = key
@@ -214,6 +239,7 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
             y += row_h
 
         # ── connectors ─────────────────────────────────────────────────────
+        last_conn_drain_extra = 0
         for conn_name, conn in comp._connectors.items():
             conn_cls = type(conn)
             conn_start_y = y
@@ -242,7 +268,7 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
                     if key[0] == "component":
                         y += FIRST_GROUP_PAD
                 elif key != prev_key:
-                    y += GROUP_GAP
+                    y += GROUP_GAP + _group_drain_extra(current_group)
                     current_group = PinGroup(rows=[], target_key=key)
                     pin_groups.append(current_group)
                 prev_key = key
@@ -260,13 +286,44 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
                 current_group.rows.append(row_info)
                 y += row_h
 
-            y += CONNECTOR_BOTTOM_PAD
+            conn_drain_extra = (
+                DRAIN_STUB_H
+                if (
+                    current_group is not None
+                    and any(
+                        id(ri.class_pin) in drained_pin_ids or id(ri.pin) in drained_pin_ids
+                        for ri in current_group.rows
+                    )
+                )
+                else 0
+            )
+            last_conn_drain_extra = conn_drain_extra
+            y += CONNECTOR_BOTTOM_PAD + conn_drain_extra
             conn_rect = Rect(inner_x, conn_start_y, inner_w, y - conn_start_y)
             connector_rects[id(conn)] = conn_rect
 
-        section_rect = Rect(inner_x, section_start_y, inner_w, y - section_start_y + SECTION_BOTTOM_PAD)
+        # Direct-pin components: add drain stub height when last group is drained.
+        # Connector components: skip SECTION_BOTTOM_PAD when the last connector already
+        # reserved drain space (CONNECTOR_BOTTOM_PAD + DRAIN_STUB_H) to avoid triple-stacking.
+        if not comp._connectors:
+            extra = (
+                DRAIN_STUB_H
+                if (
+                    current_group is not None
+                    and any(
+                        id(ri.class_pin) in drained_pin_ids or id(ri.pin) in drained_pin_ids
+                        for ri in current_group.rows
+                    )
+                )
+                else 0
+            )
+            section_bottom_pad = SECTION_BOTTOM_PAD
+        else:
+            extra = 0
+            section_bottom_pad = 0 if last_conn_drain_extra > 0 else SECTION_BOTTOM_PAD
+        section_rect = Rect(inner_x, section_start_y, inner_w, y - section_start_y + section_bottom_pad + extra)
         section_rects[id(comp)] = section_rect
-        y += SECTION_BOTTOM_PAD + SECTION_GAP
+        y += section_bottom_pad + extra + SECTION_GAP
 
     canvas_height = y + MARGIN
 

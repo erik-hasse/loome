@@ -4,16 +4,9 @@ from pathlib import Path
 
 import svgwrite
 
+from ..harness import Harness
 from ..layout.engine import WIRE_AREA_W, LayoutResult
-from ..model import (
-    CircuitBreaker,
-    Fuse,
-    GroundSymbol,
-    Harness,
-    OffPageReference,
-    Pin,
-    ShieldGroup,
-)
+from ..model import Pin, ShieldGroup, Terminal
 from .colors import _SHIELD_PALETTE, _wire_attrs
 from .primitives import (
     _JUMPER_STUB_X,
@@ -51,7 +44,7 @@ def _compute_min_term_cx(layout: LayoutResult, harness: Harness) -> float:
             remote = (
                 seg.end_b if (seg.end_a is use_pin or seg.end_a is row.pin or seg.end_a is row.class_pin) else seg.end_a
             )
-            if not isinstance(remote, (GroundSymbol, OffPageReference, Fuse, CircuitBreaker)):
+            if not isinstance(remote, Terminal):
                 continue
             _check(_remote_label(remote, row.class_pin, harness), row.wire_start_x)
 
@@ -60,14 +53,18 @@ def _compute_min_term_cx(layout: LayoutResult, harness: Harness) -> float:
         for splice in harness.splice_nodes:
             for seg in splice._connections:
                 remote = seg.end_b if seg.end_a is splice else seg.end_a
-                if isinstance(remote, GroundSymbol):
-                    _check(remote.label, wire_start_x)
-                elif isinstance(remote, OffPageReference):
-                    _check(remote.label or remote.id, wire_start_x)
-                elif isinstance(remote, (Fuse, CircuitBreaker)):
-                    _check(f"{remote.name} {remote.amps}A", wire_start_x)
+                if isinstance(remote, Terminal):
+                    _check(remote.display_name(), wire_start_x)
 
     return min_cx if min_cx != float("inf") else 0
+
+
+def _drain_label(endpoint) -> str:
+    if isinstance(endpoint, Terminal):
+        return endpoint.display_name()
+    if isinstance(endpoint, Pin):
+        return endpoint.signal_name or str(endpoint.number)
+    return ""
 
 
 def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colored: bool = True) -> None:
@@ -113,6 +110,13 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
                 if isinstance(remote, Pin):
                     shield_by_pin[id(remote)] = sg
                     row = inst_pin_to_row.get(id(remote))
+                    if row:
+                        shield_by_pin[id(row.class_pin)] = sg
+        for seg in sg.segments:
+            for ep in (seg.end_a, seg.end_b):
+                if isinstance(ep, Pin):
+                    shield_by_pin[id(ep)] = sg
+                    row = inst_pin_to_row.get(id(ep))
                     if row:
                         shield_by_pin[id(row.class_pin)] = sg
 
@@ -161,35 +165,74 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
 
     # ── shield ovals ────────────────────────────────────────────────────────
     for sg in harness.shield_groups:
-        source_by_inst: dict[int, list] = {}
-        for p in sg.pins:
-            for ri in class_pin_to_rows.get(id(p), []):
-                if not ri.pin._connections and not p._connections:
-                    continue
-                inst_key = id(ri.pin._component) if ri.pin._component is not None else id(ri.pin)
-                source_by_inst.setdefault(inst_key, []).append(ri)
-        for inst_rows in source_by_inst.values():
-            _draw_shield_ovals(dwg, inst_rows, sg.label)
+        dl = _drain_label(sg.drain) if sg.drain is not None else ""
+        dl_remote = _drain_label(sg.drain_remote) if sg.drain_remote is not None else ""
 
-        remote_rows_by_source: dict[int, list] = {}
+        if sg.segments:
+            # Connection-level shield: expand to all instance rows via class_pin_to_rows,
+            # then group by component instance (same approach as class-body shields).
+            src_rows_by_inst: dict[int, list] = {}
+            rem_rows_by_inst: dict[int, list] = {}
+            for seg in sg.segments:
+                for ep, target in ((seg.end_a, src_rows_by_inst), (seg.end_b, rem_rows_by_inst)):
+                    if not isinstance(ep, Pin):
+                        continue
+                    row = _find_row(ep)
+                    if row is None:
+                        continue
+                    cp_id = id(row.class_pin)
+                    for ri in class_pin_to_rows.get(cp_id, [row]):
+                        inst_key = id(ri.pin._component) if ri.pin._component is not None else id(ri.pin)
+                        if ri not in target.setdefault(inst_key, []):
+                            target[inst_key].append(ri)
+            for inst_rows in src_rows_by_inst.values():
+                _draw_shield_ovals(dwg, inst_rows, sg.label, drain_label=dl)
+            for inst_rows in rem_rows_by_inst.values():
+                _draw_shield_ovals(dwg, inst_rows, sg.label, drain_remote_label=dl_remote)
+        else:
+            # Class-body shield: group rows from sg.pins by component instance.
+            source_by_inst: dict[int, list] = {}
+            for p in sg.pins:
+                for ri in class_pin_to_rows.get(id(p), []):
+                    if not ri.pin._connections and not p._connections:
+                        continue
+                    inst_key = id(ri.pin._component) if ri.pin._component is not None else id(ri.pin)
+                    source_by_inst.setdefault(inst_key, []).append(ri)
+            for inst_rows in source_by_inst.values():
+                _draw_shield_ovals(
+                    dwg,
+                    inst_rows,
+                    sg.label,
+                    drain_label=dl,
+                    drain_remote_label=dl_remote,
+                    single_oval=sg.single_oval,
+                )
 
-        def _add_remote_for_source(src_pin: Pin, source_key: int) -> None:
-            for seg in src_pin._connections:
-                remote = seg.end_b if seg.end_a is src_pin else seg.end_a
-                if not isinstance(remote, Pin):
-                    continue
-                row = _find_row(remote)
-                if row is not None:
-                    remote_rows_by_source.setdefault(source_key, []).append(row)
+            # Remote ovals only for pins whose remote endpoint has no ShieldGroup of its own.
+            # When both sides define shielded pins (e.g. RS-232 helpers on both connectors),
+            # each component renders its own ovals; cross-rendering would double-draw and
+            # overwrite drain markers.
+            remote_rows_by_source: dict[int, list] = {}
 
-        for p in sg.pins:
-            _add_remote_for_source(p, id(sg))
-            for ri in class_pin_to_rows.get(id(p), []):
-                source_key = id(ri.pin._component) if ri.pin._component is not None else id(ri.pin)
-                _add_remote_for_source(ri.pin, source_key)
+            def _add_remote_for_source(src_pin: Pin, source_key: int) -> None:
+                for seg in src_pin._connections:
+                    remote = seg.end_b if seg.end_a is src_pin else seg.end_a
+                    if not isinstance(remote, Pin):
+                        continue
+                    if remote.shield_group is not None:
+                        continue
+                    row = _find_row(remote)
+                    if row is not None:
+                        remote_rows_by_source.setdefault(source_key, []).append(row)
 
-        for rows in remote_rows_by_source.values():
-            _draw_shield_ovals(dwg, rows, sg.label)
+            for p in sg.pins:
+                _add_remote_for_source(p, id(sg))
+                for ri in class_pin_to_rows.get(id(p), []):
+                    source_key = id(ri.pin._component) if ri.pin._component is not None else id(ri.pin)
+                    _add_remote_for_source(ri.pin, source_key)
+
+            for rows in remote_rows_by_source.values():
+                _draw_shield_ovals(dwg, rows, sg.label, drain_remote_label=dl_remote, single_oval=sg.single_oval)
 
     # ── jumper vertical bars ─────────────────────────────────────────────────
     for entry in jumper_stubs.values():

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import copy
-import inspect
 from dataclasses import dataclass, field
 from typing import Literal
 
@@ -21,12 +20,154 @@ WireColor = Literal[
 ]
 
 
+# ── terminals ──────────────────────────────────────────────────────────────
+#
+# Terminal subclasses are endpoints a wire runs *to* — they render as a symbol
+# (ground triangle, off-page chevron, fuse/CB box, bus-bar stripe) rather than
+# as a pin inside a component block. `display_name()` is the single source of
+# truth for the text shown next to the symbol. Adding a new Terminal subclass
+# and teaching the renderer to draw its symbol is the standard extension path
+# (see README: diodes, bus bars, relays).
+
+
+@dataclass
+class Terminal:
+    """Base class for symbol-rendered wire endpoints."""
+
+    id: str
+
+    def display_name(self) -> str:
+        return self.id
+
+
+@dataclass
+class GroundSymbol(Terminal):
+    label: str = "GND"
+
+    def display_name(self) -> str:
+        return self.label
+
+
+@dataclass
+class OffPageReference(Terminal):
+    label: str = ""
+
+    def display_name(self) -> str:
+        return self.label or self.id
+
+
+@dataclass
+class Fuse(Terminal):
+    name: str = ""
+    amps: int | float = 0
+
+    def display_name(self) -> str:
+        return f"{self.name} {self.amps}A"
+
+
+@dataclass
+class CircuitBreaker(Terminal):
+    name: str = ""
+    amps: int | float = 0
+
+    def display_name(self) -> str:
+        return f"{self.name} {self.amps}A"
+
+
+@dataclass
+class BusBar(Terminal):
+    """A named power or ground rail that accepts many wire taps.
+
+    Reserved as a first-class Terminal so the renderer can draw a thick
+    horizontal bar with labeled tap points instead of stubbing every wire
+    into an ``OffPageReference``.
+    """
+
+    label: str = ""
+
+    def display_name(self) -> str:
+        return self.label or self.id
+
+
+# ── splices ────────────────────────────────────────────────────────────────
+
+
+@dataclass
+class SpliceNode:
+    id: str
+    label: str = ""
+    _connections: list[WireSegment] = field(default_factory=list, repr=False)
+
+    def connect(
+        self,
+        other: WireEndpoint,
+        wire_id: str = "",
+        gauge: int | str = 22,
+        color: WireColor = "",
+        **kwargs,
+    ) -> WireSegment:
+        seg = WireSegment(wire_id=wire_id, gauge=gauge, color=color, end_a=self, end_b=other, **kwargs)
+        if _active_shield_stack:
+            _active_shield_stack[-1].segments.append(seg)
+            seg.shielded = True
+        self._connections.append(seg)
+        if isinstance(other, (Pin, SpliceNode)):
+            other._connections.append(seg)
+        return seg
+
+
+# ── shields ────────────────────────────────────────────────────────────────
+
+
 @dataclass
 class ShieldGroup:
     """A set of wires that share a common shield (e.g. a shielded twisted pair)."""
 
     label: str
     pins: list["Pin"]  # class-level pins whose connections are in this shield
+    segments: list["WireSegment"] = field(default_factory=list)  # connection-level segments
+    drain: "WireEndpoint | None" = None  # drain at source/near end (None = floating)
+    drain_remote: "WireEndpoint | None" = None  # drain at remote end (None = floating)
+    single_oval: bool = False  # draw only the left/near oval (e.g. CAN bus)
+
+
+_active_shield_stack: list[ShieldGroup] = []
+
+
+class Shield:
+    """Connection-level shield context manager.
+
+    Wraps ``connect()`` calls to group the resulting wire segments under a single
+    shield foil. Supports optional drain terminals on either or both ends.
+
+    Usage::
+
+        with Shield(drain=gnd) as oat_shield:
+            gsu25.J252.oat_probe_power.connect(oat_probe.oat_probe_power)
+            gsu25.J252.oat_probe_high.connect(oat_probe.oat_probe_high)
+    """
+
+    def __init__(
+        self,
+        drain: "WireEndpoint | None" = None,
+        drain_remote: "WireEndpoint | None" = None,
+        label: str = "",
+    ) -> None:
+        self._sg = ShieldGroup(label=label, pins=[], drain=drain, drain_remote=drain_remote)
+
+    def __enter__(self) -> "Shield":
+        _active_shield_stack.append(self._sg)
+        return self
+
+    def __exit__(self, *_) -> None:
+        _active_shield_stack.pop()
+
+    @property
+    def group(self) -> ShieldGroup:
+        return self._sg
+
+
+# ── wires ──────────────────────────────────────────────────────────────────
 
 
 @dataclass
@@ -45,36 +186,7 @@ class WireSegment:
         return "".join(str(p) for p in [self.wire_id, self.gauge, self.color] if p).strip()
 
 
-class Namespace(dict):
-    def __init__(self):
-        super().__init__()
-        self._shield_stack: list[ShieldGroup] = []
-
-    def __setitem__(self, key, value):
-        if self._shield_stack and isinstance(value, Pin):
-            sg = self._shield_stack[-1]
-            value.shield_group = sg
-            sg.pins.append(value)
-        super().__setitem__(key, value)
-
-
-class SupportsShield(type):
-    @classmethod
-    def __prepare__(cls, name, bases):
-        return Namespace()
-
-
-class Shielded:
-    def __enter__(self):
-        frame = inspect.currentframe().f_back
-        ns: Namespace = frame.f_locals
-        sg = ShieldGroup(label="", pins=[])
-        ns._shield_stack.append(sg)
-
-    def __exit__(self, exc_type, exc, tb):
-        frame = inspect.currentframe().f_back
-        ns: Namespace = frame.f_locals
-        ns._shield_stack.pop()
+# ── pins ───────────────────────────────────────────────────────────────────
 
 
 @dataclass
@@ -88,10 +200,6 @@ class Pin:
     _component: object | None = field(default=None, repr=False)
     _connections: list[WireSegment] = field(default_factory=list, repr=False)
     shield_group: "ShieldGroup | None" = field(default=None, repr=False)
-
-    def shielded_with(self, *others: "Pin", label: str = "") -> "ShieldGroup":
-        """Group this pin's wire with others into a single shield."""
-        return ShieldGroup(label=label, pins=[self, *others])
 
     def connect(
         self,
@@ -114,67 +222,26 @@ class Pin:
             shielded=shielded,
             notes=notes,
         )
+        if _active_shield_stack:
+            _active_shield_stack[-1].segments.append(seg)
+            seg.shielded = True
         self._connections.append(seg)
         if isinstance(other, (Pin, SpliceNode)):
             other._connections.append(seg)
         return seg
 
 
-@dataclass
-class SpliceNode:
-    id: str
-    label: str = ""
-    _connections: list[WireSegment] = field(default_factory=list, repr=False)
-
-    def connect(
-        self,
-        other: WireEndpoint,
-        wire_id: str = "",
-        gauge: int | str = 22,
-        color: WireColor = "",
-        **kwargs,
-    ) -> WireSegment:
-        seg = WireSegment(wire_id=wire_id, gauge=gauge, color=color, end_a=self, end_b=other, **kwargs)
-        self._connections.append(seg)
-        if isinstance(other, (Pin, SpliceNode)):
-            other._connections.append(seg)
-        return seg
+WireEndpoint = Pin | SpliceNode | Terminal
 
 
-@dataclass
-class GroundSymbol:
-    id: str
-    label: str = "GND"
-
-
-@dataclass
-class OffPageReference:
-    id: str
-    label: str = ""
-
-
-@dataclass
-class Fuse:
-    id: str
-    name: str
-    amps: int | float
-
-
-@dataclass
-class CircuitBreaker:
-    id: str
-    name: str
-    amps: int | float
-
-
-WireEndpoint = Pin | SpliceNode | GroundSymbol | OffPageReference | Fuse | CircuitBreaker
+# ── connectors / components ────────────────────────────────────────────────
 
 
 def _default_signal_name(attr_name: str) -> str:
     return attr_name.replace("_", " ").title()
 
 
-class Connector(metaclass=SupportsShield):
+class Connector:
     _component_class: type | None = None
     _connector_name: str = ""
 
@@ -188,7 +255,6 @@ class Connector(metaclass=SupportsShield):
                     val.signal_name = _default_signal_name(attr_name)
 
     def __init__(self):
-
         self._pins: dict[int | str, Pin] = {}
         for cls in reversed(type(self).__mro__):
             if not (isinstance(cls, type) and issubclass(cls, Connector)):
@@ -205,7 +271,7 @@ class Connector(metaclass=SupportsShield):
         return self._pins[number]
 
 
-class Component(metaclass=SupportsShield):
+class Component:
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         for attr_name, val in vars(cls).items():
@@ -247,165 +313,3 @@ class Component(metaclass=SupportsShield):
                     pin._component = self
                     setattr(self, attr_name, pin)
                     self._direct_pins[attr_name] = pin
-
-
-@dataclass
-class Harness:
-    name: str
-    components: list[Component] = field(default_factory=list)
-    splice_nodes: list[SpliceNode] = field(default_factory=list)
-    off_page_refs: list[OffPageReference] = field(default_factory=list)
-    ground_symbols: list[GroundSymbol] = field(default_factory=list)
-    fuses: list[Fuse] = field(default_factory=list)
-    circuit_breakers: list[CircuitBreaker] = field(default_factory=list)
-    shield_groups: list[ShieldGroup] = field(default_factory=list)
-
-    def add(self, *items) -> None:
-        for item in items:
-            if isinstance(item, Component):
-                self.components.append(item)
-                self._collect_shield_groups(item)
-            elif isinstance(item, SpliceNode):
-                self.splice_nodes.append(item)
-            elif isinstance(item, OffPageReference):
-                self.off_page_refs.append(item)
-            elif isinstance(item, GroundSymbol):
-                self.ground_symbols.append(item)
-            elif isinstance(item, Fuse):
-                self.fuses.append(item)
-            elif isinstance(item, CircuitBreaker):
-                self.circuit_breakers.append(item)
-            elif isinstance(item, ShieldGroup):
-                self.shield_groups.append(item)
-
-    def autodetect(self, namespace: dict) -> None:
-        """Populate the harness from a spec-file namespace.
-
-        Scans *namespace* for instances of all harness types, then follows wire
-        connections to catch any endpoints not directly assigned to variables.
-        Skips objects already added (safe to call after manual harness.add()).
-        """
-        # Pre-populate seen set so existing content is never duplicated.
-        all_existing = (
-            self.components
-            + self.splice_nodes
-            + self.ground_symbols
-            + self.off_page_refs
-            + self.fuses
-            + self.circuit_breakers
-        )
-        seen: set[int] = {id(obj) for obj in all_existing}
-
-        def _register(obj) -> None:
-            if id(obj) in seen:
-                return
-            seen.add(id(obj))
-            self.add(obj)
-
-        # ── Step 1: namespace scan ──────────────────────────────────────────
-        for val in namespace.values():
-            if isinstance(
-                val, (Component, SpliceNode, GroundSymbol, OffPageReference, Fuse, CircuitBreaker, ShieldGroup)
-            ):
-                _register(val)
-
-        # ── Step 2: connection traversal ────────────────────────────────────
-        # Build frontier from all instance pins of known components/splices
-        # and from class-level pins of Component subclasses in the namespace.
-        frontier: list = []
-
-        for comp in list(self.components):
-            frontier.extend(comp._direct_pins.values())
-            for conn in comp._connectors.values():
-                frontier.extend(p for p in vars(conn).values() if isinstance(p, Pin))
-
-        for splice in list(self.splice_nodes):
-            frontier.append(splice)
-
-        for val in namespace.values():
-            if isinstance(val, type) and issubclass(val, Component) and val is not Component:
-                for av in vars(val).values():
-                    if isinstance(av, Pin):
-                        frontier.append(av)
-                    elif isinstance(av, type) and issubclass(av, Connector) and av is not Connector:
-                        frontier.extend(pv for pv in vars(av).values() if isinstance(pv, Pin))
-
-        visited: set[int] = set()
-        while frontier:
-            item = frontier.pop()
-            if id(item) in visited:
-                continue
-            visited.add(id(item))
-
-            for seg in getattr(item, "_connections", []):
-                for ep in (seg.end_a, seg.end_b):
-                    if id(ep) in seen:
-                        continue
-                    _register(ep)
-                    if isinstance(ep, Component):
-                        frontier.extend(ep._direct_pins.values())
-                        for conn in ep._connectors.values():
-                            frontier.extend(p for p in vars(conn).values() if isinstance(p, Pin))
-                    elif isinstance(ep, SpliceNode):
-                        frontier.append(ep)
-
-    def _collect_shield_groups(self, comp: "Component") -> None:
-        existing_ids = {id(sg) for sg in self.shield_groups}
-
-        def _add(pin: Pin) -> None:
-            sg = pin.shield_group
-            if sg is not None and id(sg) not in existing_ids:
-                existing_ids.add(id(sg))
-                self.shield_groups.append(sg)
-
-        for conn in comp._connectors.values():
-            for val in vars(type(conn)).values():
-                if isinstance(val, Pin):
-                    _add(val)
-
-        for val in vars(type(comp)).values():
-            if isinstance(val, Pin):
-                _add(val)
-
-    def segments(self) -> list[WireSegment]:
-        """Return all unique WireSegments.
-
-        Instance-level connections override class-level ones for the same pin.
-        This allows multi-instance components to define per-instance wiring while
-        single-instance components can rely on the class-level spec.
-        """
-        seen: set[int] = set()
-        result = []
-
-        def _collect(pin_or_splice):
-            for seg in pin_or_splice._connections:
-                if id(seg) not in seen:
-                    seen.add(id(seg))
-                    result.append(seg)
-
-        for comp in self.components:
-            comp_cls = type(comp)
-            for attr_name, class_pin in vars(comp_cls).items():
-                if not isinstance(class_pin, Pin):
-                    continue
-                inst_pin = getattr(comp, attr_name, None)
-                if isinstance(inst_pin, Pin) and inst_pin._connections:
-                    _collect(inst_pin)
-                else:
-                    _collect(class_pin)
-
-            for conn_name, conn in comp._connectors.items():
-                conn_cls = type(conn)
-                for attr_name, class_pin in vars(conn_cls).items():
-                    if not isinstance(class_pin, Pin):
-                        continue
-                    inst_pin = getattr(conn, attr_name, None)
-                    if isinstance(inst_pin, Pin) and inst_pin._connections:
-                        _collect(inst_pin)  # instance-level overrides
-                    else:
-                        _collect(class_pin)  # fall back to class-level
-
-        for splice in self.splice_nodes:
-            _collect(splice)
-
-        return result

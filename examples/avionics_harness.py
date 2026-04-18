@@ -1,5 +1,17 @@
-from loome import GPIO, RS232, CanBus, Component, Connector, Fuse, GroundSymbol, Harness, Pin, SpliceNode
-from loome.model import Shielded
+from loome import (
+    DPST,
+    GPIO,
+    RS232,
+    CanBus,
+    Component,
+    Connector,
+    Fuse,
+    GroundSymbol,
+    Harness,
+    Pin,
+    Shield,
+    SpliceNode,
+)
 
 
 class GSU25(Component):
@@ -14,10 +26,9 @@ class GSU25(Component):
         rs232 = RS232(5, 4, 6, name="RS-232")  # tx, rx, gnd
 
     class J252(Connector):
-        with Shielded():
-            oat_probe_power = Pin(1, "OAT Probe Power")
-            oat_probe_high = Pin(2, "OAT Probe High")
-            oat_probe_low = Pin(3, "OAT Probe Low")
+        oat_probe_power = Pin(1, "OAT Probe Power")
+        oat_probe_high = Pin(2, "OAT Probe High")
+        oat_probe_low = Pin(3, "OAT Probe Low")
 
         rs232_3 = RS232(9, 10, 11, name="RS-232 3")  # tx, rx, gnd
 
@@ -35,10 +46,9 @@ class GDU460(Component):
 
 
 class OATProbe(Component):
-    with Shielded():
-        oat_probe_power = Pin(1, "OAT Probe Power")
-        oat_probe_high = Pin(2, "OAT Probe High")
-        oat_probe_low = Pin(3, "OAT Probe Low")
+    oat_probe_power = Pin(1, "OAT Probe Power")
+    oat_probe_high = Pin(2, "OAT Probe High")
+    oat_probe_low = Pin(3, "OAT Probe Low")
 
 
 class GTX45R(Component):
@@ -107,6 +117,20 @@ class GEA24(Component):
         gp2 = GPIO(21, 22, 23, name="GP2")  # positive, signal, ground
 
 
+class GMC507(Component):
+    """Autopilot controller"""
+
+    class P7001(Connector):
+        remote_go_around = Pin(10, "Remote Go-Around")
+
+
+class GTN650Xi(Component):
+    """GPS/NAV/COM"""
+
+    class P1001(Connector):
+        remote_go_around = Pin(37, "Remote Go-Around")
+
+
 # ── instances ─────────────────────────────────────────────────────────────────
 
 pilot_stick = Stick("Pilot Stick")
@@ -126,6 +150,15 @@ air_data_fuse = Fuse("air_data", "Air Data", 5)
 air_data_backup_fuse = Fuse("air_data_backup", "Air Data Backup", 5)
 backup_splice = SpliceNode("S1", label="Bkp Pwr")
 
+# ── switches ──────────────────────────────────────────────────────────────────
+
+toga = DPST("TO/GA", momentary=True)
+toga_splice = SpliceNode("toga", label="TOGA")
+toga.com1.connect(toga_splice)
+toga.com2.connect(toga_splice)
+toga_splice.connect(gnd)
+
+
 # ── class-level connections ───────────────────────────────────────────────────
 
 GSU25.J251.power.connect(air_data_fuse)
@@ -135,9 +168,11 @@ backup_splice.connect(GMU11.J441.backup_power)
 GSU25.J251.ground.connect(gnd)
 GSU25.J251.rs232.connect(pfd.P4601.rs232, ground=False)  # cross-connects TX↔RX; GND defined but not wired
 
-GSU25.J252.oat_probe_power.connect(OATProbe.oat_probe_power)
-GSU25.J252.oat_probe_high.connect(OATProbe.oat_probe_high)
-GSU25.J252.oat_probe_low.connect(OATProbe.oat_probe_low)
+oat_shield = Shield(drain=gnd, drain_remote=gnd)
+with oat_shield:
+    GSU25.J252.oat_probe_power.connect(OATProbe.oat_probe_power)
+    GSU25.J252.oat_probe_high.connect(OATProbe.oat_probe_high)
+    GSU25.J252.oat_probe_low.connect(OATProbe.oat_probe_low)
 GSU25.J252.rs232_3.connect(GTX45R.P3251.rs232)
 GSU25.J252.magnetometer_power.connect(GMU11.J441.power)
 
@@ -152,6 +187,7 @@ roll_trim = RayAllanTrim("Roll Trim")
 pitch_servo = GSA28("Pitch Servo")
 pitch_trim = RayAllanTrim("Pitch Trim")
 yaw_servo = GSA28("Yaw Servo")
+controller = GMC507("AP Controller")
 
 # Class-level connections apply to all three servo instances
 GSA28.J281.ground.connect(gnd)
@@ -169,8 +205,15 @@ yaw_servo.J281.id_strap_2.connect(yaw_servo.J281.id_strap_3)
 pilot_stick.ap_disconnect.connect(ap_disconnect_splice)
 copilot_stick.ap_disconnect.connect(ap_disconnect_splice)
 
-GEA24.J244.gp1.connect(pitch_trim.position)
-GEA24.J244.gp2.connect(roll_trim.position)
+GEA24.J244.gp1.connect(pitch_trim.position, drain_remote=gnd)
+GEA24.J244.gp2.connect(roll_trim.position, drain_remote=gnd)
+
+controller.P7001.remote_go_around.connect(toga.no1)
+
+# ── GPS ───────────────────────────────────────────────────────────────────────
+
+gps = GTN650Xi("GPS")
+gps.P1001.remote_go_around.connect(toga.no2)
 
 # ── harness ───────────────────────────────────────────────────────────────────
 
