@@ -165,11 +165,19 @@ class Harness:
                     seen.add(id(seg))
                     result.append(seg)
 
-        for comp in self.components:
-            comp_cls = type(comp)
-            for attr_name, class_pin in vars(comp_cls).items():
-                if not isinstance(class_pin, Pin):
+        def _iter_class_pins(cls, base_cls):
+            """Walk MRO most-derived first, yielding (attr_name, class_pin) once per name."""
+            emitted: set[str] = set()
+            for c in cls.__mro__:
+                if not (isinstance(c, type) and issubclass(c, base_cls)):
                     continue
+                for attr_name, val in vars(c).items():
+                    if isinstance(val, Pin) and attr_name not in emitted:
+                        emitted.add(attr_name)
+                        yield attr_name, val
+
+        for comp in self.components:
+            for attr_name, class_pin in _iter_class_pins(type(comp), Component):
                 inst_pin = getattr(comp, attr_name, None)
                 if isinstance(inst_pin, Pin) and inst_pin._connections:
                     _collect(inst_pin)
@@ -177,10 +185,7 @@ class Harness:
                     _collect(class_pin)
 
             for conn_name, conn in comp._connectors.items():
-                conn_cls = type(conn)
-                for attr_name, class_pin in vars(conn_cls).items():
-                    if not isinstance(class_pin, Pin):
-                        continue
+                for attr_name, class_pin in _iter_class_pins(type(conn), Connector):
                     inst_pin = getattr(conn, attr_name, None)
                     if isinstance(inst_pin, Pin) and inst_pin._connections:
                         _collect(inst_pin)  # instance-level overrides

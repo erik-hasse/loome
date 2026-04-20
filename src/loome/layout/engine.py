@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from ..harness import Harness
-from ..model import Pin, SpliceNode, Terminal
+from ..model import Component, Connector, Pin, SpliceNode, Terminal
 from .geometry import Rect
 
 MARGIN = 20
@@ -129,6 +129,22 @@ def _sort_pin_attrs(
     return [x[3] for x in keyed]
 
 
+def _iter_class_pins(cls, base_cls):
+    """Walk MRO most-derived first, yielding (attr_name, class_pin) once per name."""
+    emitted: set[str] = set()
+    for c in cls.__mro__:
+        if not (isinstance(c, type) and issubclass(c, base_cls)):
+            continue
+        for attr_name, val in vars(c).items():
+            if isinstance(val, Pin) and attr_name not in emitted:
+                emitted.add(attr_name)
+                yield attr_name, val
+
+
+def _class_pin_map(cls, base_cls) -> dict[str, Pin]:
+    return dict(_iter_class_pins(cls, base_cls))
+
+
 def _pin_target_key(class_pin: Pin, inst_pin: Pin | None = None) -> tuple:
     """Return a stable grouping key based on where this pin's first connection leads.
 
@@ -197,9 +213,10 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
 
         # ── direct pins (no connector header) ──────────────────────────────
         comp_cls = type(comp)
+        direct_class_pins = _class_pin_map(comp_cls, Component)
         direct_pin_attrs = _sort_pin_attrs(
-            [attr for attr, val in vars(comp_cls).items() if isinstance(val, Pin)],
-            get_class_pin=lambda a: vars(comp_cls).get(a),
+            list(direct_class_pins.keys()),
+            get_class_pin=direct_class_pins.get,
             get_inst_pin=comp._direct_pins.get,
         )
         prev_key: tuple | None = None
@@ -209,7 +226,7 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
             inst_pin = comp._direct_pins.get(attr_name)
             if inst_pin is None:
                 continue
-            class_pin = vars(comp_cls).get(attr_name, inst_pin)
+            class_pin = direct_class_pins.get(attr_name, inst_pin)
             if not show_unconnected and not _pin_is_connected(class_pin, inst_pin):
                 continue
             key = _pin_target_key(class_pin, inst_pin)
@@ -242,6 +259,7 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
         last_conn_drain_extra = 0
         for conn_name, conn in comp._connectors.items():
             conn_cls = type(conn)
+            conn_class_pins = _class_pin_map(conn_cls, Connector)
             conn_start_y = y
             y += CONNECTOR_HEADER_H
 
@@ -249,15 +267,15 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
             current_group = None
 
             pin_attrs = _sort_pin_attrs(
-                [attr for attr, val in vars(conn_cls).items() if isinstance(val, Pin)],
-                get_class_pin=lambda a: vars(conn_cls).get(a),
+                list(conn_class_pins.keys()),
+                get_class_pin=conn_class_pins.get,
                 get_inst_pin=lambda a: getattr(conn, a, None) if isinstance(getattr(conn, a, None), Pin) else None,
             )
             for attr_name in pin_attrs:
                 inst_pin = getattr(conn, attr_name, None)
                 if inst_pin is None or not isinstance(inst_pin, Pin):
                     continue
-                class_pin = vars(conn_cls).get(attr_name, inst_pin)
+                class_pin = conn_class_pins.get(attr_name, inst_pin)
                 if not show_unconnected and not _pin_is_connected(class_pin, inst_pin):
                     continue
                 key = _pin_target_key(class_pin, inst_pin)

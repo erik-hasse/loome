@@ -278,13 +278,20 @@ class Component:
             if isinstance(val, type) and issubclass(val, Connector) and val is not Connector:
                 val._component_class = cls
                 val._connector_name = attr_name
-                for pin_name, pin_val in vars(val).items():
-                    if isinstance(pin_val, Pin):
-                        pin_val._component_class = cls
-                        pin_val._connector_class = val
-                        pin_val._attr_name = pin_name
-                        if not pin_val.signal_name:
-                            pin_val.signal_name = _default_signal_name(pin_name)
+                # Walk MRO so pins inherited from Connector base classes (e.g. a
+                # shared _BaseJ281) pick up component/connector tagging too.
+                tagged: set[str] = set()
+                for c in val.__mro__:
+                    if not (isinstance(c, type) and issubclass(c, Connector)):
+                        continue
+                    for pin_name, pin_val in vars(c).items():
+                        if isinstance(pin_val, Pin) and pin_name not in tagged:
+                            tagged.add(pin_name)
+                            pin_val._component_class = cls
+                            pin_val._connector_class = val
+                            pin_val._attr_name = pin_name
+                            if not pin_val.signal_name:
+                                pin_val.signal_name = _default_signal_name(pin_name)
             elif isinstance(val, Pin) and not val._attr_name:
                 val._attr_name = attr_name
                 val._component_class = cls
@@ -313,3 +320,6 @@ class Component:
                     pin._component = self
                     setattr(self, attr_name, pin)
                     self._direct_pins[attr_name] = pin
+
+    def __getitem__(self, number: int | str) -> Pin:
+        return self._direct_pins[number]

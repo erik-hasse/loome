@@ -1,3 +1,5 @@
+from enum import StrEnum
+
 from loome import (
     DPST,
     GPIO,
@@ -68,27 +70,67 @@ class GMU11(Component):
         can = CanBus(1, 2)
 
 
+class _BaseJ281(Connector):
+    can = CanBus(1, 2)
+    can_term_1 = Pin(3, "Can Term 1")
+    can_term_2 = Pin(4, "Can Term 2")
+
+    id_strap_1 = Pin(5, "ID Strap 1")
+    id_strap_2 = Pin(6, "ID Strap 2")
+
+    ground = Pin(9, "Ground")
+    power = Pin(10, "Power")
+    trim_in_1 = Pin(11, "Trim In 1")
+    trim_in_2 = Pin(12, "Trim In 2")
+    trim_out_1 = Pin(13, "Trim Out 1")
+    trim_out_2 = Pin(14, "Trim Out 2")
+    disconnect = Pin(15, "Disconnect")
+
+
+class Axis(StrEnum):
+    ROLL = "roll"
+    PITCH = "pitch"
+    YAW = "yaw"
+
+
 class GSA28(Component):
-    """Autopilot Servo"""
+    """Autopilot Servo (pitch/yaw variant). If axis is provided, strap jumpers will be
+    connected automatically."""
 
-    class J281(Connector):
-        can = CanBus(1, 2)
-        can_term_1 = Pin(3, "Can Term 1")
-        can_term_2 = Pin(4, "Can Term 2")
+    def __init__(self, name: str, axis: Axis | None = None, is_trim: bool = False):
+        super().__init__(name)
+        self.axis = axis
+        self.is_trim = is_trim
 
-        id_strap_1 = Pin(5, "ID Strap 1")
-        id_strap_2 = Pin(6, "ID Strap 2")
+        match axis, is_trim:
+            case Axis.ROLL, False:
+                if type(self) is GSA28:
+                    raise ValueError("Use GSA28RollServo instead")
+            case Axis.PITCH, False:
+                self.J281[5].connect(self.J281[8])
+            case Axis.YAW, False:
+                self.J281[6].connect(self.J281[7])
+            case Axis.ROLL, True:
+                self.J281[5].connect(self.J281[8])
+                self.J281[6].connect(self.J281[7])
+            case Axis.PITCH, True:
+                self.J281[7].connect(self.J281[8])
+            case Axis.YAW, True:
+                raise ValueError("GSA 28 does not support yaw trim")
+
+    class J281(_BaseJ281):
         id_strap_3 = Pin(7, "ID Strap 3")
         id_strap_4 = Pin(8, "ID Strap 4")
 
-        rs232 = RS232(7, 8, name="RS-232 (Roll only)")
-        ground = Pin(9, "Ground")
-        power = Pin(10, "Power")
-        trim_in_1 = Pin(11, "Trim In 1")
-        trim_in_2 = Pin(12, "Trim In 2")
-        trim_out_1 = Pin(13, "Trim Out 1")
-        trim_out_2 = Pin(14, "Trim Out 2")
-        disconnect = Pin(15, "Disconnect")
+
+class GSA28RollServo(GSA28):
+    """Autopilot Servo, roll variant — repurposes pins 7/8 as RS-232."""
+
+    def __init__(self, name: str):
+        super().__init__(name, Axis.ROLL, is_trim=False)
+
+    class J281(_BaseJ281):
+        rs232 = RS232(7, 8, name="RS-232")
 
 
 class GAD27(Component):
@@ -182,11 +224,11 @@ GMU11.J441.ground.connect(gnd)
 
 ap_fuse = Fuse("ap", "Autopilot", 5)
 ap_disconnect_splice = SpliceNode("AP Disconnect", label="AP Disconnect")
-roll_servo = GSA28("Roll Servo")
+roll_servo = GSA28RollServo("Roll Servo")
 roll_trim = RayAllanTrim("Roll Trim")
-pitch_servo = GSA28("Pitch Servo")
+pitch_servo = GSA28("Pitch Servo", axis=Axis.PITCH)
 pitch_trim = RayAllanTrim("Pitch Trim")
-yaw_servo = GSA28("Yaw Servo")
+yaw_servo = GSA28("Yaw Servo", axis=Axis.YAW)
 controller = GMC507("AP Controller")
 
 # Class-level connections apply to all three servo instances
@@ -199,8 +241,6 @@ roll_servo.J281.trim_in_2.connect(GAD27.J272.trim_out_2)
 roll_servo.J281.trim_out_1.connect(roll_trim.trim_1)
 roll_servo.J281.trim_out_2.connect(roll_trim.trim_2)
 
-pitch_servo.J281.id_strap_1.connect(pitch_servo.J281.id_strap_4)
-yaw_servo.J281.id_strap_2.connect(yaw_servo.J281.id_strap_3)
 
 pilot_stick.ap_disconnect.connect(ap_disconnect_splice)
 copilot_stick.ap_disconnect.connect(ap_disconnect_splice)
