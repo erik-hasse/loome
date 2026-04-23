@@ -3,6 +3,7 @@ from loome import (
     Bundle,
     CanBusLine,
     Fuse,
+    FuseBlock,
     GroundSymbol,
     Harness,
     Shield,
@@ -43,6 +44,10 @@ air_data_fuse = Fuse("air_data", "Air Data", 5)
 air_data_backup_fuse = Fuse("air_data_backup", "Air Data Backup", 5)
 backup_splice = SpliceNode("S1", label="Bkp Pwr")
 
+main_fuse_block = FuseBlock("FB1", label="Main Panel Block")
+main_fuse_block.place(1, air_data_fuse)
+main_fuse_block.place(2, air_data_backup_fuse)
+
 # ── switches ──────────────────────────────────────────────────────────────────
 
 toga = DPST("TO/GA", momentary=True)
@@ -74,6 +79,7 @@ GMU11.J441.ground.connect(gnd)
 # ── autopilot ─────────────────────────────────────────────────────────────────
 
 ap_fuse = Fuse("ap", "Autopilot", 5)
+main_fuse_block.place(3, ap_fuse)
 ap_disconnect_splice = SpliceNode("AP Disconnect", label="AP Disconnect")
 roll_servo = GSA28RollServo("Roll Servo")
 roll_trim = RayAllanTrim("Roll Trim")
@@ -123,8 +129,8 @@ panel.attach(air_data_backup_fuse, leg_length=2)
 panel.attach(ap_fuse, leg_length=2)
 panel.attach(backup_splice, leg_length=1)
 pedestal.attach(controller.P7001, leg_length=8)
-pedestal.attach(pitch_servo.J281, leg_length=10)
-pedestal.attach(yaw_servo.J281, leg_length=12)
+tail.attach(pitch_servo.J281, leg_length=10)
+tail.attach(yaw_servo.J281, leg_length=12)
 tail.attach(gmu11.J441, leg_length=10)
 tail.attach(oat_probe, leg_length=5)
 tail.attach(gtx45r.P3251, leg_length=8)
@@ -132,7 +138,14 @@ wing_L.attach(roll_servo.J281, leg_length=12)
 
 main_can = CanBusLine(
     "Main CAN",
-    devices=[gsu25.J251, roll_servo.J281, gmu11.J441],
+    devices=[
+        gsu25.J251,
+        pfd.P4601,
+        roll_servo.J281,
+        pitch_servo.J281,
+        yaw_servo.J281,
+        gmu11.J441,
+    ],
 )
 
 # ── harness ───────────────────────────────────────────────────────────────────

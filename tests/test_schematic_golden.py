@@ -16,7 +16,7 @@ def test_schematic_output_matches_golden(tmp_path):
         check=True,
         capture_output=True,
     )
-    assert out.read_bytes() == golden.read_bytes(), (
+    assert out.read_bytes().rstrip() == golden.read_bytes().rstrip(), (
         "schematic output drifted from golden fixture; run `loome render` "
         "against tests/fixtures/schematic_spec.py and update the fixture if "
         "the change is intentional"

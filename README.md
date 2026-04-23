@@ -3,28 +3,41 @@
 Items are roughly in priority order within each section.
 
 
-## Backlog — switches (remaining)
+## Low effort
 
 - **PDF export** — `cairosvg` converts SVG → PDF in one call; very low effort once SVG output
   is solid.
 
+- **`loome validate` command** — dedicated CLI entry that runs `Harness.validate_bundles()`
+  and exits non-zero on warnings, for CI use without also rendering SVG.
+
 ## Medium effort
 
-- **CAN Bus ordering / visualization** — CAN pins currently render as ordinary wires going to
-  an off-page reference. Better treatment: a horizontal bus bar with all CAN devices stubbing
-  off it, respecting termination resistor placement. Requires layout changes, not just renderer
-  changes.
+- **CAN bus rendering** — data-model support is in place: `CanBusLine` captures device
+  ordering, `Harness.resolved_length()` returns per-stub lengths for CAN pins, and
+  `CanBusLine.stub_lengths_for()` exposes the two-neighbor lengths on intermediate taps.
+  What's still missing is the renderer treatment: instead of every can pin stubbing to a
+  shared off-page reference, draw a horizontal bus track with each device tapping off it in
+  order, plus markers for the terminator devices at either end. layout is the bulk of the
+  remaining work; the renderer already has all the length data it needs.
 
-- **Fuse / CB summary** — `loome fuses spec.py` CLI command (or a dedicated section within the
-  BoM) that renders a table of every `Fuse` and `CircuitBreaker` in the harness: name, rating
-  (amps), the wire ID / gauge it feeds, and the pin/connector it ultimately protects. Requires
-  traversing each terminal's wire connections to identify the protected load. Useful for
-  populating the "fuse schedule" block that most aviation and automotive harness drawings
-  include. Similar implementation effort to BoM export.
+- **automatic can termination** — add a `connector.can_terminate()` instance method that
+  `canbusline` calls on its first and last device. two flavors a device can implement:
 
-- **BoM export** — `loome bom spec.py` CLI command that outputs a parts list: wire segments
-  (id, gauge, color, length if resolved from bundle), connectors + pin counts, terminals.
-  Total wire by gauge is useful for cut sheets.
+  1. *in-connector jumper* — short two dedicated terminator pins together (e.g. the
+     `can_term_1`/`can_term_2` pins on `_basej281`, or `can_bus_term` on the gdu). just
+     emits an internal wire segment; the existing renderer already handles same-connector
+     jumpers.
+  2. *termination adapter* — splice in a pass-through connector that exposes h/l on both
+     sides with a 120ω resistor between them. needs a new adapter-style `component` that
+     renders inline on the bus and carries a "120ω h↔l" note on its symbol.
+
+- **FuseBlock / CB-bank topology rendering** — the `FuseBlock` and `CircuitBreakerBank`
+  data types exist and are consumed by the fuse schedule, but the bundle-layout view
+  still attaches each `Fuse` / `CircuitBreaker` individually. Teach `renderers/bundle.py`
+  to attach a block or bank to a breakout as a single unit and draw the member fuses/CBs
+  inside it, respecting `positions`. Groups that aren't attached fall back to the current
+  per-fuse behavior.
 
 ## Larger features
 

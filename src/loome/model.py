@@ -89,6 +89,41 @@ class BusBar(Terminal):
         return self.label or self.id
 
 
+# ── protective-device containers ───────────────────────────────────────────
+#
+# Grouping objects for harness organization and the fuse schedule. Not
+# Terminals — they don't sit on a wire. The bundle renderer will eventually
+# grow support for attaching one of these to a breakout as a single unit;
+# until then they're consumed only by the BoM / fuse-schedule output.
+
+
+@dataclass
+class FuseBlock:
+    """Holds a set of ``Fuse``s in numbered positions (e.g. an ATO block)."""
+
+    id: str
+    label: str = ""
+    positions: dict[int | str, "Fuse"] = field(default_factory=dict)
+
+    def place(self, position: int | str, fuse: "Fuse") -> "Fuse":
+        self.positions[position] = fuse
+        return fuse
+
+
+@dataclass
+class CircuitBreakerBank:
+    """A row of ``CircuitBreaker``s sharing a ``BusBar`` feed rail."""
+
+    id: str
+    label: str = ""
+    bus: "BusBar | None" = None
+    positions: dict[int | str, "CircuitBreaker"] = field(default_factory=dict)
+
+    def place(self, position: int | str, breaker: "CircuitBreaker") -> "CircuitBreaker":
+        self.positions[position] = breaker
+        return breaker
+
+
 # ── splices ────────────────────────────────────────────────────────────────
 
 

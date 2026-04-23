@@ -61,3 +61,23 @@ def test_can_bus_warns_if_device_unattached():
     warnings = h.validate_bundles()
     assert any("CAN bus" in w and "not attached" in w for w in warnings)
     assert bus.resolved_length(h) is None
+
+
+def test_warns_if_can_capable_connector_not_in_bus():
+    a, b, c = _Node("A"), _Node("B"), _Node("C")
+    bundle = Bundle("trunk")
+    ba = bundle.breakout("a")
+    bb = bundle.breakout("b", after=ba, length=10)
+    bc = bundle.breakout("c", after=bb, length=10)
+    ba.attach(a.J1, leg_length=1)
+    bb.attach(b.J1, leg_length=1)
+    bc.attach(c.J1, leg_length=1)
+    bus = CanBusLine("Main CAN", devices=[a.J1, b.J1])  # c omitted
+
+    h = Harness("h")
+    h.autodetect({"a": a, "b": b, "c": c, "trunk": bundle, "bus": bus})
+
+    warnings = h.validate_bundles()
+    assert any("CAN-capable" in w and "C.J1" in w for w in warnings)
+    assert not any("A.J1" in w and "CAN-capable" in w for w in warnings)
+    assert not any("B.J1" in w and "CAN-capable" in w for w in warnings)

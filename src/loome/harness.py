@@ -6,9 +6,11 @@ from .bundles import Bundle
 from .buses import CanBusLine
 from .model import (
     CircuitBreaker,
+    CircuitBreakerBank,
     Component,
     Connector,
     Fuse,
+    FuseBlock,
     GroundSymbol,
     OffPageReference,
     Pin,
@@ -39,6 +41,8 @@ class Harness:
     shield_groups: list[ShieldGroup] = field(default_factory=list)
     bundles: list[Bundle] = field(default_factory=list)
     can_buses: list[CanBusLine] = field(default_factory=list)
+    fuse_blocks: list[FuseBlock] = field(default_factory=list)
+    cb_banks: list[CircuitBreakerBank] = field(default_factory=list)
 
     # Convenience filtered views (kept as properties so tests and callers
     # can still query by concrete type without pattern-matching the list).
@@ -58,6 +62,20 @@ class Harness:
     def circuit_breakers(self) -> list[CircuitBreaker]:
         return [t for t in self.terminals if isinstance(t, CircuitBreaker)]
 
+    def location_for(self, device: Fuse | CircuitBreaker) -> str:
+        """Return ``"block_id:position"`` for a placed fuse/CB, or ``""``."""
+        if isinstance(device, Fuse):
+            for block in self.fuse_blocks:
+                for pos, f in block.positions.items():
+                    if f is device:
+                        return f"{block.id}:{pos}"
+        elif isinstance(device, CircuitBreaker):
+            for bank in self.cb_banks:
+                for pos, cb in bank.positions.items():
+                    if cb is device:
+                        return f"{bank.id}:{pos}"
+        return ""
+
     def add(self, *items) -> None:
         for item in items:
             if isinstance(item, Component):
@@ -75,6 +93,10 @@ class Harness:
                 self.bundles.append(item)
             elif isinstance(item, CanBusLine):
                 self.can_buses.append(item)
+            elif isinstance(item, FuseBlock):
+                self.fuse_blocks.append(item)
+            elif isinstance(item, CircuitBreakerBank):
+                self.cb_banks.append(item)
 
     def autodetect(self, namespace: dict) -> None:
         """Populate the harness from a spec-file namespace.
@@ -105,6 +127,12 @@ class Harness:
             elif isinstance(val, CanBusLine):
                 if val not in self.can_buses:
                     self.can_buses.append(val)
+            elif isinstance(val, FuseBlock):
+                if val not in self.fuse_blocks:
+                    self.fuse_blocks.append(val)
+            elif isinstance(val, CircuitBreakerBank):
+                if val not in self.cb_banks:
+                    self.cb_banks.append(val)
 
         # ── Step 2: connection traversal ────────────────────────────────────
         # Build frontier from all instance pins of known components/splices
@@ -234,6 +262,14 @@ class Harness:
             for dev in bus.devices:
                 if self._attachment_for(dev) is None:
                     warnings.append(f"CAN bus {bus.name!r}: device {type(dev).__name__} not attached to any bundle")
+
+        covered: set[int] = {id(dev) for bus in self.can_buses for dev in bus.devices}
+        for comp in self.components:
+            for conn_name, conn in comp._connectors.items():
+                if id(conn) in covered:
+                    continue
+                if _connector_has_can_pins(conn):
+                    warnings.append(f"CAN-capable connector {comp.label}.{conn_name} not listed in any CanBusLine")
         return warnings
 
     def _attachment_for(self, endpoint):
@@ -314,6 +350,21 @@ class Harness:
             _collect(splice)
 
         return result
+
+
+def _connector_has_can_pins(conn: Connector) -> bool:
+    """True when any pin on *conn* (including inherited) is a CAN Bus pin."""
+    seen: set[str] = set()
+    for c in type(conn).__mro__:
+        if not (isinstance(c, type) and issubclass(c, Connector)):
+            continue
+        for name, val in vars(c).items():
+            if name in seen:
+                continue
+            seen.add(name)
+            if isinstance(val, Pin) and val.shield_group is not None and val.shield_group.single_oval:
+                return True
+    return False
 
 
 def _connector_short_label(conn: Connector) -> str:
