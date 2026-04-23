@@ -92,7 +92,7 @@ def _draw_connection(
         wire_end = term_cx - 12
         dwg.add(dwg.line(start=(wx + _WIRE_PAD, cy), end=(wire_end, cy), **attrs))
         label_x1 = wx + _SHIELD_LEFT_CX + _SHIELD_RX if shield is not None else wx + _WIRE_PAD
-        _draw_wire_label(dwg, seg, label_x1, wire_end, cy, psp, colored)
+        _draw_wire_label(dwg, seg, label_x1, wire_end, cy, psp, colored, harness=harness)
         _draw_terminal(dwg, remote, term_cx, cy)
         dwg.add(
             dwg.text(
@@ -112,21 +112,21 @@ def _draw_connection(
                 for x1, x2 in [(wx + _WIRE_PAD, lo_left), (lo_right, wire_end)]:
                     if x2 > x1:
                         dwg.add(dwg.line(start=(x1, cy), end=(x2, cy), **attrs))
-                _draw_wire_label(dwg, seg, lo_right, wire_end, cy, psp, colored)
+                _draw_wire_label(dwg, seg, lo_right, wire_end, cy, psp, colored, harness=harness)
             else:
                 ro_left = wx + _SHIELD_RIGHT_CX - _SHIELD_RX
                 ro_right = wx + _SHIELD_RIGHT_CX + _SHIELD_RX
                 for x1, x2 in [(wx + _WIRE_PAD, lo_left), (lo_right, ro_left), (ro_right, wire_end)]:
                     if x2 > x1:
                         dwg.add(dwg.line(start=(x1, cy), end=(x2, cy), **attrs))
-                _draw_wire_label(dwg, seg, lo_right, ro_left, cy, psp, colored)
+                _draw_wire_label(dwg, seg, lo_right, ro_left, cy, psp, colored, harness=harness)
         else:
             dwg.add(dwg.line(start=(wx + _WIRE_PAD, cy), end=(wire_end, cy), **attrs))
-            _draw_wire_label(dwg, seg, wx + _WIRE_PAD, wire_end, cy, psp, colored)
+            _draw_wire_label(dwg, seg, wx + _WIRE_PAD, wire_end, cy, psp, colored, harness=harness)
     else:
         label_x = wx + _REMOTE_BOX_X
         dwg.add(dwg.line(start=(wx + _WIRE_PAD, cy), end=(label_x - 4, cy), **attrs))
-        _draw_wire_label(dwg, seg, wx + _WIRE_PAD, label_x - 4, cy, psp, colored)
+        _draw_wire_label(dwg, seg, wx + _WIRE_PAD, label_x - 4, cy, psp, colored, harness=harness)
         dwg.add(
             dwg.text(
                 _remote_label(remote, class_pin, harness),
@@ -325,7 +325,9 @@ def _draw_pin_row(
                     dwg.add(
                         dwg.line(start=(wire_x + _WIRE_PAD, line_y), end=(wire_x + _JUMPER_STUB_X, line_y), **attrs)
                     )
-                    _draw_wire_label(dwg, seg, wire_x + _WIRE_PAD, wire_x + _JUMPER_STUB_X, line_y, psp, colored)
+                    _draw_wire_label(
+                        dwg, seg, wire_x + _WIRE_PAD, wire_x + _JUMPER_STUB_X, line_y, psp, colored, harness=harness
+                    )
                     if jumper_stubs is not None:
                         entry = jumper_stubs.setdefault(id(seg), [seg, wire_x, []])
                         entry[2].append(line_y)

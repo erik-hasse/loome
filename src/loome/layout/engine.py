@@ -19,7 +19,7 @@ DRAIN_STUB_H = 16  # extra bottom padding when a shield group has a drain termin
 DRAIN_GROUP_GAP = 8  # extra gap after a pin group that ends with a drained shield
 PIN_NUM_W = 36
 PIN_NAME_W = 160
-WIRE_AREA_W = 300
+WIRE_AREA_W = 500
 CANVAS_W = MARGIN * 2 + PIN_NUM_W + PIN_NAME_W + WIRE_AREA_W  # 536
 
 

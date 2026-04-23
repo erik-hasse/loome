@@ -177,7 +177,6 @@ class WireSegment:
     color: str
     end_a: WireEndpoint
     end_b: WireEndpoint
-    length_mm: float | None = None
     shielded: bool = False
     notes: str = ""
 
@@ -208,7 +207,6 @@ class Pin:
         gauge: int | str = 22,
         color: WireColor = "",
         *,
-        length_mm: float | None = None,
         shielded: bool = False,
         notes: str = "",
     ) -> WireSegment:
@@ -218,7 +216,6 @@ class Pin:
             color=color,
             end_a=self,
             end_b=other,
-            length_mm=length_mm,
             shielded=shielded,
             notes=notes,
         )

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from .bundles import Bundle
+from .buses import CanBusLine
 from .model import (
     CircuitBreaker,
     Component,
@@ -30,10 +32,13 @@ class Harness:
     """
 
     name: str
+    length_unit: str = "in"
     components: list[Component] = field(default_factory=list)
     splice_nodes: list[SpliceNode] = field(default_factory=list)
     terminals: list[Terminal] = field(default_factory=list)
     shield_groups: list[ShieldGroup] = field(default_factory=list)
+    bundles: list[Bundle] = field(default_factory=list)
+    can_buses: list[CanBusLine] = field(default_factory=list)
 
     # Convenience filtered views (kept as properties so tests and callers
     # can still query by concrete type without pattern-matching the list).
@@ -66,6 +71,10 @@ class Harness:
                 self.shield_groups.append(item)
             elif isinstance(item, Shield):
                 self.shield_groups.append(item.group)
+            elif isinstance(item, Bundle):
+                self.bundles.append(item)
+            elif isinstance(item, CanBusLine):
+                self.can_buses.append(item)
 
     def autodetect(self, namespace: dict) -> None:
         """Populate the harness from a spec-file namespace.
@@ -90,6 +99,12 @@ class Harness:
                 if id(val.group) not in seen:
                     seen.add(id(val.group))
                     self.shield_groups.append(val.group)
+            elif isinstance(val, Bundle):
+                if val not in self.bundles:
+                    self.bundles.append(val)
+            elif isinstance(val, CanBusLine):
+                if val not in self.can_buses:
+                    self.can_buses.append(val)
 
         # ── Step 2: connection traversal ────────────────────────────────────
         # Build frontier from all instance pins of known components/splices
@@ -131,6 +146,103 @@ class Harness:
                     elif isinstance(ep, SpliceNode):
                         frontier.append(ep)
 
+        # ── Step 3: freeze bundles ──────────────────────────────────────────
+        for bundle in self.bundles:
+            bundle.freeze()
+
+    def format_length(self, length: float | None) -> str:
+        """Render a numeric length in this harness's display unit, or '—' for None."""
+        if length is None:
+            return "—"
+        if float(length).is_integer():
+            return f"{int(length)} {self.length_unit}"
+        return f"{length:g} {self.length_unit}"
+
+    def format_wire_length(self, seg: WireSegment) -> str:
+        """Format the physical length(s) of this wire for inline display.
+
+        Returns an empty string for wires that don't belong in the bundle
+        (unresolved ends, self-loops/straps). For a CAN-bus pin the wire has
+        one length per adjacent bus device; those are joined with ``/``.
+        """
+        for bus in self.can_buses:
+            for ep in (seg.end_a, seg.end_b):
+                if isinstance(ep, Pin) and bus.covers_pin(ep):
+                    pairs = bus.stub_lengths_for(ep, self)
+                    if not pairs:
+                        return ""
+                    if len(pairs) == 1:
+                        return self.format_length(pairs[0][0])
+                    return " / ".join(
+                        f"{self.format_length(length)}→{_connector_short_label(n)}" for length, n in pairs
+                    )
+
+        length = self.resolved_length(seg)
+        if length is None:
+            return ""
+        att_a = self._attachment_for(seg.end_a)
+        att_b = self._attachment_for(seg.end_b)
+        if att_a is not None and att_a is att_b:
+            return ""  # strap / jumper: both ends on same attachment
+        return self.format_length(length)
+
+    def resolved_length(self, seg: WireSegment) -> float | None:
+        """Return the physical length of a wire from bundle state, or None.
+
+        For a CAN pin in a known CanBusLine, returns the stub length to the
+        bus tap. Otherwise returns leg_a + trunk_distance + leg_b when both
+        endpoints resolve inside the same bundle; None otherwise.
+        """
+        for bus in self.can_buses:
+            for ep in (seg.end_a, seg.end_b):
+                if isinstance(ep, Pin) and bus.covers_pin(ep):
+                    return bus.segment_length_for(ep, self)
+
+        att_a = self._attachment_for(seg.end_a)
+        att_b = self._attachment_for(seg.end_b)
+        if att_a is None or att_b is None:
+            return None
+        if att_a.breakout.bundle is not att_b.breakout.bundle:
+            return None
+        bundle = att_a.breakout.bundle
+        return att_a.leg_length + bundle.distance(att_a.breakout, att_b.breakout) + att_b.leg_length
+
+    def validate_bundles(self) -> list[str]:
+        """Return warnings about bundle coverage; empty list if everything resolves."""
+        warnings: list[str] = []
+        for seg in self.segments():
+            att_a = self._attachment_for(seg.end_a)
+            att_b = self._attachment_for(seg.end_b)
+            can_a = any(isinstance(seg.end_a, Pin) and bus.covers_pin(seg.end_a) for bus in self.can_buses)
+            can_b = any(isinstance(seg.end_b, Pin) and bus.covers_pin(seg.end_b) for bus in self.can_buses)
+            if can_a or can_b:
+                continue
+            if att_a is None and att_b is None:
+                continue  # both unattached — not a bundle concern
+            if att_a is None or att_b is None:
+                warnings.append(
+                    f"wire {_describe_endpoint(seg.end_a)} ↔ {_describe_endpoint(seg.end_b)}: one end unattached"
+                )
+                continue
+            if att_a.breakout.bundle is not att_b.breakout.bundle:
+                warnings.append(
+                    f"wire {_describe_endpoint(seg.end_a)} ↔ {_describe_endpoint(seg.end_b)}: "
+                    f"endpoints on different bundles ({att_a.breakout.bundle.name!r} vs "
+                    f"{att_b.breakout.bundle.name!r})"
+                )
+        for bus in self.can_buses:
+            for dev in bus.devices:
+                if self._attachment_for(dev) is None:
+                    warnings.append(f"CAN bus {bus.name!r}: device {type(dev).__name__} not attached to any bundle")
+        return warnings
+
+    def _attachment_for(self, endpoint):
+        for bundle in self.bundles:
+            att = bundle.attachment_for(endpoint)
+            if att is not None:
+                return att
+        return None
+
     def _collect_shield_groups(self, comp: Component) -> None:
         existing_ids = {id(sg) for sg in self.shield_groups}
 
@@ -140,14 +252,20 @@ class Harness:
                 existing_ids.add(id(sg))
                 self.shield_groups.append(sg)
 
-        for conn in comp._connectors.values():
-            for val in vars(type(conn)).values():
-                if isinstance(val, Pin):
-                    _add(val)
+        def _walk_pins(cls, base_cls):
+            seen: set[str] = set()
+            for c in cls.__mro__:
+                if not (isinstance(c, type) and issubclass(c, base_cls)):
+                    continue
+                for name, val in vars(c).items():
+                    if isinstance(val, Pin) and name not in seen:
+                        seen.add(name)
+                        _add(val)
 
-        for val in vars(type(comp)).values():
-            if isinstance(val, Pin):
-                _add(val)
+        for conn in comp._connectors.values():
+            _walk_pins(type(conn), Connector)
+
+        _walk_pins(type(comp), Component)
 
     def segments(self) -> list[WireSegment]:
         """Return all unique WireSegments.
@@ -196,3 +314,21 @@ class Harness:
             _collect(splice)
 
         return result
+
+
+def _connector_short_label(conn: Connector) -> str:
+    comp = getattr(conn, "_component", None)
+    if isinstance(comp, Component):
+        return comp.label
+    return type(conn).__name__
+
+
+def _describe_endpoint(ep) -> str:
+    if isinstance(ep, Pin):
+        owner = ep._component.label if ep._component is not None else "?"
+        conn = ep._connector_class._connector_name if ep._connector_class is not None else ""
+        pin = ep.signal_name or str(ep.number)
+        return f"{owner}{'.' + conn if conn else ''}.{pin}"
+    if isinstance(ep, (Terminal, SpliceNode)):
+        return ep.id
+    return repr(ep)

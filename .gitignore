@@ -14,5 +14,5 @@ wheels/
 .DS_Store
 
 # Generated outputs
-out.svg
 out.png
+*.svg

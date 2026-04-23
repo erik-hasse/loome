@@ -23,8 +23,8 @@ Items are roughly in priority order within each section.
   include. Similar implementation effort to BoM export.
 
 - **BoM export** — `loome bom spec.py` CLI command that outputs a parts list: wire segments
-  (id, gauge, color, length if set), connectors + pin counts, terminals. Wire lengths already
-  have a `length_mm` field; total wire by gauge is useful for cut sheets.
+  (id, gauge, color, length if resolved from bundle), connectors + pin counts, terminals.
+  Total wire by gauge is useful for cut sheets.
 
 ## Larger features
 

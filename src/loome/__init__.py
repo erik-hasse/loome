@@ -1,3 +1,5 @@
+from .bundles import Breakout, Bundle
+from .buses import CanBusLine
 from .harness import Harness
 from .model import (
     BusBar,
@@ -19,8 +21,11 @@ from .ports import GPIO, RS232, CanBus, Port
 from .switches import DPDT, DPST, SPDT, SPST
 
 __all__ = [
+    "Breakout",
+    "Bundle",
     "BusBar",
     "CanBus",
+    "CanBusLine",
     "CircuitBreaker",
     "Component",
     "Connector",

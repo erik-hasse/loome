@@ -11,6 +11,11 @@ dependencies = [
     "svgwrite>=1.4.3",
 ]
 
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
 [project.scripts]
 loome = "loome.cli:main"
 

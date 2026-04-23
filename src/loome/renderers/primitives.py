@@ -20,14 +20,14 @@ from .colors import _effective_color_code
 # X offsets within the wire column (relative to wire_start_x)
 _WIRE_PAD = 6  # gap before wire begins
 _SHIELD_LEFT_CX = 40  # center x of left shield oval
-_SHIELD_RIGHT_CX = 130  # center x of right shield oval
+_SHIELD_RIGHT_CX = 322  # center x of right shield oval (just inside _REMOTE_BOX_X)
 _SHIELD_RX = 7  # half-width of each oval
 _MONO_CHAR_W = 5.4  # estimated px width of one monospace char at 9px
 _TERM_SYMBOL_W = 22  # px from wire end to symbol center (gap + half symbol width)
 
 # Remote component box (drawn to the right of the wire / shield area)
-_REMOTE_BOX_X = 148  # left edge of box, relative to wire_start_x
-_REMOTE_BOX_W = 140  # box width  (ends at 288 / 300)
+_REMOTE_BOX_X = 340  # left edge of box, relative to wire_start_x
+_REMOTE_BOX_W = 140  # box width  (ends at 480 / 500)
 _REMOTE_BOX_PIN_NUM_W = 26  # width of the pin-number column inside box
 
 # Splice symbol position (relative to wire_start_x)
@@ -83,12 +83,16 @@ def _draw_wire_label(
     psp: dict | None = None,
     colored: bool = True,
     color_code_override: str | None = None,
+    harness: Harness | None = None,
 ) -> None:
     color_code = (
         color_code_override if color_code_override is not None else _effective_color_code(seg, psp or {}, colored)
     )
     parts = [p for p in [seg.wire_id, str(seg.gauge) if seg.gauge else "", color_code] if p]
     label = "".join(parts)
+    length_str = harness.format_wire_length(seg) if harness is not None else ""
+    if length_str:
+        label = f"{label} / {length_str}" if label else length_str
     # Place label just inside the left edge of the segment. For shielded wires
     # x1 is already lo_right (just past the left oval), so this stays clear of the ovals.
     label_x = x1 + 4

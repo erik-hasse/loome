@@ -50,7 +50,7 @@ def _draw_splice_out_leg(
 ) -> None:
     """Draw one outward leg from a splice: wire + label + remote symbol/label."""
     dwg.add(dwg.line(start=(start_x, cy), end=(common_wire_end, cy), **attrs))
-    _draw_wire_label(dwg, out_seg, start_x, common_wire_end, cy, psp, colored, color_code)
+    _draw_wire_label(dwg, out_seg, start_x, common_wire_end, cy, psp, colored, color_code, harness=harness)
 
     if isinstance(out_remote, Terminal):
         label_text = _remote_label(out_remote, class_pin, harness)
@@ -130,7 +130,7 @@ def _draw_splice_connection(
     cc = _splice_color_code(incoming_seg, splice, [out_seg], colored)
 
     dwg.add(dwg.line(start=(wx + _WIRE_PAD, cy), end=(splice_cx - 6, cy), **in_attrs))
-    _draw_wire_label(dwg, incoming_seg, wx + _WIRE_PAD, splice_cx - 6, cy, psp, colored, cc)
+    _draw_wire_label(dwg, incoming_seg, wx + _WIRE_PAD, splice_cx - 6, cy, psp, colored, cc, harness=harness)
     _draw_splice_symbol(dwg, splice_cx, cy)
 
     if out_seg is None:
@@ -193,7 +193,7 @@ def _draw_splice_fan(
     cc = _splice_color_code(incoming_seg, splice, out_segs, colored)
 
     dwg.add(dwg.line(start=(wx + _WIRE_PAD, center_y), end=(splice_cx - 6, center_y), **splice_attrs))
-    _draw_wire_label(dwg, incoming_seg, wx + _WIRE_PAD, splice_cx - 6, center_y, psp, colored, cc)
+    _draw_wire_label(dwg, incoming_seg, wx + _WIRE_PAD, splice_cx - 6, center_y, psp, colored, cc, harness=harness)
     _draw_splice_symbol(dwg, splice_cx, center_y)
 
     # Pre-compute a common wire_end so all fan legs are the same length.
