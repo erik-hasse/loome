@@ -22,7 +22,47 @@ from __future__ import annotations
 
 from .model import GroundSymbol, OffPageReference, Pin, ShieldGroup
 
+
+class PortBuilder:
+    """Lazy fluent wrapper returned by ``port >> other``.
+
+    The underlying ``connect()`` is deferred until the builder is garbage
+    collected, so modifiers like ``.ground(False)`` can be applied first.
+    """
+
+    def __init__(self, src, dst) -> None:
+        self._src = src
+        self._dst = dst
+        self._kwargs: dict = {}
+        self._done = False
+
+    def _finish(self) -> None:
+        if not self._done:
+            self._done = True
+            self._src.connect(self._dst, **self._kwargs)
+
+    def __del__(self) -> None:
+        self._finish()
+
+    def ground(self, value: bool) -> "PortBuilder":
+        self._kwargs["ground"] = value
+        return self
+
+    def drain(self, value) -> "PortBuilder":
+        self._kwargs["drain"] = value
+        return self
+
+    def drain_remote(self, value) -> "PortBuilder":
+        self._kwargs["drain_remote"] = value
+        return self
+
+    def notes(self, value: str) -> "PortBuilder":
+        self._kwargs["notes"] = value
+        return self
+
+
 _CAN_DRAIN = GroundSymbol("_can_shield_drain_", "GND")
+_RS232_BACKSHELL = GroundSymbol("_rs232_backshell_", "GND")
 
 
 class Port:
@@ -138,7 +178,9 @@ class RS232(Port):
     ) -> None:
         super().__init__()
         self._name = name
-        sg = ShieldGroup(label="", pins=[])
+        # Shield is always drained to the connector backshell at this end,
+        # independent of whether the cable carries a separate signal-ground wire.
+        sg = ShieldGroup(label="", pins=[], drain=_RS232_BACKSHELL)
         self._sg = sg
         self._tx = Pin(tx_pin, f"{name} Out")
         self._rx = Pin(rx_pin, f"{name} In")
@@ -147,7 +189,6 @@ class RS232(Port):
         if gnd_pin is not None:
             self._gnd = Pin(gnd_pin, f"{name} GND")
             pins.append(self._gnd)
-            sg.drain = self._gnd
         for p in pins:
             p.shield_group = sg
             sg.pins.append(p)
@@ -156,16 +197,19 @@ class RS232(Port):
         """Cross-connect: self.TX → other.RX and self.RX → other.TX."""
         self._tx.connect(other._rx)
         seg_rx = self._rx.connect(other._tx)
-        if self._gnd is not None and other._gnd is not None:
-            self._sg.drain_remote = other._gnd
-            other._sg.drain = other._gnd
-            other._sg.drain_remote = self._gnd
+        # Both ends are backshell-drained regardless of whether either side
+        # exposes a signal-ground pin.
+        self._sg.drain_remote = _RS232_BACKSHELL
+        other._sg.drain_remote = _RS232_BACKSHELL
         if ground and self._gnd is not None and other._gnd is not None:
             seg_gnd = self._gnd.connect(other._gnd)
             if notes:
                 seg_gnd.notes = notes
         elif notes:
             seg_rx.notes = notes
+
+    def __rshift__(self, other: RS232) -> PortBuilder:
+        return PortBuilder(self, other)
 
 
 class GPIO(Port):
@@ -215,6 +259,9 @@ class GPIO(Port):
             for p in (self._positive, self._signal, self._ground):
                 p.shield_group = sg
                 sg.pins.append(p)
+
+    def __rshift__(self, other: GPIO) -> PortBuilder:
+        return PortBuilder(self, other)
 
     def connect(self, other: GPIO, notes: str = "", drain=None, drain_remote=None, **kwargs) -> None:
         """Connect positive↔positive, signal↔signal, ground↔ground.

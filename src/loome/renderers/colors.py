@@ -39,7 +39,7 @@ def _wire_attrs(
 ) -> dict:
     """Return SVG stroke keyword args for a wire segment.
 
-    Priority: uncolored → explicit color → power (fuse/CB) → ground → shielded → white.
+    Priority: uncolored → explicit color → aircraft_power_2 (fuse/CB) → ground → shielded → white.
     Shield palette is checked end_a-first so that a wire's color is the same at both
     ends of the physical wire.
     """
@@ -74,7 +74,7 @@ def _wire_attrs(
 def _effective_color_code(seg: WireSegment, psp: dict, colored: bool) -> str:
     """Return the color code to display on the wire label.
 
-    Mirrors the priority in _wire_attrs: explicit > power > ground > shielded.
+    Mirrors the priority in _wire_attrs: explicit > aircraft_power_2 > ground > shielded.
     """
     if not colored:
         return ""
@@ -103,7 +103,7 @@ def _splice_color_code(
 ) -> str:
     """Color code for a splice context, propagated from outward connections.
 
-    Mirrors _incoming_splice_attrs priority: explicit > power > ground.
+    Mirrors _incoming_splice_attrs priority: explicit > aircraft_power_2 > ground.
     """
     if not colored:
         return ""

@@ -1,3 +1,5 @@
+from enum import StrEnum
+
 from loome import GPIO, RS232, CanBus, Component, Connector, Pin
 from loome.constants import Axis
 
@@ -11,7 +13,7 @@ class GAD27(Component):
         signal_ground = Pin(4, "Signal Ground")
 
         power_in = Pin(7, "Power In")
-        power_gndr = Pin(8, "Power Ground")
+        power_gnd = Pin(8, "Power Ground")
 
         discrete_in_1 = Pin(9, "Discrete In 1")
         discrete_in_2 = Pin(10, "Discrete In 2")
@@ -65,7 +67,7 @@ class GAD27(Component):
         pwm_lighting_3 = Pin(47, "PWM Lighting 3")
 
         discrete_in_8 = Pin(48, "Discrete In 8")
-        discrete_in_16 = Pin(49, "Discrete In 16")
+        discrete_in_9 = Pin(49, "Discrete In 9  ")
 
     class J272(Connector):
         pitch_trim_power_in = Pin(1, "Pitch Trim Power In")
@@ -95,42 +97,9 @@ class GAD27(Component):
         light_2_output = Pin(10, "Light 2 Output")
 
 
-class GAD29(Component):
-    class J291(Connector):
-        can = CanBus(1, 2)
-        ground = Pin(3, "Ground")
-        power_1 = Pin(7, "Power 1")
-        power_2 = Pin(8, "Power 2")
-
-    class J282(Connector):
-        # TODO
-        pass
-
-
-class GSU25(Component):
-    """Air Data Unit"""
-
-    class J251(Connector):
-        ground = Pin(6, "Ground")
-        power = Pin(7, "Power")
-        backup_power = Pin(8, "Backup Power")
-
-        can = CanBus(1, 2)
-        rs232 = RS232(5, 4, 6, name="RS-232")  # tx, rx, gnd
-
-    class J252(Connector):
-        oat_probe_power = Pin(1, "OAT Probe Power")
-        oat_probe_high = Pin(2, "OAT Probe High")
-        oat_probe_low = Pin(3, "OAT Probe Low")
-
-        rs232_3 = RS232(9, 10, 11, name="RS-232 3")  # tx, rx, gnd
-
-        magnetometer_power = Pin(6, "Magnetometer Power")
-
-
 class _P4X01(Connector):
     can = CanBus(1, 2)
-    rs232 = RS232(4, 5, 6, name="RS-232")
+    rs232 = RS232(4, 5, 6)
     power_1 = Pin(7, "Power 1")
     power_2 = Pin(8, "Power 2")
     ground = Pin(9, "Ground")
@@ -176,8 +145,35 @@ class _P4X02(Connector):
     lighting_bus_high_14V = Pin(43, "Lighting Bus High 14V")
 
 
+class GDUMode(StrEnum):
+    PFD = "PFD"
+    MFD = "MFD"
+
+
 class GDU460(Component):
-    """Display Unit"""
+    """Display Unit, automatically connects CDU pins based on mode and display number"""
+
+    def __init__(self, name: str, mode: GDUMode, number: int = 1):
+        super().__init__(name)
+        self.mode = mode
+        self.number = number
+
+        match mode, number:
+            case GDUMode.PFD, 1:
+                self.P4602.cdu_system_id_program_1.local_ground()
+            case GDUMode.PFD, 2:
+                self.P4602.cdu_system_id_program_2.local_ground()
+            case GDUMode.PFD, 3:
+                self.P4602.cdu_system_id_program_1.local_ground()
+                self.P4602.cdu_system_id_program_2.local_ground()
+                self.P4602.cdu_system_id_program_6.local_ground()
+            case GDUMode.MFD, 2:
+                self.P4602.cdu_system_id_program_1.local_ground()
+                self.P4602.cdu_system_id_program_2.local_ground()
+            case GDUMode.MFD, 3:
+                self.P4602.cdu_system_id_program_1.local_ground()
+                self.P4602.cdu_system_id_program_2.local_ground()
+                self.P4602.cdu_system_id_program_5.local_ground()
 
     class P4601(_P4X01):
         pass
@@ -186,27 +182,156 @@ class GDU460(Component):
         pass
 
 
-class OATProbe(Component):
-    oat_probe_power = Pin(1, "OAT Probe Power")
-    oat_probe_high = Pin(2, "OAT Probe High")
-    oat_probe_low = Pin(3, "OAT Probe Low")
+class GEA24(Component):
+    """EIS Interface"""
+
+    class J241(Connector):
+        can = CanBus(1, 2)
+        rs232 = RS232(5, 4, 6)  # tx, rx, gnd
+        aircraft_power_1 = Pin(7, "Aircraft Power 1")
+        aircraft_power_2 = Pin(8, "Aircraft Power 2")
+        ground = Pin(9, "Ground")
+
+    class J242(Connector):
+        cht6_low = Pin(2, "CHT6 Low")
+        egt6_low = Pin(3, "EGT6 Low")
+        cht5_low = Pin(4, "CHT5 Low")
+        egt5_low = Pin(5, "EGT5 Low")
+        cht4_low = Pin(6, "CHT4 Low")
+        egt4_low = Pin(7, "EGT4 Low")
+        cht3_low = Pin(8, "CHT3 Low")
+        egt3_low = Pin(9, "EGT3 Low")
+        cht2_low = Pin(10, "CHT2 Low")
+        egt2_low = Pin(11, "EGT2 Low")
+        cht1_low = Pin(12, "CHT1 Low")
+        egt1_low = Pin(13, "EGT1 Low")
+        cht6_high = Pin(14, "CHT6 High")
+        egt6_high = Pin(15, "EGT6 High")
+        cht5_high = Pin(16, "CHT5 High")
+        egt5_high = Pin(17, "EGT5 High")
+        cht4_high = Pin(18, "CHT4 High")
+        egt4_high = Pin(19, "EGT4 High")
+        cht3_high = Pin(20, "CHT3 High")
+        egt3_high = Pin(21, "EGT3 High")
+        cht2_high = Pin(22, "CHT2 High")
+        egt2_high = Pin(23, "EGT2 High")
+        cht1_high = Pin(24, "CHT1 High")
+        egt1_high = Pin(25, "EGT1 High")
+
+    class J243(Connector):
+        fuel_pressure_ground = Pin(1, "Fuel Pressure Ground")
+        fuel_pressure = Pin(2, "Fuel Pressure")
+        fuel_pressure_xdcr_12v = Pin(3, "Fuel Pressure Transducer +12V")
+        fuel_pressure_xdcr_5v = Pin(4, "Fuel Pressure Transducer +5V")
+
+        rpm_xdcr_gnd_2 = Pin(5, "RPM Transducer Ground 2")
+        rpm_2 = Pin(6, "RPM 2")
+        rpm_xdcr_gnd_1 = Pin(7, "RPM Transducer Ground 1")
+        rpm_1 = Pin(8, "RPM 1")
+        rpm_xdcr_12v_1 = Pin(9, "RPM Transducer +12V 1")
+        rpm_xdcr_12v_2 = Pin(10, "RPM Transducer +12V 2")
+
+        manifold_pressure_gnd = Pin(12, "Manifold Pressure Ground")
+        manifold_pressure = Pin(13, "Manifold Pressure")
+        manifold_pressure_xdcr_12v = Pin(14, "Manifold Pressure Transducer +12V")
+        manifold_pressure_xdcr_5v = Pin(15, "Manifold Pressure Transducer +5V")
+
+        oil_pressure_gnd = Pin(16, "Oil Pressure Ground")
+        oil_pressure_high = Pin(17, "Oil Pressure High")
+        oil_pressure_xdcr_12v = Pin(18, "Oil Pressure +12V")
+        oil_pressure_xdcr_5v = Pin(19, "Oil Pressure +5V")
+
+        fuel_xdcr_gnd_1 = Pin(20, "Fuel Transducer Ground 1")
+        fuel_return = Pin(21, "Fuel Return")
+        fuel_xdcr_gnd_2 = Pin(22, "Fuel Transducer Ground 2")
+        fuel_flow = Pin(23, "Fuel Flow")
+        fuel_xdcr_12v_1 = Pin(24, "Fuel Transducer +12V 1")
+        fuel_xdcr_12v_2 = Pin(25, "Fuel Transducer +12V 2")
+
+        gp_5v_out = Pin(26, "GP 5V Out")
+        gp_gnd_1 = Pin(27, "GP Ground 1")
+        gp7_low = Pin(28, "GP7 Low")
+        gp7_high = Pin(29, "GP7 High")
+        gp6_low = Pin(30, "GP6 Low")
+        gp6_high = Pin(31, "GP6 High")
+
+        oil_temp_low = Pin(32, "Oil Temp Low")
+        oil_temp_high = Pin(33, "Oil Temp High")
+
+        shunt_2_low = Pin(34, "Shunt 2 Low")
+        shunt_2_high = Pin(35, "Shunt 2 High")
+        shunt_1_low = Pin(36, "Shunt 1 Low")
+        shunt_1_high = Pin(37, "Shunt 1 High")
+
+    class J244(Connector):
+        system_id_1a = Pin(1, "System ID 1A")
+        system_id_1b = Pin(2, "System ID 1B/Ground")
+
+        fuel_quantity_1 = GPIO(5, 6, 7, name="Fuel Quantity 1")
+        fuel_quantity_2 = GPIO(8, 9, 10, name="Fuel Quantity 2")
+
+        gp1 = GPIO(18, 19, 20, name="GP1")  # positive, signal, ground
+        gp2 = GPIO(21, 22, 23, name="GP2")  # positive, signal, ground
+        gp3 = GPIO(11, 12, 13, name="GP3")
+        gp4 = GPIO(14, 15, 16, name="GP4")
+        gp5 = GPIO(30, 31, 32, name="GP5")
+
+        can2 = CanBus(17, 33)
+
+        gp_5v_out_2 = Pin(24, "GP 5V Out 2")
+        volts_1 = Pin(25, "Volts 1")
+        gp_gnd_2 = Pin(26, "GP Ground 2")
+        gp_5v_out_3 = Pin(27, "GP 5V Out 3")
+        volts_2 = Pin(28, "Volts 2")
+        gp_gnd_3 = Pin(29, "GP Ground 3")
+
+        fuel_xdcr_12v_3 = Pin(34, "Fuel Transducer +12V 3")
+        fuel_xdcr_12v_4 = Pin(35, "Fuel Transducer +12V 4")
+        fuel_flow = Pin(36, "Fuel Flow")
+        fuel_return = Pin(37, "Fuel Return")
+        fuel_xdcr_gnd_3 = Pin(38, "Fuel Transducer Ground 3")
+        fuel_xdcr_gnd_4 = Pin(39, "Fuel Transducer Ground 4")
+
+        discrete_in_1 = Pin(40, "Discrete In 1")
+        discrete_in_2 = Pin(41, "Discrete In 2")
+        discrete_in_3 = Pin(42, "Discrete In 3")
+        discrete_in_4 = Pin(43, "Discrete In 4")
+
+        discrete_out_1 = Pin(44, "Discrete Out 1, Master Warning")
+        discrete_out_2 = Pin(45, "Discrete Out 2, Master Caution")
+
+        shunt_2_high = Pin(46, "Shunt 2 High")
+        shunt_2_low = Pin(47, "Shunt 2 Low")
+
+        gp_12v_out = Pin(50, "GP 12V Out")
 
 
-class GTX45R(Component):
-    """Remote Transponder"""
+class GMC507(Component):
+    """Autopilot controller"""
 
-    class P3251(Connector):
-        rs232 = RS232(9, 31, 11, name="RS-232")  # tx, rx, gnd
+    class J7001(Connector):
+        unit_id_1 = Pin(1, "Unit ID 1")
+        unit_id_2 = Pin(2, "Unit ID 2")
+        can = CanBus(3, 4)
+        can_term_2 = Pin(6, "Can Terminator_2")
+        aircraft_power_1 = Pin(7, "Aircraft Power 1")
+        can_term_1 = Pin(8, "Can Term 1")
+        aircraft_power_2 = Pin(9, "Aircraft Power 2")
+        remote_go_around = Pin(10, "Remote Go-Around")
+        lighting_bus_high = Pin(11, "Lighting Bus High")
+        ground = Pin(15, "Ground")
 
 
 class GMU11(Component):
     """Magnetometer"""
 
     class J441(Connector):
-        power = Pin(8, "Power")
-        backup_power = Pin(7, "Backup Power")
-        ground = Pin(9, "Ground")
         can = CanBus(1, 2)
+        unit_id = Pin(3, "Unit ID")
+        signal_ground = Pin(6, "Signal Ground")
+        aircraft_power_1 = Pin(7, "Aircraft Power 1")
+        aircraft_power_2 = Pin(8, "Aircraft Power 2")
+        ground = Pin(9, "Ground")
 
 
 class _BaseJ281(Connector):
@@ -263,26 +388,271 @@ class GSA28RollServo(GSA28):
         super().__init__(name, Axis.ROLL, is_trim=False)
 
     class J281(_BaseJ281):
-        rs232 = RS232(7, 8, name="RS-232")
+        rs232 = RS232(7, 8)
 
 
-class GEA24(Component):
-    """EIS Interface"""
+class GSU25(Component):
+    """Air Data Unit"""
 
-    class J244(Connector):
-        gp1 = GPIO(18, 19, 20, name="GP1")  # positive, signal, ground
-        gp2 = GPIO(21, 22, 23, name="GP2")  # positive, signal, ground
+    class J251(Connector):
+        can = CanBus(1, 2)
+        rs232 = RS232(5, 4, None)
+        aircraft_power_1 = Pin(7, "Aircraft Power 1")
+        aircraft_power_2 = Pin(8, "Aircraft Power 2")
+        ground_a = Pin(6, "Ground A")
+        ground_b = Pin(9, "Ground B")
+
+    class J252(Connector):
+        oat_probe_power = Pin(1, "OAT Probe Power")
+        oat_probe_high = Pin(2, "OAT Probe High")
+        oat_probe_low = Pin(3, "OAT Probe Low")
+
+        unit_id_1_ground = Pin(4, "Unit ID 1 Ground")
+        unit_id_1 = Pin(5, "Unit ID 1")
+        magnetometer_power_12v = Pin(6, "Magnetometer Power +12V")
+        magnetometer_ground = Pin(7, "Magnetometer Ground")
+
+        rs232_3 = RS232(9, 10, 11, name="RS-232 3")  # tx, rx, gnd
+
+        rs485_rx_a = Pin(12, "RS-485 RX A")
+        rs485_rx_b = Pin(13, "RS-485 RX B")
+
+        ground = Pin(14, "Ground")
+        rs232_2_tx = Pin(15, "RS-232 2 TX")
 
 
-class GMC507(Component):
-    """Autopilot controller"""
+class _BaseJ292(Connector):
+    arinc_rx_4b = Pin(4, "Arinc RX 4B")
+    arinc_rx_3b = Pin(5, "Arinc RX 3B")
+    arinc_tx_2b_1 = Pin(6, "Arinc TX 2B 1")
+    arinc_tx_2b_2 = Pin(7, "Arinc TX 2B 2")
+    can_term_1 = Pin(9, "Can Term 1")
+    arinc_rx_2b = Pin(10, "Arinc RX 2B")
+    arinc_rx_1b = Pin(11, "Arinc RX 1B")
+    arinc_tx_1b_1 = Pin(12, "Arinc TX 1B 1")
+    arinc_tx_1b_2 = Pin(13, "Arinc TX 1B 2")
+    arinc_rx_4a = Pin(16, "Arinc RX 4A")
+    arinc_rx_3a = Pin(17, "Arinc RX 3A")
+    arinc_tx_2a_1 = Pin(18, "Arinc TX 2A 1")
+    arinc_tx_2a_2 = Pin(19, "Arinc TX 2A 2")
+    can_term_2 = Pin(21, "Can Term 2")
+    arinc_rx_2a = Pin(22, "Arinc RX 2A")
+    arinc_rx_1a = Pin(23, "Arinc RX 1A")
+    arinc_tx_1a_1 = Pin(24, "Arinc TX 1A 1")
+    arinc_tx_1a_2 = Pin(25, "Arinc TX 1A 2")
 
-    class P7001(Connector):
-        remote_go_around = Pin(10, "Remote Go-Around")
+
+class GAD29C(Component):
+    class J291(Connector):
+        can = CanBus(1, 2)
+        ground = Pin(3, "Ground")
+        power_1 = Pin(7, "Power 1")
+        power_2 = Pin(8, "Power 2")
+
+    class J292(_BaseJ292):
+        ground_1 = Pin(14, "Ground 1")
+        ground_2 = Pin(20, "Ground 2")
 
 
-class GTN650Xi(Component):
-    """GPS/NAV/COM"""
+class GTP59(Component):
+    """OAT Probe"""
 
-    class P1001(Connector):
-        remote_go_around = Pin(37, "Remote Go-Around")
+    oat_probe_power = Pin("WHT", "OAT Probe Power")
+    oat_probe_sense = Pin("BLU", "OAT Probe Sense")
+    oat_probe_low = Pin("ORN", "OAT Probe Low")
+
+
+class GTR20(Component):
+    class J2001(Connector):
+        aircraft_power = Pin(1, "Aircraft Power 1")
+        disconnect_1 = Pin(2, "Disconnect 1")
+        tx_interlock_out = Pin(4, "Tx Interlock Out")
+        tx_interlock_in = Pin(5, "Tx Interlock In")
+        can = CanBus(7, 6)
+        id_in = Pin(8, "ID In")
+        aux_mono_in_2 = Pin(9, "Aux Mono In 2")
+        receiver_out_high = Pin(10, "Receiver Out High")
+        copilot_hs_right = Pin(11, "Copilot HS Right")
+        copilot_hs_left = Pin(12, "Copilot HS Left")
+        pilot_hs_right = Pin(13, "Pilot HS Right")
+        pilot_hs_left = Pin(14, "Pilot HS Left")
+        copilot_ptt = Pin(15, "Copilot PTT")
+        copilot_mic_in = Pin(16, "Copilot Mic In")
+        pilot_mic_in = Pin(17, "Pilot Mic In")
+        music_in_right = Pin(18, "Music In Right")
+        music_in_left = Pin(19, "Music In Left")
+        ground = Pin(20, "Ground")
+        disconnect_2 = Pin(22, "Disconnect 2")
+        can_term_b = Pin(25, "CAN Term B")
+        can_term_a = Pin(26, "CAN Term A")
+        id_low = Pin(27, "ID Low")
+        aux_2_low = Pin(28, "Aux 2 Low")
+        receiver_audio_low = Pin(29, "Receiver Audio Low")
+        copilot_hs_low = Pin(30, "Copilot HS Low")
+        aux_1_low = Pin(31, "Aux 1 Low")
+        aux_mono_in_1 = Pin(32, "Aux Mono In 1")
+        pilot_hs_low = Pin(33, "Pilot HS Low")
+        copilot_mic_low = Pin(34, "Copilot Mic Low")
+        pilot_ptt = Pin(35, "Pilot PTT")
+        pilot_mic_low = Pin(36, "Pilot Mic Low")
+        music_low = Pin(37, "Music Low")
+
+
+class GDL51R(Component):
+    rs232_2 = RS232(5, 6, 11, name="RS 232 2")
+    rs232_1 = RS232(7, 8, 12, name="RS 232 1")
+    ground = Pin(9, "Ground")
+    aircraft_power = Pin(10, "Aircraft Power")
+    music_out_left = Pin(13, "Music Out Left")
+    music_out_common = Pin(14, "Music Out Common")
+    music_out_right = Pin(15, "Music Out Right")
+
+
+class GMA245(Component):
+    class P2401(Connector):
+        transceiver_3_audio_in = Pin(3, "Transceiver 3 Audio In")
+        transceiver_3_audio_low = Pin(4, "Transceiver 3 Audio Low")
+        transceiver_3_mic_out_high = Pin(5, "Transceiver 3 Mic Out High")
+        receiver_4_audio_in_high = Pin(7, "Receiver 4 Audio In")
+        receiver_4_audio_in_low = Pin(8, "Receiver 4 Audio In")
+        com_1_audio_in_high = Pin(9, "Com 1 Audio In High")
+        com_1_audio_low = Pin(10, "Com 1 Audio Low")
+        com_1_mic_audio_out_high = Pin(11, "Com 1 Mic Audio Out High")
+        com_1_mic_key_out = Pin(12, "Com 1 Mic Key Out")
+        com_2_audio_in_high = Pin(13, "Com 2 Audio In High")
+        com_2_audio_low = Pin(14, "Com 2 Audio Low")
+        com_2_mic_audio_out_high = Pin(15, "Com 2 Mic Audio Out High")
+        pilot_ics_key = Pin(16, "Pilot ICS Key")
+        nav_1_audio_in_high = Pin(17, "Nav 1 Audio In High")
+        nav_1_audio_in_low = Pin(18, "Nav 1 Audio In Low")
+        nav_2_audio_in_high = Pin(19, "Nav 2 Audio In High")
+        nav_2_audio_in_low = Pin(20, "Nav 2 Audio In Low")
+        receiver_3_audio_in_high = Pin(21, "Receiver 3 Audio In High")
+        receiver_3_audio_in_low = Pin(22, "Receiver 3 Audio In Low")
+        receiver_5_audio_in_high = Pin(23, "Receiver 5 Audio In High")
+        com_active_out = Pin(24, "Com Active Out")
+        alert_3_audio_in_high = Pin(29, "Alert 3 Audio In High")
+        com_2_mic_key_out = Pin(30, "Com 2 Mic Key Out")
+        alert_1_audio_in_high = Pin(31, "Alert 1 Audio In High")
+        alert_1_audio_in_low = Pin(32, "Alert 1 Audio In Low")
+        pilot_mic_audio_in_high = Pin(33, "Pilot Mic Audio In High")
+        pilot_mic_key_in = Pin(34, "Pilot Mic Key In")
+        pilot_mic_audio_in_low = Pin(35, "Pilot Mic Audio In Low")
+        can = CanBus(36, 37)
+        pass_headset_audio_out_left = Pin(40, "Pass Headset Audio Out Left")
+        pass_headset_audio_out_right = Pin(41, "Pass Headset Audio Out Right")
+        pass_headset_audio_low = Pin(42, "Pass Headset Audio Out Low")
+        alert_3_4_aux_3_audio_in_low = Pin(43, "Alert 3, 4, Aux 3 Audio In Low")
+        alert_4_audio_in_high = Pin(44, "Alert 4, Audio In High")
+
+    class J2402(Connector):
+        pilot_headset_audio_out_low = Pin(1, "Pilot Headset Audio Out Low")
+        copilot_headset_audio_out_low = Pin(2, "Copilot Headset Audio Out Low")
+        copilot_headset_audio_out_left = Pin(3, "Copilot Headset Audio Out Left")
+        copilot_headset_audio_out_right = Pin(4, "Copilot Headset Audio Out Right")
+        lighting_bus_low = Pin(5, "Lighting Bus Low")
+        lighting_bus_14v_high_28v_low = Pin(6, "Lighting Bus 14v High/28v Low")
+        lighting_bus_high = Pin(7, "Lighting Bus High")
+        aircraft_power_a = Pin(8, "Aircraft Power")
+        aircraft_power_b = Pin(9, "Aircraft Power")
+        ground_a = Pin(10, "Ground A")
+        ground_b = Pin(11, "Ground B")
+        passenger_ics_key = Pin(13, "Passenger ICS Key")
+        alert_2_low = Pin(14, "Alert 2 Low")
+        alert_2_audio_in_high = Pin(15, "Alert 2 Audio In High")
+        pilot_headset_audio_out_left = Pin(16, "Pilot Headset Audio Out Left")
+        com_swap = Pin(20, "Com Swap")
+        ground = Pin(21, "Ground")
+        play_key = Pin(22, "Play Key")
+        music_1_in_left = Pin(23, "Music 1 In Left")
+        music_1_in_right = Pin(24, "Music 1 In Right")
+        music_1_in_low = Pin(25, "Music 1 In Low")
+        music_2_in_left = Pin(26, "Music 2 In Left")
+        music_2_in_right = Pin(27, "Music 2 In Right")
+        music_2_in_low = Pin(28, "Music 2 In Low")
+        failsafe_warn_audio_in_high = Pin(29, "Failsafe Warn Audio In High")
+        copilot_ics_key = Pin(30, "Copilot ICS Key")
+        pilot_headset_audio_out_right = Pin(31, "Pilot Headset Audio Out Right")
+        copilot_mic_audio_in_high = Pin(32, "Copilot Mic Audio In High")
+        copilot_mic_key_in = Pin(33, "Copilot Mic Key In")
+        copilot_mic_audio_in_low = Pin(34, "Copilot Mic Audio In")
+        pass_1_mic_audio_in_high = Pin(35, "Pass 1 Mic Audio In High")
+        pass_1_mic_audio_in_low = Pin(36, "Pass 1 Mic Audio In Low")
+        pass_2_mic_audio_in_high = Pin(37, "Pass 2 Mic Audio In High")
+        pass_2_mic_audio_in_low = Pin(38, "Pass 2 Mic Audio In Low")
+        pass_3_mic_audio_in_high = Pin(39, "Pass 3 Mic Audio In High")
+        pass_3_mic_audio_in_low = Pin(40, "Pass 3 Mic Audio In Low")
+        pass_4_mic_audio_in_high = Pin(41, "Pass 4 Mic Audio In High")
+        pass_4_mic_audio_in_low = Pin(42, "Pass 4 Mic Audio In Low")
+        speaker_audio_out_low = Pin(43, "Speaker Audio Out Low")
+        speaker_audio_out_high = Pin(44, "Speaker Audio Out High")
+
+
+class GAP2620(Component):
+    power = Pin("Red", "Power")
+    ground = Pin("Blk", "Ground")
+    signal = Pin("Blu", "Signal")
+
+
+class _BaseP3251(Connector):
+    alt_encoder_clock = Pin(1, "Alt Encoder Clock")
+    usb_data_high = Pin(2, "USB Data High")
+    arinc_429_out_a = Pin(5, "Arinc 429 Out A")
+    arinc_429_out_b = Pin(6, "Arinc 429 Out B")
+    rs232_1 = RS232(9, 31, 52, name="RS232 1")
+    rs232_2 = RS232(8, 30, 51, name="RS232 2")
+    rs232_3 = RS232(7, 29, 50, name="RS232 3")
+    external_standby_select = Pin(14, "External Standby Select")
+    transponder_fail_1 = Pin(17, "Transponder Fail 1")
+    external_suppression = Pin(18, "External Suppression")
+    ground_1 = Pin(20, "Ground 1")
+    aircraft_power_1a = Pin(21, "Aircraft Power 1A")
+    alt_encoder_data = Pin(22, "Alt Encoder Data")
+    alt_encoder_ground = Pin(23, "Alt Encoder Ground")
+    usb_data_low = Pin(24, "USB Data Low")
+    arinc_429_in_1a = Pin(27, "Arinc 429 In 1a")
+    arinc_429_in_1b = Pin(28, "Arinc 429 In 1b")
+    external_ident_select = Pin(36, "External Identity Select")
+    power_control = Pin(38, "Power Control")
+    ground_2 = Pin(41, "Ground 2")
+    aircraft_power_1b = Pin(42, "Aircraft Power 1B")
+    alt_encoder_power = Pin(43, "Alt Encoder Power")
+    usb_vbus_power = Pin(44, "USB Vbus Power")
+    usb_ground = Pin(45, "USB Ground")
+    arinc_429_in_2a = Pin(48, "Arinc 429 In 2a")
+    arinc_429_in_2b = Pin(49, "Arinc 429 In 2b")
+    power_config = Pin(59, "Power Config")
+    aircraft_power_2a = Pin(61, "Aircraft Power 2a")
+    aircraft_power_2b = Pin(62, "Aircraft Power 2b")
+
+
+class GTX45R(Component):
+    """Remote Transponder"""
+
+    class P3251(_BaseP3251):
+        time_mark_a = Pin(4, "Time Mark A")
+        time_mark_b = Pin(26, "Time Mark B")
+        gps_keep_alive = Pin(60, "GPS Keep Alive")
+
+    class P3252(Connector):
+        ethernet_out_1b = Pin(1, "Ethernet Out 1B")
+        ethernet_in_1b = Pin(2, "Ethernet In 1B")
+        ethernet_out_2b = Pin(3, "Ethernet Out 2B")
+        ethernet_in_2b = Pin(4, "Ethernet In 2B")
+        rs232 = RS232(5, 10, 15)
+        ethernet_out_1a = Pin(6, "Ethernet Out 1A")
+        ethernet_in_1a = Pin(7, "Ethernet In 1a")
+        ethernet_out_2a = Pin(8, "Ethernet Out 2a")
+        ethernet_in_2a = Pin(9, "Ethernet In 2a")
+        rs422_a = Pin(11, "RS 422 A")
+        rs422_b = Pin(12, "RS 422 B")
+
+
+class G5(Component):
+    class J51(Connector):
+        can = CanBus(1, 2)
+        unit_id = Pin(3, "Unit ID")
+        rs232 = RS232(5, 4, 6)
+        aircraft_power_1 = Pin(7, "Aircraft Power 1")
+        aircraft_power_2 = Pin(8, "Aircraft Power 2")
+        ground = Pin(9, "Ground")

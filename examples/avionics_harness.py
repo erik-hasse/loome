@@ -1,153 +1,215 @@
-from loome import (
-    DPST,
-    Bundle,
-    CanBusLine,
-    Fuse,
-    FuseBlock,
-    GroundSymbol,
-    Harness,
-    Shield,
-    SpliceNode,
+from examples.fuses import avionics_block_1, avionics_block_2, avionics_block_3
+from examples.lrus import (
+    copilot_lemo,
+    copilot_stick,
+    g5,
+    gad27,
+    gad29,
+    gdl51r,
+    gea24,
+    gma245,
+    gmc507,
+    gmu11,
+    gsu25,
+    gtn650xi,
+    gtr20,
+    gtx45r,
+    mfd,
+    music_in,
+    oat_probe,
+    pfd,
+    pilot_lemo,
+    pilot_stick,
+    pitch_servo,
+    pitch_trim,
+    roll_servo,
+    roll_trim,
+    yaw_servo,
 )
-from loome.components import RayAllanTrim, Stick
-from loome.components.garmin import (
-    GAD27,
-    GDU460,
-    GEA24,
-    GMC507,
-    GMU11,
-    GSA28,
-    GSU25,
-    GTX45R,
-    GSA28RollServo,
-    GTN650Xi,
-    OATProbe,
-)
-from loome.constants import Axis
+from loome import DPST, CanBusLine, GroundSymbol, Harness, Shield
 
-# ── instances ─────────────────────────────────────────────────────────────────
-
-pilot_stick = Stick("Pilot Stick")
-copilot_stick = Stick("Copilot Stick")
-pfd = GDU460("GDU 460 PFD")
-
-gsu25 = GSU25("GSU 25")
-oat_probe = OATProbe("OAT Probe")
-gtx45r = GTX45R("GTX45R")
-gmu11 = GMU11("GMU 11")
-gea24 = GEA24("GEA24")
-
-# ── terminals ─────────────────────────────────────────────────────────────────
-
-gnd = GroundSymbol("CHASSIS_GND")
-air_data_fuse = Fuse("air_data", "Air Data", 5)
-air_data_backup_fuse = Fuse("air_data_backup", "Air Data Backup", 5)
-backup_splice = SpliceNode("S1", label="Bkp Pwr")
-
-main_fuse_block = FuseBlock("FB1", label="Main Panel Block")
-main_fuse_block.place(1, air_data_fuse)
-main_fuse_block.place(2, air_data_backup_fuse)
-
-# ── switches ──────────────────────────────────────────────────────────────────
-
+gnd = GroundSymbol("GND")
+local = GroundSymbol("local")
 toga = DPST("TO/GA", momentary=True)
-toga_splice = SpliceNode("toga", label="TOGA")
-toga.com1.connect(toga_splice)
-toga.com2.connect(toga_splice)
-toga_splice.connect(gnd)
+
+# Page 2
+with gsu25.J251 as c:
+    c.ground_a >> gnd
+    c.aircraft_power_1 >> avionics_block_1.GSU25
+    c.aircraft_power_2 >> avionics_block_2.GSU25
+    c.rs232 >> pfd.P4601.rs232
+
+with gsu25.J252 as c:
+    with Shield(drain=local, drain_remote=local):
+        c.oat_probe_power >> oat_probe.oat_probe_power
+        c.oat_probe_high >> oat_probe.oat_probe_sense
+        c.oat_probe_low >> oat_probe.oat_probe_low
+    c.rs232_3 >> gtx45r.P3251.rs232_1
 
 
-# ── class-level connections ───────────────────────────────────────────────────
+with gmu11.J441 as c:
+    c.aircraft_power_1 >> avionics_block_1.GMU11
+    c.aircraft_power_2 >> avionics_block_2.GMU11
+    c.ground >> gnd
 
-GSU25.J251.power.connect(air_data_fuse)
-GSU25.J251.backup_power.connect(backup_splice)
-backup_splice.connect(air_data_backup_fuse)
-backup_splice.connect(GMU11.J441.backup_power)
-GSU25.J251.ground.connect(gnd)
-GSU25.J251.rs232.connect(pfd.P4601.rs232, ground=False)  # cross-connects TX↔RX; GND defined but not wired
+# Page 3
+with roll_servo.J281 as c:
+    c.ground >> gnd
+    c.power >> avionics_block_3.GSA28_roll
+    c.trim_in_1 >> gad27.J272.roll_trim_out_1
+    c.trim_in_2 >> gad27.J272.roll_trim_out_2
+    c.trim_out_1 >> roll_trim.trim_1
+    c.trim_out_2 >> roll_trim.trim_2
 
-oat_shield = Shield(drain=gnd, drain_remote=gnd)
-with oat_shield:
-    GSU25.J252.oat_probe_power.connect(OATProbe.oat_probe_power)
-    GSU25.J252.oat_probe_high.connect(OATProbe.oat_probe_high)
-    GSU25.J252.oat_probe_low.connect(OATProbe.oat_probe_low)
-GSU25.J252.rs232_3.connect(GTX45R.P3251.rs232)
-GSU25.J252.magnetometer_power.connect(GMU11.J441.power)
+with gmc507.J7001 as c:
+    c.aircraft_power_1 >> avionics_block_1.GMC507
+    c.aircraft_power_2 >> avionics_block_2.GMC507
+    c.ground >> gnd
+    c.remote_go_around >> toga.no2
 
-GMU11.J441.ground.connect(gnd)
+# Page 4
+with pitch_servo.J281 as c:
+    c.ground >> gnd
+    c.power >> avionics_block_3.GSA28_pitch
+    c.trim_in_1 >> gad27.J272.pitch_trim_out_1
+    c.trim_in_2 >> gad27.J272.pitch_trim_out_2
+    c.trim_out_1 >> pitch_trim.trim_1
+    c.trim_out_2 >> pitch_trim.trim_2
 
-# ── autopilot ─────────────────────────────────────────────────────────────────
+pilot_stick.ap_disconnect >> copilot_stick.ap_disconnect
+copilot_stick.ap_disconnect >> pitch_servo.J281.disconnect
+pitch_servo.J281.disconnect >> yaw_servo.J281.disconnect
+yaw_servo.J281.disconnect >> roll_servo.J281.disconnect
 
-ap_fuse = Fuse("ap", "Autopilot", 5)
-main_fuse_block.place(3, ap_fuse)
-ap_disconnect_splice = SpliceNode("AP Disconnect", label="AP Disconnect")
-roll_servo = GSA28RollServo("Roll Servo")
-roll_trim = RayAllanTrim("Roll Trim")
-pitch_servo = GSA28("Pitch Servo", axis=Axis.PITCH)
-pitch_trim = RayAllanTrim("Pitch Trim")
-yaw_servo = GSA28("Yaw Servo", axis=Axis.YAW)
-controller = GMC507("AP Controller")
+toga.com1 >> toga.com2
+toga.com1 >> gnd
 
-# Class-level connections apply to all three servo instances
-GSA28.J281.ground.connect(gnd)
-GSA28.J281.power.connect(ap_fuse)
-GSA28.J281.disconnect.connect(ap_disconnect_splice)
+# Page 5
 
-roll_servo.J281.trim_in_1.connect(GAD27.J272.roll_trim_out_1)
-roll_servo.J281.trim_in_2.connect(GAD27.J272.roll_trim_out_2)
-roll_servo.J281.trim_out_1.connect(roll_trim.trim_1)
-roll_servo.J281.trim_out_2.connect(roll_trim.trim_2)
+with yaw_servo.J281 as c:
+    c.ground >> gnd
+    c.power >> avionics_block_3.GSA28_yaw
+
+# Page 6
+
+with gdl51r as c:
+    c.aircraft_power >> avionics_block_3.GDL51R
+    c.ground >> gnd
+    with Shield(drain_remote=local):
+        c.music_out_left >> gma245.J2402.music_2_in_left
+        c.music_out_common >> gma245.J2402.music_2_in_low
+        c.music_out_right >> gma245.J2402.music_2_in_right
+
+    c.rs232_1 >> pfd.P4602.rs232_1
+    c.rs232_2 >> mfd.P4602.rs232_4
+
+# Page 7
+with gma245.P2401 as c:
+    with Shield(drain=local):
+        c.pilot_mic_key_in >> pilot_stick.push_to_talk
+        c.pilot_mic_audio_in_high >> pilot_lemo.mic_high
+        c.pilot_mic_audio_in_low >> pilot_lemo.mic_low
+
+with gma245.J2402 as c:
+    with Shield(drain=local):
+        c.pilot_headset_audio_out_left >> pilot_lemo.audio_left
+        c.pilot_headset_audio_out_right >> pilot_lemo.audio_right
+        c.pilot_headset_audio_out_low >> pilot_lemo.ground
+
+    with Shield(drain=local):
+        c.copilot_headset_audio_out_left >> copilot_lemo.audio_left
+        c.copilot_headset_audio_out_right >> copilot_lemo.audio_right
+        c.copilot_headset_audio_out_low >> copilot_lemo.ground
+
+    with Shield(drain=local):
+        c.copilot_mic_key_in >> copilot_stick.push_to_talk
+        c.copilot_mic_audio_in_high >> copilot_lemo.mic_high
+        c.copilot_mic_audio_in_low >> copilot_lemo.mic_low
+
+    # Page 8
+    with Shield(drain=local):
+        c.music_1_in_left >> music_in.tip
+        c.music_1_in_right >> music_in.ring
+        c.music_1_in_low >> music_in.sleeve
+
+    c.aircraft_power_a >> avionics_block_3.GMA245
+    c.aircraft_power_b >> avionics_block_3.GMA245
+    c.ground_a >> gnd
+    c.ground_b >> gnd
+
+    c.lighting_bus_high >> c.lighting_bus_14v_high_28v_low
+
+    c.com_swap >> pilot_stick.com_swap
+    c.com_swap >> copilot_stick.com_swap
+
+    c.play_key >> pilot_stick.replay
+    c.play_key >> copilot_stick.replay
 
 
-pilot_stick.ap_disconnect.connect(ap_disconnect_splice)
-copilot_stick.ap_disconnect.connect(ap_disconnect_splice)
+# Page 9
+with gma245.P2401 as c:
+    with Shield(drain=local):
+        c.com_1_audio_in_high >> gtn650xi.P1003.com_audio_hi
+        c.com_1_audio_low >> gtn650xi.P1003.com_audio_lo
 
-GEA24.J244.gp1.connect(pitch_trim.position, drain_remote=gnd)
-GEA24.J244.gp2.connect(roll_trim.position, drain_remote=gnd)
+    with Shield(drain=local):
+        c.com_1_audio_low >> gtn650xi.P1003.mic_audio_in_lo
+        c.com_1_mic_audio_out_high >> gtn650xi.P1003.com_mic_1_audio_in_hi
+        c.com_1_mic_key_out >> gtn650xi.P1003.com_mic_1_key
+    c.com_1_mic_key_out >> gtr20.J2001.tx_interlock_in
 
-controller.P7001.remote_go_around.connect(toga.no1)
+    with Shield(drain=local):
+        c.nav_1_audio_in_high >> gtn650xi.P1004.vor_loc_audio_out_hi
+        c.nav_1_audio_in_low >> gtn650xi.P1004.vor_loc_audio_out_lo
 
-# ── GPS ───────────────────────────────────────────────────────────────────────
+    with Shield(drain=local):
+        c.alert_3_4_aux_3_audio_in_low >> gtn650xi.P1001.audio_out_lo
+        c.alert_4_audio_in_high >> gtn650xi.P1001.audio_out_hi
 
-gps = GTN650Xi("GPS")
-gps.P1001.remote_go_around.connect(toga.no2)
+    with Shield(drain=local):
+        c.com_2_audio_in_high >> gtr20.J2001.receiver_out_high
+        c.com_2_audio_low >> gtr20.J2001.receiver_audio_low
 
-# ── bundle (physical-layout topology) ────────────────────────────────────────
+    with Shield(drain=local):
+        c.com_2_audio_low >> gtr20.J2001.pilot_mic_low
+        c.com_2_mic_audio_out_high >> gtr20.J2001.pilot_mic_in
+        c.com_2_mic_key_out >> gtr20.J2001.pilot_ptt
 
-trunk = Bundle("Main Avionics Trunk")
-panel = trunk.breakout("panel")
-pedestal = trunk.breakout("pedestal", after=panel, length=24)
-tail = trunk.breakout("tail", after=pedestal, length=96)
-wing_L = trunk.breakout("wing_L", after=pedestal, length=72)
 
-panel.attach(pfd.P4601, leg_length=6)
-panel.attach(gsu25.J251, leg_length=6)
-panel.attach(gsu25.J252, leg_length=6)
-panel.attach(gnd, leg_length=2)
-panel.attach(air_data_fuse, leg_length=2)
-panel.attach(air_data_backup_fuse, leg_length=2)
-panel.attach(ap_fuse, leg_length=2)
-panel.attach(backup_splice, leg_length=1)
-pedestal.attach(controller.P7001, leg_length=8)
-tail.attach(pitch_servo.J281, leg_length=10)
-tail.attach(yaw_servo.J281, leg_length=12)
-tail.attach(gmu11.J441, leg_length=10)
-tail.attach(oat_probe, leg_length=5)
-tail.attach(gtx45r.P3251, leg_length=8)
-wing_L.attach(roll_servo.J281, leg_length=12)
+# Page 10
 
-main_can = CanBusLine(
-    "Main CAN",
-    devices=[
-        gsu25.J251,
-        pfd.P4601,
-        roll_servo.J281,
-        pitch_servo.J281,
-        yaw_servo.J281,
-        gmu11.J441,
-    ],
-)
+with gtr20.J2001 as c:
+    pass
+
+# Page 15
+
+gad27.J271.dc_lighting_1 >> mfd.P4602.lighting_bus_high_14V
+mfd.P4602.lighting_bus_high_14V >> pfd.P4602.lighting_bus_high_14V
+pfd.P4602.lighting_bus_high_14V >> gtn650xi.P1001.lighting_bus_1_hi
+gtn650xi.P1001.lighting_bus_1_hi >> gmc507.J7001.lighting_bus_high
+gmc507.J7001.lighting_bus_high >> gma245.J2402.lighting_bus_high
+
 
 # ── harness ───────────────────────────────────────────────────────────────────
+
+CanBusLine(
+    name="CAN Bus",
+    devices=[
+        gmu11.J441,
+        roll_servo.J281,
+        mfd.P4602,
+        gad29.J291,
+        gtr20.J2001,
+        g5.J51,
+        gmc507.J7001,
+        gma245.P2401,
+        pfd.P4602,
+        gea24.J241,
+        gad27.J271,
+        gsu25.J251,
+        pitch_servo.J281,
+        yaw_servo.J281,
+    ],
+)
 
 harness = Harness("Avionics Harness", length_unit="in")

@@ -7,16 +7,17 @@ from ..layout.engine import PIN_NUM_W, WIRE_AREA_W, PinGroup, PinRowInfo
 from ..model import Pin, ShieldGroup, SpliceNode, Terminal, WireSegment
 from .colors import _wire_attrs
 from .primitives import (
+    _BULLET_CX,
     _JUMPER_STUB_X,
     _MONO_CHAR_W,
     _REMOTE_BOX_PIN_NUM_W,
-    _REMOTE_BOX_W,
     _REMOTE_BOX_X,
     _SHIELD_LEFT_CX,
     _SHIELD_RIGHT_CX,
     _SHIELD_RX,
     _TERM_SYMBOL_W,
     _WIRE_PAD,
+    _draw_bullet,
     _draw_terminal,
     _draw_unconnected,
     _draw_wire_label,
@@ -79,19 +80,26 @@ def _draw_connection(
     min_term_cx: float = 0,
     colored: bool = True,
     pin_shield_palette: dict | None = None,
+    start_x_offset: float = _WIRE_PAD,
+    wire_end_x: float | None = None,
 ) -> None:
+    """Draw the leg of wire from ``wx + start_x_offset`` to the remote endpoint.
+
+    Multi-direct-connection rows pass a larger ``start_x_offset`` so the leg
+    begins at the bullet position instead of right at the pin column.
+    """
     psp = pin_shield_palette or {}
     attrs = _wire_attrs(seg, psp, colored)
+    start_x = wx + start_x_offset
+    right_edge = wire_end_x if wire_end_x is not None else (wx + WIRE_AREA_W)
 
     if isinstance(remote, Terminal):
         label_text = _remote_label(remote, class_pin, harness)
-        term_cx = (
-            min_term_cx if min_term_cx > 0 else (wx + WIRE_AREA_W - 4 - len(label_text) * _MONO_CHAR_W - _TERM_SYMBOL_W)
-        )
-        term_cx = max(term_cx, wx + _WIRE_PAD + 20)
+        term_cx = min_term_cx if min_term_cx > 0 else (right_edge - 4 - len(label_text) * _MONO_CHAR_W - _TERM_SYMBOL_W)
+        term_cx = max(term_cx, start_x + 20)
         wire_end = term_cx - 12
-        dwg.add(dwg.line(start=(wx + _WIRE_PAD, cy), end=(wire_end, cy), **attrs))
-        label_x1 = wx + _SHIELD_LEFT_CX + _SHIELD_RX if shield is not None else wx + _WIRE_PAD
+        dwg.add(dwg.line(start=(start_x, cy), end=(wire_end, cy), **attrs))
+        label_x1 = wx + _SHIELD_LEFT_CX + _SHIELD_RX if shield is not None else start_x
         _draw_wire_label(dwg, seg, label_x1, wire_end, cy, psp, colored, harness=harness)
         _draw_terminal(dwg, remote, term_cx, cy)
         dwg.add(
@@ -105,28 +113,20 @@ def _draw_connection(
         )
     elif isinstance(remote, Pin):
         wire_end = wx + _REMOTE_BOX_X - 4
+        dwg.add(dwg.line(start=(start_x, cy), end=(wire_end, cy), **attrs))
         if shield is not None:
-            lo_left = wx + _SHIELD_LEFT_CX - _SHIELD_RX
             lo_right = wx + _SHIELD_LEFT_CX + _SHIELD_RX
             if shield.single_oval:
-                for x1, x2 in [(wx + _WIRE_PAD, lo_left), (lo_right, wire_end)]:
-                    if x2 > x1:
-                        dwg.add(dwg.line(start=(x1, cy), end=(x2, cy), **attrs))
                 _draw_wire_label(dwg, seg, lo_right, wire_end, cy, psp, colored, harness=harness)
             else:
                 ro_left = wx + _SHIELD_RIGHT_CX - _SHIELD_RX
-                ro_right = wx + _SHIELD_RIGHT_CX + _SHIELD_RX
-                for x1, x2 in [(wx + _WIRE_PAD, lo_left), (lo_right, ro_left), (ro_right, wire_end)]:
-                    if x2 > x1:
-                        dwg.add(dwg.line(start=(x1, cy), end=(x2, cy), **attrs))
                 _draw_wire_label(dwg, seg, lo_right, ro_left, cy, psp, colored, harness=harness)
         else:
-            dwg.add(dwg.line(start=(wx + _WIRE_PAD, cy), end=(wire_end, cy), **attrs))
-            _draw_wire_label(dwg, seg, wx + _WIRE_PAD, wire_end, cy, psp, colored, harness=harness)
+            _draw_wire_label(dwg, seg, start_x, wire_end, cy, psp, colored, harness=harness)
     else:
         label_x = wx + _REMOTE_BOX_X
-        dwg.add(dwg.line(start=(wx + _WIRE_PAD, cy), end=(label_x - 4, cy), **attrs))
-        _draw_wire_label(dwg, seg, wx + _WIRE_PAD, label_x - 4, cy, psp, colored, harness=harness)
+        dwg.add(dwg.line(start=(start_x, cy), end=(label_x - 4, cy), **attrs))
+        _draw_wire_label(dwg, seg, start_x, label_x - 4, cy, psp, colored, harness=harness)
         dwg.add(
             dwg.text(
                 _remote_label(remote, class_pin, harness),
@@ -141,7 +141,7 @@ def _draw_connection(
 # ── remote component boxes ─────────────────────────────────────────────────
 
 
-def _draw_remote_box(dwg: svgwrite.Drawing, group: PinGroup, harness: Harness) -> None:
+def _draw_remote_box(dwg: svgwrite.Drawing, group: PinGroup, harness: Harness, remote_box_w: float) -> None:
     rows = group.rows
     if not rows:
         return
@@ -151,6 +151,7 @@ def _draw_remote_box(dwg: svgwrite.Drawing, group: PinGroup, harness: Harness) -
     y_bot = rows[-1].rect.y + rows[-1].rect.h
     box_x = wx + _REMOTE_BOX_X
     box_h = y_bot - y_top
+    box_w = remote_box_w
 
     comp_label = ""
     conn_name = ""
@@ -159,8 +160,9 @@ def _draw_remote_box(dwg: svgwrite.Drawing, group: PinGroup, harness: Harness) -
     for row in rows:
         use_pin = row.pin if row.pin._connections else row.class_pin
         rpin: Pin | None = None
-        if use_pin._connections:
-            seg = use_pin._connections[0]
+        # Per-leg row knows its segment directly. Fall back to first connection.
+        seg = row.segment if row.segment is not None else (use_pin._connections[0] if use_pin._connections else None)
+        if seg is not None:
             remote = (
                 seg.end_b if (seg.end_a is use_pin or seg.end_a is row.pin or seg.end_a is row.class_pin) else seg.end_a
             )
@@ -193,7 +195,7 @@ def _draw_remote_box(dwg: svgwrite.Drawing, group: PinGroup, harness: Harness) -
     dwg.add(
         dwg.rect(
             insert=(box_x, y_top),
-            size=(_REMOTE_BOX_W, box_h),
+            size=(box_w, box_h),
             rx=3,
             ry=3,
             fill="#eff6ff",
@@ -237,7 +239,7 @@ def _draw_remote_box(dwg: svgwrite.Drawing, group: PinGroup, harness: Harness) -
             dwg.add(
                 dwg.line(
                     start=(box_x, div_y),
-                    end=(box_x + _REMOTE_BOX_W, div_y),
+                    end=(box_x + box_w, div_y),
                     stroke="#bfdbfe",
                     stroke_width=0.5,
                 )
@@ -278,45 +280,166 @@ def _draw_pin_row(
     for lx in [name_x, wire_x]:
         dwg.add(dwg.line(start=(lx, rect.y), end=(lx, rect.y + rect.h), stroke="#cbd5e1", stroke_width=0.5))
 
-    dwg.add(
-        dwg.text(
-            str(pin.number),
-            insert=(rect.x + PIN_NUM_W / 2, cy + 4),
-            text_anchor="middle",
-            fill="#64748b",
-            font_size="10px",
-            font_family="ui-monospace, monospace",
+    if not row_info.is_continuation:
+        dwg.add(
+            dwg.text(
+                str(pin.number),
+                insert=(rect.x + PIN_NUM_W / 2, cy + 4),
+                text_anchor="middle",
+                fill="#64748b",
+                font_size="10px",
+                font_family="ui-monospace, monospace",
+            )
         )
-    )
-    dwg.add(
-        dwg.text(
-            pin.signal_name,
-            insert=(name_x + 6, cy + 4),
-            fill="#1e293b",
-            font_size="10px",
-            font_family="ui-monospace, monospace",
+        dwg.add(
+            dwg.text(
+                pin.signal_name,
+                insert=(name_x + 6, cy + 4),
+                fill="#1e293b",
+                font_size="10px",
+                font_family="ui-monospace, monospace",
+            )
         )
-    )
 
+    psp = pin_shield_palette or {}
+
+    # ── Per-leg row path (multi-direct-connection or single direct) ──────────
+    if row_info.segment is not None and not _segment_terminates_at_splice(row_info.segment, class_pin, pin):
+        seg = row_info.segment
+        remote = seg.end_b if (seg.end_a is class_pin or seg.end_a is pin) else seg.end_a
+
+        is_primary = not row_info.is_continuation
+        has_continuations = bool(row_info.continuation_rows)
+
+        if is_primary and has_continuations:
+            # Multi-direct-connection primary row: draw the pre-bullet stub
+            # and the leg from bullet to remote here. The bullet glyph and
+            # vertical drop are drawn in a deferred pass so they sit above
+            # the continuation rows' backgrounds and the leg wire.
+            bullet_cx = wire_x + _BULLET_CX
+            attrs = _wire_attrs(seg, psp, colored)
+            dwg.add(dwg.line(start=(wire_x + _WIRE_PAD, cy), end=(bullet_cx, cy), **attrs))
+            if isinstance(remote, Pin) and _is_jumper(pin, remote):
+                dwg.add(dwg.line(start=(bullet_cx, cy), end=(wire_x + _JUMPER_STUB_X, cy), **attrs))
+                _draw_wire_label(dwg, seg, bullet_cx, wire_x + _JUMPER_STUB_X, cy, psp, colored, harness=harness)
+                if jumper_stubs is not None:
+                    entry = jumper_stubs.setdefault(id(seg), [seg, wire_x, []])
+                    entry[2].append(cy)
+            else:
+                _draw_connection(
+                    dwg,
+                    seg,
+                    remote,
+                    wire_x,
+                    cy,
+                    class_pin,
+                    harness,
+                    shield,
+                    min_term_cx,
+                    colored,
+                    psp,
+                    start_x_offset=_BULLET_CX,
+                    wire_end_x=row_info.wire_end_x,
+                )
+            return
+
+        if row_info.is_continuation:
+            # Continuation: wire starts at bullet x; no pre-bullet stub, no
+            # bullet glyph (already drawn by primary), no vertical drop.
+            if isinstance(remote, Pin) and _is_jumper(pin, remote):
+                attrs = _wire_attrs(seg, psp, colored)
+                bullet_cx = wire_x + _BULLET_CX
+                dwg.add(dwg.line(start=(bullet_cx, cy), end=(wire_x + _JUMPER_STUB_X, cy), **attrs))
+                _draw_wire_label(dwg, seg, bullet_cx, wire_x + _JUMPER_STUB_X, cy, psp, colored, harness=harness)
+                if jumper_stubs is not None:
+                    entry = jumper_stubs.setdefault(id(seg), [seg, wire_x, []])
+                    entry[2].append(cy)
+            else:
+                _draw_connection(
+                    dwg,
+                    seg,
+                    remote,
+                    wire_x,
+                    cy,
+                    class_pin,
+                    harness,
+                    shield,
+                    min_term_cx,
+                    colored,
+                    psp,
+                    start_x_offset=_BULLET_CX,
+                    wire_end_x=row_info.wire_end_x,
+                )
+            return
+
+        # Primary, single direct connection — same visual as before.
+        if isinstance(remote, Pin) and _is_jumper(pin, remote):
+            attrs = _wire_attrs(seg, psp, colored)
+            dwg.add(dwg.line(start=(wire_x + _WIRE_PAD, cy), end=(wire_x + _JUMPER_STUB_X, cy), **attrs))
+            _draw_wire_label(dwg, seg, wire_x + _WIRE_PAD, wire_x + _JUMPER_STUB_X, cy, psp, colored, harness=harness)
+            if jumper_stubs is not None:
+                entry = jumper_stubs.setdefault(id(seg), [seg, wire_x, []])
+                entry[2].append(cy)
+        else:
+            _draw_connection(
+                dwg,
+                seg,
+                remote,
+                wire_x,
+                cy,
+                class_pin,
+                harness,
+                shield,
+                min_term_cx,
+                colored,
+                psp,
+                wire_end_x=row_info.wire_end_x,
+            )
+        return
+
+    # ── Legacy path: SpliceNode-mediated or unconnected ─────────────────────
     connections = list(pin._connections) if pin._connections else list(class_pin._connections)
 
     if not connections:
         _draw_unconnected(dwg, wire_x, cy)
         return
 
-    psp = pin_shield_palette or {}
     expanded = _expand_connections(connections, pin, class_pin)
 
     first_splice = expanded[0][1] if expanded else None
     if first_splice is not None and all(sp is first_splice for _, sp, _ in expanded):
-        _draw_splice_fan(dwg, expanded, wire_x, rect, class_pin, harness, min_term_cx, colored, psp)
+        _draw_splice_fan(
+            dwg,
+            expanded,
+            wire_x,
+            rect,
+            class_pin,
+            harness,
+            min_term_cx,
+            colored,
+            psp,
+            shield=shield,
+            wire_end_x=row_info.wire_end_x,
+        )
     else:
         row_h = rect.h / max(len(expanded), 1)
         for i, (seg, splice, out_seg) in enumerate(expanded):
             line_y = rect.y + row_h * (i + 0.5)
             if splice is not None:
                 _draw_splice_connection(
-                    dwg, seg, splice, out_seg, wire_x, line_y, class_pin, harness, min_term_cx, colored, psp
+                    dwg,
+                    seg,
+                    splice,
+                    out_seg,
+                    wire_x,
+                    line_y,
+                    class_pin,
+                    harness,
+                    min_term_cx,
+                    colored,
+                    psp,
+                    shield=shield,
+                    wire_end_x=row_info.wire_end_x,
                 )
             else:
                 remote = seg.end_b if (seg.end_a is class_pin or seg.end_a is pin) else seg.end_a
@@ -333,5 +456,45 @@ def _draw_pin_row(
                         entry[2].append(line_y)
                 else:
                     _draw_connection(
-                        dwg, seg, remote, wire_x, line_y, class_pin, harness, shield, min_term_cx, colored, psp
+                        dwg,
+                        seg,
+                        remote,
+                        wire_x,
+                        line_y,
+                        class_pin,
+                        harness,
+                        shield,
+                        min_term_cx,
+                        colored,
+                        psp,
+                        wire_end_x=row_info.wire_end_x,
                     )
+
+
+def _segment_terminates_at_splice(seg: WireSegment, class_pin: Pin, pin: Pin) -> bool:
+    """True when this segment's *remote* end is a SpliceNode."""
+    remote = seg.end_b if (seg.end_a is class_pin or seg.end_a is pin) else seg.end_a
+    return isinstance(remote, SpliceNode)
+
+
+def _draw_bullet_and_drop(
+    dwg: svgwrite.Drawing,
+    primary: PinRowInfo,
+    colored: bool = True,
+    pin_shield_palette: dict | None = None,
+) -> None:
+    """Draw the multi-direct-connection bullet + vertical drop on top of all sub-rows.
+
+    Run after every sub-row is drawn so the bullet sits above the leg wire and
+    the drop line isn't covered by the continuation rows' backgrounds.
+    """
+    if not primary.continuation_rows or primary.segment is None:
+        return
+    psp = pin_shield_palette or {}
+    cy = primary.rect.y + primary.rect.h / 2
+    last = primary.continuation_rows[-1]
+    last_cy = last.rect.y + last.rect.h / 2
+    bullet_cx = primary.wire_start_x + _BULLET_CX
+    attrs = _wire_attrs(primary.segment, psp, colored)
+    dwg.add(dwg.line(start=(bullet_cx, cy), end=(bullet_cx, last_cy), **attrs))
+    _draw_bullet(dwg, bullet_cx, cy)

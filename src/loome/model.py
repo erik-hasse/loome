@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import copy
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Literal, Self
 
 WireColor = Literal[
     "",  # auto (default)
@@ -43,6 +43,7 @@ class Terminal:
 @dataclass
 class GroundSymbol(Terminal):
     label: str = "GND"
+    filled: bool = True
 
     def display_name(self) -> str:
         return self.label
@@ -62,7 +63,7 @@ class Fuse(Terminal):
     amps: int | float = 0
 
     def display_name(self) -> str:
-        return f"{self.name} {self.amps}A"
+        return f"{self.name or self.id} {self.amps}A"
 
 
 @dataclass
@@ -76,7 +77,7 @@ class CircuitBreaker(Terminal):
 
 @dataclass
 class BusBar(Terminal):
-    """A named power or ground rail that accepts many wire taps.
+    """A named aircraft_power_2 or ground rail that accepts many wire taps.
 
     Reserved as a first-class Terminal so the renderer can draw a thick
     horizontal bar with labeled tap points instead of stubbing every wire
@@ -97,13 +98,39 @@ class BusBar(Terminal):
 # until then they're consumed only by the BoM / fuse-schedule output.
 
 
-@dataclass
 class FuseBlock:
-    """Holds a set of ``Fuse``s in numbered positions (e.g. an ATO block)."""
+    """Holds a set of ``Fuse``s in numbered positions (e.g. an ATO block).
 
-    id: str
-    label: str = ""
-    positions: dict[int | str, "Fuse"] = field(default_factory=dict)
+    Subclass and declare ``Fuse`` class attributes for a declarative style::
+
+        class AvionicsFuseBlock(FuseBlock):
+            G5    = Fuse("G5",    amps=5)
+            GAD27 = Fuse("GAD27", amps=2)
+
+    Or use the imperative style for one-offs::
+
+        fb = FuseBlock("FB1", label="Main Panel Block")
+        fb.place(1, some_fuse)
+    """
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        for attr_name, val in vars(cls).items():
+            if isinstance(val, Fuse) and not val.name:
+                val.name = attr_name
+
+    def __init__(self, id: str | None = None, label: str = ""):
+        self.id = id or type(self).__name__
+        self.label = label or self.id
+        self.positions: dict[int | str, Fuse] = {}
+        for cls in reversed(type(self).__mro__):
+            if not (isinstance(cls, type) and issubclass(cls, FuseBlock)):
+                continue
+            for attr_name, val in vars(cls).items():
+                if isinstance(val, Fuse):
+                    fuse = copy.copy(val)
+                    setattr(self, attr_name, fuse)
+                    self.positions[attr_name] = fuse
 
     def place(self, position: int | str, fuse: "Fuse") -> "Fuse":
         self.positions[position] = fuse
@@ -143,12 +170,17 @@ class SpliceNode:
     ) -> WireSegment:
         seg = WireSegment(wire_id=wire_id, gauge=gauge, color=color, end_a=self, end_b=other, **kwargs)
         if _active_shield_stack:
-            _active_shield_stack[-1].segments.append(seg)
+            sg = _active_shield_stack[-1]
+            sg.segments.append(seg)
             seg.shielded = True
+            seg.shield_group = sg
         self._connections.append(seg)
         if isinstance(other, (Pin, SpliceNode)):
             other._connections.append(seg)
         return seg
+
+    def __rshift__(self, other: WireEndpoint) -> "WireBuilder":
+        return WireBuilder(self.connect(other))
 
 
 # ── shields ────────────────────────────────────────────────────────────────
@@ -214,6 +246,7 @@ class WireSegment:
     end_b: WireEndpoint
     shielded: bool = False
     notes: str = ""
+    shield_group: "ShieldGroup | None" = field(default=None, repr=False)
 
     @property
     def label(self) -> str:
@@ -235,6 +268,10 @@ class Pin:
     _connections: list[WireSegment] = field(default_factory=list, repr=False)
     shield_group: "ShieldGroup | None" = field(default=None, repr=False)
 
+    def local_ground(self, label: str = "GND") -> None:
+        sym = GroundSymbol(id=f"lgnd_{id(self)}", label=label, filled=False)
+        self.connect(sym)
+
     def connect(
         self,
         other: WireEndpoint,
@@ -255,15 +292,43 @@ class Pin:
             notes=notes,
         )
         if _active_shield_stack:
-            _active_shield_stack[-1].segments.append(seg)
+            sg = _active_shield_stack[-1]
+            sg.segments.append(seg)
             seg.shielded = True
+            seg.shield_group = sg
         self._connections.append(seg)
         if isinstance(other, (Pin, SpliceNode)):
             other._connections.append(seg)
         return seg
 
+    def __rshift__(self, other: "WireEndpoint") -> "WireBuilder":
+        return WireBuilder(self.connect(other))
+
 
 WireEndpoint = Pin | SpliceNode | Terminal
+
+
+class WireBuilder:
+    """Fluent modifier returned by ``pin >> other``."""
+
+    def __init__(self, segment: WireSegment) -> None:
+        self._seg = segment
+
+    def gauge(self, value: int | str) -> "WireBuilder":
+        self._seg.gauge = value
+        return self
+
+    def color(self, value: WireColor) -> "WireBuilder":
+        self._seg.color = value
+        return self
+
+    def wire_id(self, value: str) -> "WireBuilder":
+        self._seg.wire_id = value
+        return self
+
+    def notes(self, value: str) -> "WireBuilder":
+        self._seg.notes = value
+        return self
 
 
 # ── connectors / components ────────────────────────────────────────────────
@@ -301,6 +366,12 @@ class Connector:
 
     def __getitem__(self, number: int | str) -> Pin:
         return self._pins[number]
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
 
 
 class Component:
@@ -355,3 +426,9 @@ class Component:
 
     def __getitem__(self, number: int | str) -> Pin:
         return self._direct_pins[number]
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass

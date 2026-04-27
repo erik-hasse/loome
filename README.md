@@ -5,11 +5,16 @@ Items are roughly in priority order within each section.
 
 ## Low effort
 
+- **Ground Rendering** - The triangles for ground (both local and chassis) render strangely and
+  should be cleaned up.
+
 - **PDF export** — `cairosvg` converts SVG → PDF in one call; very low effort once SVG output
   is solid.
 
 - **`loome validate` command** — dedicated CLI entry that runs `Harness.validate_bundles()`
   and exits non-zero on warnings, for CI use without also rendering SVG.
+
+- Thermocouple specific wire support, similar to RS232/CAN/GPIO
 
 ## Medium effort
 

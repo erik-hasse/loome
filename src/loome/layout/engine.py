@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from ..harness import Harness
-from ..model import Component, Connector, Pin, SpliceNode, Terminal
+from ..model import Component, Connector, Pin, SpliceNode, Terminal, WireSegment
 from .geometry import Rect
 
 MARGIN = 20
@@ -12,15 +12,25 @@ COMPONENT_HEADER_H = 28
 CONNECTOR_HEADER_H = 22
 PIN_ROW_H = 22
 GROUP_GAP = 14  # vertical gap inserted between pin groups with different remote targets
+COMPONENT_GAP_EXTRA = 12  # added on top of GROUP_GAP when groups target different remote components
 FIRST_GROUP_PAD = 12  # extra top padding before the first group when it needs a label above it
+SHIELD_HEADER_PAD = 16  # gap when shield-mates cross to a different remote component (room for header label)
 CONNECTOR_BOTTOM_PAD = 6  # breathing room after last pin row in a connector (before next header)
 SECTION_BOTTOM_PAD = 6  # breathing room between last pin row and section border bottom
 DRAIN_STUB_H = 16  # extra bottom padding when a shield group has a drain terminal
-DRAIN_GROUP_GAP = 8  # extra gap after a pin group that ends with a drained shield
+DRAIN_GROUP_GAP = 22  # minimum clearance after a pin group that ends with a drained shield (drain stem + triangle)
 PIN_NUM_W = 36
-PIN_NAME_W = 160
-WIRE_AREA_W = 500
-CANVAS_W = MARGIN * 2 + PIN_NUM_W + PIN_NAME_W + WIRE_AREA_W  # 536
+PIN_NAME_W = 160  # default; layout() may widen based on actual pin names
+REMOTE_BOX_W = 140  # default; layout() may widen based on actual remote names
+REMOTE_BOX_PIN_NUM_W = 26
+REMOTE_BOX_X_OFFSET = 340  # offset of remote box from wire_start_x
+REMOTE_BOX_RIGHT_PAD = 20  # gap between remote box and section right edge
+PIN_NAME_CHAR_W = 6.2  # 10px monospace
+REMOTE_NAME_CHAR_W = 5.6  # 9px monospace
+PIN_NAME_PAD = 14
+REMOTE_NAME_PAD = 10
+WIRE_AREA_W = 500  # default; layout() recomputes from REMOTE_BOX_W
+CANVAS_W = MARGIN * 2 + PIN_NUM_W + PIN_NAME_W + WIRE_AREA_W
 
 
 @dataclass
@@ -30,6 +40,17 @@ class PinRowInfo:
     rect: Rect
     wire_start_x: float
     wire_end_x: float
+    # The specific outgoing segment this row draws. Set when a pin has more
+    # than one direct connection (each leg gets its own row). None for
+    # single-connection pins and for pins routed through a SpliceNode (which
+    # are still drawn as one tall row with the existing fan-out renderer).
+    segment: WireSegment | None = None
+    # True for sub-rows after the primary row of a multi-connection pin.
+    # Continuation rows skip the pin number / signal name when drawn.
+    is_continuation: bool = False
+    # Set on the primary row only: the additional sub-rows that share this
+    # pin. Renderer walks these to draw the bullet + drop-down branches.
+    continuation_rows: list["PinRowInfo"] = field(default_factory=list)
 
 
 @dataclass
@@ -42,13 +63,74 @@ class PinGroup:
 
 
 @dataclass
+class _RowCtx:
+    """Per-row context fed into ``_row_separator`` to decide the gap before this row.
+
+    Lives only during ``layout()``. The row this describes is the *next* one to
+    be emitted; the gap is `_row_separator(prev_ctx, this_ctx)`.
+    """
+
+    target_key: tuple
+    shield_ids: frozenset[int]
+    is_drained: bool
+    is_first_leg_of_pin: bool  # False for continuation legs of a multi-direct pin
+
+
+def _row_separator(prev: _RowCtx | None, new: _RowCtx) -> int:
+    """Return the vertical gap to insert before a row described by ``new``.
+
+    Single source of truth for inter-row spacing. Rules (in priority order):
+
+    - First row in a section/connector: ``FIRST_GROUP_PAD`` if the row's target
+      is a component (its remote box needs a label above it), else 0.
+    - Continuation leg of a multi-direct pin: 0, plus ``COMPONENT_GAP_EXTRA``
+      if this leg targets a different remote component (header room).
+    - Same target as previous: 0 unless leaving a drained shield.
+    - Different target with overlapping shield (shield-mates): keep close, but
+      add ``SHIELD_HEADER_PAD`` if the remote component changes.
+    - Different target without shield overlap: ``GROUP_GAP``, plus
+      ``COMPONENT_GAP_EXTRA`` if the remote component also changes.
+
+    Drained-shield boundary: when leaving a drained shield's last row, the
+    drain triangle hangs ~``DRAIN_GROUP_GAP`` below it. We use ``max`` (not
+    sum) with whatever group/component gap applies, so the spacing stays
+    consistent instead of stacking.
+    """
+    if prev is None:
+        return FIRST_GROUP_PAD if new.target_key[0] == "component" else 0
+
+    leaving_drain = prev.is_drained and prev.shield_ids and not (prev.shield_ids & new.shield_ids)
+    drain_floor = DRAIN_GROUP_GAP if leaving_drain else 0
+
+    if not new.is_first_leg_of_pin:
+        # Continuation leg of the same pin.
+        comp_extra = COMPONENT_GAP_EXTRA if _components_differ(prev.target_key, new.target_key) else 0
+        return max(drain_floor, comp_extra)
+
+    if prev.target_key == new.target_key:
+        return drain_floor
+
+    shield_overlap = bool(prev.shield_ids & new.shield_ids)
+    comp_extra = COMPONENT_GAP_EXTRA if _components_differ(prev.target_key, new.target_key) else 0
+    if shield_overlap:
+        # Shield-mates: keep close so a single oval can wrap them; only insert
+        # header room if the remote component changes.
+        return max(drain_floor, SHIELD_HEADER_PAD if comp_extra else 0)
+    return max(drain_floor, GROUP_GAP) + comp_extra
+
+
+@dataclass
 class LayoutResult:
     section_rects: dict[int, Rect]
     connector_rects: dict[int, Rect]
-    pin_rows: dict[int, PinRowInfo]
+    pin_rows: dict[int, PinRowInfo]  # id(inst_pin) → primary row
+    all_rows: list[PinRowInfo]  # every row in y order, including continuations
     pin_groups: list[PinGroup]
     canvas_width: float
     canvas_height: float
+    pin_name_w: float = PIN_NAME_W
+    remote_box_w: float = REMOTE_BOX_W
+    wire_area_w: float = WIRE_AREA_W
 
 
 def _effective_pin(class_pin: Pin, inst_pin: Pin | None) -> Pin:
@@ -77,24 +159,50 @@ def _pin_display_rows(class_pin: Pin, inst_pin: Pin | None = None) -> int:
     return max(total, 1)
 
 
-def _pin_shield_order(class_pin: Pin, inst_pin: Pin | None = None) -> int:
-    """Sort key for shield palette ordering within a group (0=W, 1=WB, 2=WO, 999=unshielded).
-
-    For source pins (end_a), returns their position in their own shield group.
-    For remote pins (end_b), returns the source pin's position so ordering follows
-    the physical wire color after palette propagation.
-    """
+def _has_splice_connection(class_pin: Pin, inst_pin: Pin | None = None) -> bool:
+    """True if any of this pin's connections terminates at a SpliceNode."""
     use = _effective_pin(class_pin, inst_pin)
     for seg in use._connections:
+        remote = seg.end_b if seg.end_a is use else seg.end_a
+        if isinstance(remote, SpliceNode):
+            return True
+    return False
+
+
+def _pin_outgoing_segments(class_pin: Pin, inst_pin: Pin | None = None) -> list[WireSegment]:
+    """Return the segments outgoing from this pin (preferring instance over class)."""
+    use = _effective_pin(class_pin, inst_pin)
+    return list(use._connections)
+
+
+def _pin_shield_order(class_pin: Pin, inst_pin: Pin | None = None) -> int:
+    """Sort key for shield ordering within a group.
+
+    For class-body shields, returns the pin's position in ``sg.pins``.
+    For connection-level shields (``with Shield(...)`` blocks), returns the
+    segment's position in ``sg.segments`` — preserving the order pins were
+    written in the shield block.
+    Returns 999 when the pin is unshielded.
+    """
+    use = _effective_pin(class_pin, inst_pin)
+    # Connection-level shield: position by segment index.
+    for seg in use._connections:
+        sg = seg.shield_group
+        if sg is not None:
+            for idx, s in enumerate(sg.segments):
+                if s is seg:
+                    return idx
+    # Class-body shield: source-pin index in sg.pins (so remote pins inherit
+    # the order of their source).
+    for seg in use._connections:
         if seg.end_b is use or seg.end_b is class_pin:
-            src = seg.end_a  # this pin is end_b → source is end_a
+            src = seg.end_a
         else:
-            src = class_pin  # this pin is end_a → it is the source
+            src = class_pin
         if isinstance(src, Pin) and src.shield_group is not None:
             for idx, p in enumerate(src.shield_group.pins):
                 if p is src:
                     return idx
-    # Fallback: direct shield group position (handles unconnected shielded pins)
     sg = class_pin.shield_group
     if sg is not None:
         for idx, p in enumerate(sg.pins):
@@ -108,10 +216,11 @@ def _sort_pin_attrs(
     get_class_pin,
     get_inst_pin,
 ) -> list[str]:
-    """Sort pin attribute names by (group order, shield palette order, original index).
+    """Sort pin attribute names by (group order, shield order, original index).
 
-    Preserves the encounter order of target groups while sorting pins within each
-    group by W→WB→WO palette order.
+    A pin's "group" is its shield (when shielded) or its remote target (when
+    unshielded). Shield-mates therefore stay adjacent even when they target
+    different remotes, which lets a single shield oval wrap them all.
     """
     group_order: dict[tuple, int] = {}
     keyed: list[tuple] = []
@@ -121,10 +230,14 @@ def _sort_pin_attrs(
         if cp is None:
             keyed.append((999, 999, orig_idx, attr_name))
             continue
-        tk = _pin_target_key(cp, ip)
-        if tk not in group_order:
-            group_order[tk] = len(group_order)
-        keyed.append((group_order[tk], _pin_shield_order(cp, ip), orig_idx, attr_name))
+        sids = _pin_shield_ids(cp, ip)
+        if sids:
+            gkey: tuple = ("shield", min(sids))
+        else:
+            gkey = _pin_target_key(cp, ip)
+        if gkey not in group_order:
+            group_order[gkey] = len(group_order)
+        keyed.append((group_order[gkey], _pin_shield_order(cp, ip), orig_idx, attr_name))
     keyed.sort(key=lambda x: x[:3])
     return [x[3] for x in keyed]
 
@@ -145,6 +258,15 @@ def _class_pin_map(cls, base_cls) -> dict[str, Pin]:
     return dict(_iter_class_pins(cls, base_cls))
 
 
+def _components_differ(k1: tuple | None, k2: tuple | None) -> bool:
+    """True when both keys are component-targets pointing at different components."""
+    if k1 is None or k2 is None:
+        return False
+    if len(k1) < 2 or len(k2) < 2:
+        return False
+    return k1[0] == "component" and k2[0] == "component" and k1[1] != k2[1]
+
+
 def _pin_target_key(class_pin: Pin, inst_pin: Pin | None = None) -> tuple:
     """Return a stable grouping key based on where this pin's first connection leads.
 
@@ -153,10 +275,17 @@ def _pin_target_key(class_pin: Pin, inst_pin: Pin | None = None) -> tuple:
     use = _effective_pin(class_pin, inst_pin)
     if not use._connections:
         return ("unconnected",)
-    seg = use._connections[0]
-    remote = seg.end_b if seg.end_a is use else seg.end_a
+    return _segment_target_key(use._connections[0], use, inst_pin)
+
+
+def _segment_target_key(seg: WireSegment, source_pin: Pin, inst_pin: Pin | None = None) -> tuple:
+    """Grouping key for a single segment's remote endpoint.
+
+    Lets multi-direct-connection pins assign each leg its own remote-box group
+    (so two legs to two different remotes get two correctly-labeled boxes).
+    """
+    remote = seg.end_b if seg.end_a is source_pin else seg.end_a
     if isinstance(remote, Pin):
-        # Jumper: both pins live in the same connector (or same direct-pin component)
         if inst_pin is not None:
             if inst_pin._connector is not None and inst_pin._connector is remote._connector:
                 return ("jumper",)
@@ -167,7 +296,6 @@ def _pin_target_key(class_pin: Pin, inst_pin: Pin | None = None) -> tuple:
                 and remote._connector is None
             ):
                 return ("jumper",)
-        # Prefer instance identity so multiple instances of the same class get separate groups.
         comp_key = id(remote._component) if remote._component is not None else id(remote._component_class)
         return ("component", comp_key, id(remote._connector_class))
     elif isinstance(remote, Terminal):
@@ -175,11 +303,80 @@ def _pin_target_key(class_pin: Pin, inst_pin: Pin | None = None) -> tuple:
     return ("other", id(remote))
 
 
+def _pin_shield_ids(class_pin: Pin, inst_pin: Pin | None = None) -> set[int]:
+    """Return the set of shield-group ids this pin participates in.
+
+    Includes the class-body shield (``pin.shield_group``) and any
+    connection-level shields attached to its outgoing segments.
+    """
+    ids: set[int] = set()
+    sg = class_pin.shield_group
+    if sg is not None:
+        ids.add(id(sg))
+    use = _effective_pin(class_pin, inst_pin)
+    for seg in use._connections:
+        if seg.shield_group is not None:
+            ids.add(id(seg.shield_group))
+    return ids
+
+
+def _collect_displayed_signal_names(harness: Harness, show_unconnected: bool) -> tuple[list[str], list[str]]:
+    """Return (local_names, remote_names) — signal names of pins that will render.
+
+    Local names are pins that own a row; remote names are pins on the other end
+    of segments (rendered inside remote boxes). Used to size the local pin-name
+    column and the remote box width before laying out rows.
+    """
+    local: list[str] = []
+    remote: list[str] = []
+
+    def _walk(comp):
+        comp_cls = type(comp)
+        for attr_name, cp in _iter_class_pins(comp_cls, Component):
+            ip = comp._direct_pins.get(attr_name)
+            if not show_unconnected and not _pin_is_connected(cp, ip):
+                continue
+            local.append((ip or cp).signal_name)
+            for seg in _pin_outgoing_segments(cp, ip):
+                rp = seg.end_b if seg.end_a is (ip or cp) else seg.end_a
+                if isinstance(rp, Pin):
+                    remote.append(rp.signal_name)
+        for conn in comp._connectors.values():
+            for attr_name, cp in _iter_class_pins(type(conn), Connector):
+                ip = getattr(conn, attr_name, None)
+                if not isinstance(ip, Pin):
+                    ip = None
+                if not show_unconnected and not _pin_is_connected(cp, ip):
+                    continue
+                local.append((ip or cp).signal_name)
+                for seg in _pin_outgoing_segments(cp, ip):
+                    rp = seg.end_b if seg.end_a is (ip or cp) else seg.end_a
+                    if isinstance(rp, Pin):
+                        remote.append(rp.signal_name)
+
+    for comp in harness.components:
+        _walk(comp)
+    return local, remote
+
+
 def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
     section_rects: dict[int, Rect] = {}
     connector_rects: dict[int, Rect] = {}
     pin_rows: dict[int, PinRowInfo] = {}
+    all_rows: list[PinRowInfo] = []
     pin_groups: list[PinGroup] = []
+
+    local_names, remote_names = _collect_displayed_signal_names(harness, show_unconnected)
+    max_local = max((len(n) for n in local_names), default=0)
+    max_remote = max((len(n) for n in remote_names), default=0)
+    pin_name_w = max(PIN_NAME_W, int(max_local * PIN_NAME_CHAR_W) + PIN_NAME_PAD)
+    remote_box_w = max(
+        REMOTE_BOX_W,
+        REMOTE_BOX_PIN_NUM_W + int(max_remote * REMOTE_NAME_CHAR_W) + REMOTE_NAME_PAD,
+    )
+    wire_area_w = REMOTE_BOX_X_OFFSET + remote_box_w + REMOTE_BOX_RIGHT_PAD
+    canvas_w = MARGIN * 2 + PIN_NUM_W + pin_name_w + wire_area_w
+    inner_w_local = canvas_w - MARGIN * 2
 
     # Pre-compute set of pin ids (class or instance) that belong to a drained shield.
     # Used to inject extra gap after groups that end at such a pin.
@@ -194,18 +391,93 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
                 if isinstance(ep, Pin):
                     drained_pin_ids.add(id(ep))
 
-    def _group_drain_extra(group: PinGroup | None) -> int:
-        if group is None:
-            return 0
-        return (
-            DRAIN_GROUP_GAP
-            if any(id(ri.class_pin) in drained_pin_ids or id(ri.pin) in drained_pin_ids for ri in group.rows)
-            else 0
-        )
-
     y = MARGIN
     inner_x = MARGIN
-    inner_w = CANVAS_W - MARGIN * 2  # 496
+    inner_w = inner_w_local
+    wire_start_x = inner_x + PIN_NUM_W + pin_name_w
+    wire_end_x = inner_x + inner_w
+
+    def _emit_pin(
+        class_pin: Pin,
+        inst_pin: Pin,
+        prev_ctx: _RowCtx | None,
+        current_group: PinGroup | None,
+    ) -> tuple[_RowCtx, PinGroup]:
+        """Emit row(s) for one pin, advancing ``y`` and creating PinGroups as needed.
+
+        Returns ``(prev_ctx, current_group)`` updated for the next pin.
+        """
+        nonlocal y
+        is_drained = id(class_pin) in drained_pin_ids or id(inst_pin) in drained_pin_ids
+        pin_shields = frozenset(_pin_shield_ids(class_pin, inst_pin))
+        segments = _pin_outgoing_segments(class_pin, inst_pin)
+
+        if not segments or _has_splice_connection(class_pin, inst_pin) or len(segments) == 1:
+            seg0 = segments[0] if len(segments) == 1 else None
+            seg_shields = frozenset({id(seg0.shield_group)}) if (seg0 and seg0.shield_group) else pin_shields
+            key = _pin_target_key(class_pin, inst_pin)
+            ctx = _RowCtx(
+                target_key=key,
+                shield_ids=seg_shields,
+                is_drained=is_drained,
+                is_first_leg_of_pin=True,
+            )
+            y += _row_separator(prev_ctx, ctx)
+            if current_group is None or current_group.target_key != key:
+                current_group = PinGroup(rows=[], target_key=key, first_in_section=(prev_ctx is None))
+                pin_groups.append(current_group)
+            row_h = _pin_display_rows(class_pin, inst_pin) * PIN_ROW_H
+            row_info = PinRowInfo(
+                pin=inst_pin,
+                class_pin=class_pin,
+                rect=Rect(inner_x, y, inner_w, row_h),
+                wire_start_x=wire_start_x,
+                wire_end_x=wire_end_x,
+                segment=seg0,
+            )
+            pin_rows[id(inst_pin)] = row_info
+            all_rows.append(row_info)
+            current_group.rows.append(row_info)
+            y += row_h
+            return ctx, current_group
+
+        # Multi-direct: one PIN_ROW_H sub-row per leg, each with its own ctx.
+        primary: PinRowInfo | None = None
+        ctx: _RowCtx | None = None
+        for i, seg in enumerate(segments):
+            leg_key = _segment_target_key(seg, inst_pin, inst_pin)
+            seg_shields = frozenset({id(seg.shield_group)}) if seg.shield_group else frozenset()
+            ctx = _RowCtx(
+                target_key=leg_key,
+                shield_ids=seg_shields,
+                is_drained=is_drained,
+                is_first_leg_of_pin=(i == 0),
+            )
+            y += _row_separator(prev_ctx, ctx)
+            if current_group is None or current_group.target_key != leg_key:
+                current_group = PinGroup(rows=[], target_key=leg_key, first_in_section=(prev_ctx is None))
+                pin_groups.append(current_group)
+            sub = PinRowInfo(
+                pin=inst_pin,
+                class_pin=class_pin,
+                rect=Rect(inner_x, y, inner_w, PIN_ROW_H),
+                wire_start_x=wire_start_x,
+                wire_end_x=wire_end_x,
+                segment=seg,
+                is_continuation=(i > 0),
+            )
+            if i == 0:
+                primary = sub
+                pin_rows[id(inst_pin)] = sub
+            else:
+                assert primary is not None
+                primary.continuation_rows.append(sub)
+            all_rows.append(sub)
+            current_group.rows.append(sub)
+            y += PIN_ROW_H
+            prev_ctx = ctx
+        assert ctx is not None and current_group is not None
+        return ctx, current_group
 
     for comp in harness.components:
         section_start_y = y
@@ -219,7 +491,7 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
             get_class_pin=direct_class_pins.get,
             get_inst_pin=comp._direct_pins.get,
         )
-        prev_key: tuple | None = None
+        prev_ctx: _RowCtx | None = None
         current_group: PinGroup | None = None
 
         for attr_name in direct_pin_attrs:
@@ -229,31 +501,7 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
             class_pin = direct_class_pins.get(attr_name, inst_pin)
             if not show_unconnected and not _pin_is_connected(class_pin, inst_pin):
                 continue
-            key = _pin_target_key(class_pin, inst_pin)
-
-            if prev_key is None:
-                current_group = PinGroup(rows=[], target_key=key, first_in_section=True)
-                pin_groups.append(current_group)
-                if key[0] == "component":
-                    y += FIRST_GROUP_PAD
-            elif key != prev_key:
-                y += GROUP_GAP + _group_drain_extra(current_group)
-                current_group = PinGroup(rows=[], target_key=key)
-                pin_groups.append(current_group)
-            prev_key = key
-
-            row_h = _pin_display_rows(class_pin, inst_pin) * PIN_ROW_H
-            row_rect = Rect(inner_x, y, inner_w, row_h)
-            row_info = PinRowInfo(
-                pin=inst_pin,
-                class_pin=class_pin,
-                rect=row_rect,
-                wire_start_x=inner_x + PIN_NUM_W + PIN_NAME_W,
-                wire_end_x=inner_x + inner_w,
-            )
-            pin_rows[id(inst_pin)] = row_info
-            current_group.rows.append(row_info)
-            y += row_h
+            prev_ctx, current_group = _emit_pin(class_pin, inst_pin, prev_ctx, current_group)
 
         # ── connectors ─────────────────────────────────────────────────────
         last_conn_drain_extra = 0
@@ -263,7 +511,7 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
             conn_start_y = y
             y += CONNECTOR_HEADER_H
 
-            prev_key = None
+            prev_ctx = None  # restart spacing inside each connector
             current_group = None
 
             pin_attrs = _sort_pin_attrs(
@@ -278,40 +526,16 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
                 class_pin = conn_class_pins.get(attr_name, inst_pin)
                 if not show_unconnected and not _pin_is_connected(class_pin, inst_pin):
                     continue
-                key = _pin_target_key(class_pin, inst_pin)
+                prev_ctx, current_group = _emit_pin(class_pin, inst_pin, prev_ctx, current_group)
 
-                if prev_key is None:
-                    current_group = PinGroup(rows=[], target_key=key, first_in_section=True)
-                    pin_groups.append(current_group)
-                    if key[0] == "component":
-                        y += FIRST_GROUP_PAD
-                elif key != prev_key:
-                    y += GROUP_GAP + _group_drain_extra(current_group)
-                    current_group = PinGroup(rows=[], target_key=key)
-                    pin_groups.append(current_group)
-                prev_key = key
-
-                row_h = _pin_display_rows(class_pin, inst_pin) * PIN_ROW_H
-                row_rect = Rect(inner_x, y, inner_w, row_h)
-                row_info = PinRowInfo(
-                    pin=inst_pin,
-                    class_pin=class_pin,
-                    rect=row_rect,
-                    wire_start_x=inner_x + PIN_NUM_W + PIN_NAME_W,
-                    wire_end_x=inner_x + inner_w,
-                )
-                pin_rows[id(inst_pin)] = row_info
-                current_group.rows.append(row_info)
-                y += row_h
-
+            if current_group is None:
+                # No pins emitted for this connector — skip rendering it entirely.
+                y = conn_start_y
+                continue
             conn_drain_extra = (
                 DRAIN_STUB_H
-                if (
-                    current_group is not None
-                    and any(
-                        id(ri.class_pin) in drained_pin_ids or id(ri.pin) in drained_pin_ids
-                        for ri in current_group.rows
-                    )
+                if any(
+                    id(ri.class_pin) in drained_pin_ids or id(ri.pin) in drained_pin_ids for ri in current_group.rows
                 )
                 else 0
             )
@@ -349,7 +573,11 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
         section_rects=section_rects,
         connector_rects=connector_rects,
         pin_rows=pin_rows,
+        all_rows=all_rows,
         pin_groups=pin_groups,
-        canvas_width=CANVAS_W,
+        canvas_width=canvas_w,
         canvas_height=canvas_height,
+        pin_name_w=pin_name_w,
+        remote_box_w=remote_box_w,
+        wire_area_w=wire_area_w,
     )

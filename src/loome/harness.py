@@ -163,6 +163,10 @@ class Harness:
             visited.add(id(item))
 
             for seg in getattr(item, "_connections", []):
+                sg = getattr(seg, "shield_group", None)
+                if sg is not None and id(sg) not in seen:
+                    seen.add(id(sg))
+                    self.shield_groups.append(sg)
                 for ep in (seg.end_a, seg.end_b):
                     if id(ep) in seen:
                         continue

@@ -34,6 +34,11 @@ _REMOTE_BOX_PIN_NUM_W = 26  # width of the pin-number column inside box
 _SPLICE_CX = 80  # center x of the X symbol
 _SPLICE_FAN_X = 100  # x where fan diagonals end and outward horizontals begin
 
+# Multi-direct-connection bullet position (relative to wire_start_x).
+# Sits BEFORE the left shield oval so the bullet visually appears outside the
+# shielded bundle, with branches dropping below to additional rows.
+_BULLET_CX = 22
+
 # Jumper connections (both pins in the same connector)
 _JUMPER_STUB_X = 40  # how far the horizontal stub extends before the vertical bar
 
@@ -125,6 +130,51 @@ def _draw_splice_symbol(dwg: svgwrite.Drawing, cx: float, cy: float) -> None:
     dwg.add(dwg.line(start=(cx + r, cy - r), end=(cx - r, cy + r), stroke="#475569", stroke_width=1.5))
 
 
+def _draw_bullet(dwg: svgwrite.Drawing, cx: float, cy: float) -> None:
+    """Filled dot marking a junction where one pin's wire branches to multiple destinations."""
+    dwg.add(dwg.circle(center=(cx, cy), r=3.5, fill="#334155", stroke="#334155"))
+
+
+def _draw_wire_around_ovals(
+    dwg: svgwrite.Drawing,
+    x1: float,
+    x2: float,
+    cy: float,
+    wx: float,
+    shield,
+    attrs: dict,
+) -> None:
+    """Draw a horizontal wire from x1→x2 at cy, breaking around shield ovals.
+
+    When ``shield`` is None, draws one line. Otherwise skips the x-span(s)
+    occupied by the left oval (and the right oval, unless ``shield.single_oval``)
+    so the wire visually enters/exits each oval instead of passing through it.
+    """
+    if shield is None or x2 <= x1:
+        if x2 > x1:
+            dwg.add(dwg.line(start=(x1, cy), end=(x2, cy), **attrs))
+        return
+
+    spans: list[tuple[float, float]] = []
+    lo_l = wx + _SHIELD_LEFT_CX - _SHIELD_RX
+    lo_r = wx + _SHIELD_LEFT_CX + _SHIELD_RX
+    if lo_l < x2 and lo_r > x1:
+        spans.append((lo_l, lo_r))
+    if not shield.single_oval:
+        ro_l = wx + _SHIELD_RIGHT_CX - _SHIELD_RX
+        ro_r = wx + _SHIELD_RIGHT_CX + _SHIELD_RX
+        if ro_l < x2 and ro_r > x1:
+            spans.append((ro_l, ro_r))
+
+    cursor = x1
+    for span_l, span_r in spans:
+        if span_l > cursor:
+            dwg.add(dwg.line(start=(cursor, cy), end=(span_l, cy), **attrs))
+        cursor = max(cursor, span_r)
+    if cursor < x2:
+        dwg.add(dwg.line(start=(cursor, cy), end=(x2, cy), **attrs))
+
+
 def _draw_unconnected(dwg: svgwrite.Drawing, wx: float, cy: float) -> None:
     dwg.add(
         dwg.line(
@@ -153,8 +203,20 @@ def _draw_terminal(dwg: svgwrite.Drawing, remote: Terminal, x: float, y: float) 
     exported from the public API without touching layout or wire drawing).
     """
     if isinstance(remote, GroundSymbol):
-        pts = [(x, y + 10), (x - 7, y - 2), (x + 7, y - 2)]
-        dwg.add(dwg.polygon(points=pts, fill="#334155", stroke="#334155", stroke_width=1))
+        if remote.filled:
+            pts = [(x, y + 10), (x - 7, y - 2), (x + 7, y - 2)]
+            dwg.add(dwg.polygon(points=pts, fill="#334155", stroke="#334155", stroke_width=1))
+        else:
+            stem_end = y + 4
+            dwg.add(dwg.line(start=(x, y - 2), end=(x, stem_end), stroke="#475569", stroke_width=1))
+            dwg.add(
+                dwg.polygon(
+                    points=[(x - 5, stem_end), (x + 5, stem_end), (x, stem_end + 8)],
+                    fill="white",
+                    stroke="#475569",
+                    stroke_width=1,
+                )
+            )
     elif isinstance(remote, BusBar):
         dwg.add(
             dwg.rect(

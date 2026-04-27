@@ -5,8 +5,8 @@ from pathlib import Path
 import svgwrite
 
 from ..harness import Harness
-from ..layout.engine import WIRE_AREA_W, LayoutResult
-from ..model import Pin, ShieldGroup, Terminal
+from ..layout.engine import LayoutResult, PinRowInfo
+from ..model import Pin, ShieldGroup, SpliceNode, Terminal
 from .colors import _SHIELD_PALETTE, _wire_attrs
 from .primitives import (
     _JUMPER_STUB_X,
@@ -17,7 +17,7 @@ from .primitives import (
     _draw_shield_ovals,
     _remote_label,
 )
-from .wires import _draw_pin_row, _draw_remote_box
+from .wires import _draw_bullet_and_drop, _draw_pin_row, _draw_remote_box
 
 
 def _compute_min_term_cx(layout: LayoutResult, harness: Harness) -> float:
@@ -28,9 +28,9 @@ def _compute_min_term_cx(layout: LayoutResult, harness: Harness) -> float:
     """
     min_cx = float("inf")
 
-    def _check(label_text: str, wire_start_x: float) -> None:
+    def _check(label_text: str, wire_end_x: float) -> None:
         nonlocal min_cx
-        cx = wire_start_x + WIRE_AREA_W - 4 - len(label_text) * _MONO_CHAR_W - _TERM_SYMBOL_W
+        cx = wire_end_x - 4 - len(label_text) * _MONO_CHAR_W - _TERM_SYMBOL_W
         min_cx = min(min_cx, cx)
 
     for group in layout.pin_groups:
@@ -46,15 +46,15 @@ def _compute_min_term_cx(layout: LayoutResult, harness: Harness) -> float:
             )
             if not isinstance(remote, Terminal):
                 continue
-            _check(_remote_label(remote, row.class_pin, harness), row.wire_start_x)
+            _check(_remote_label(remote, row.class_pin, harness), row.wire_end_x)
 
     if layout.pin_rows:
-        wire_start_x = next(iter(layout.pin_rows.values())).wire_start_x
+        wire_end_x = next(iter(layout.pin_rows.values())).wire_end_x
         for splice in harness.splice_nodes:
             for seg in splice._connections:
                 remote = seg.end_b if seg.end_a is splice else seg.end_a
                 if isinstance(remote, Terminal):
-                    _check(remote.display_name(), wire_start_x)
+                    _check(remote.display_name(), wire_end_x)
 
     return min_cx if min_cx != float("inf") else 0
 
@@ -65,6 +65,53 @@ def _drain_label(endpoint) -> str:
     if isinstance(endpoint, Pin):
         return endpoint.signal_name or str(endpoint.number)
     return ""
+
+
+def _split_contiguous(rows: list[PinRowInfo]) -> list[list[PinRowInfo]]:
+    """Partition rows into vertically-contiguous runs.
+
+    The layout engine inserts GROUP_GAP (14px) between pin groups that target
+    different remotes; within a group, adjacent rows abut at 0px. Splitting on
+    any gap > 1px keeps same-group rows together and breaks on group boundaries
+    so a shield spanning multiple groups draws one oval per run instead of a
+    single oval that swallows the rows in between.
+    """
+    ordered = sorted(rows, key=lambda r: r.rect.y)
+    runs: list[list[PinRowInfo]] = []
+    for r in ordered:
+        if not runs:
+            runs.append([r])
+            continue
+        last = runs[-1][-1]
+        gap = r.rect.y - (last.rect.y + last.rect.h)
+        # Same shield group → keep in one run regardless of small layout gaps
+        # (header room between shield-mates targeting different components).
+        same_shield = (
+            r.segment is not None
+            and last.segment is not None
+            and r.segment.shield_group is not None
+            and r.segment.shield_group is last.segment.shield_group
+        )
+        if gap <= 1.0 or (same_shield and gap <= 30.0):
+            runs[-1].append(r)
+        else:
+            runs.append([r])
+    return runs
+
+
+def _drain_run_index(runs: list[list[PinRowInfo]], drain_endpoint) -> int:
+    """Return the index of the run that should carry the drain triangle.
+
+    If the drain is a Pin, place the triangle on the run containing that pin.
+    Otherwise (Terminal / GroundSymbol / None), place it on the last run so the
+    triangle hangs below the bottom of the shield bundle.
+    """
+    if isinstance(drain_endpoint, Pin):
+        for i, run in enumerate(runs):
+            for ri in run:
+                if ri.pin is drain_endpoint or ri.class_pin is drain_endpoint:
+                    return i
+    return len(runs) - 1 if runs else 0
 
 
 def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colored: bool = True) -> None:
@@ -88,19 +135,36 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
                 if isinstance(remote, Pin) and id(remote) in pin_shield_palette:
                     pin_shield_palette[id(remote)] = src
 
-    # Build pin→row lookups
+    # Build pin→row lookups (primary row only — for legacy lookup paths).
     class_pin_to_row: dict[int, object] = {}
     inst_pin_to_row: dict[int, object] = {}
     class_pin_to_rows: dict[int, list] = {}
-    for ri in layout.pin_rows.values():
-        class_pin_to_row[id(ri.class_pin)] = ri
-        inst_pin_to_row[id(ri.pin)] = ri
+    inst_pin_to_rows: dict[int, list] = {}
+    segment_to_rows: dict[int, list] = {}
+    for ri in layout.all_rows:
+        # Primary row "wins" for the by-pin lookups (continuations don't
+        # overwrite). class_pin_to_rows / inst_pin_to_rows list every row.
+        if not ri.is_continuation:
+            class_pin_to_row.setdefault(id(ri.class_pin), ri)
+            inst_pin_to_row.setdefault(id(ri.pin), ri)
         class_pin_to_rows.setdefault(id(ri.class_pin), []).append(ri)
+        inst_pin_to_rows.setdefault(id(ri.pin), []).append(ri)
+        if ri.segment is not None:
+            segment_to_rows.setdefault(id(ri.segment), []).append(ri)
 
     def _find_row(pin: Pin):
         return class_pin_to_row.get(id(pin)) or inst_pin_to_row.get(id(pin))
 
-    # Build shield lookup: pin id → ShieldGroup (source + remote pins)
+    # Per-row shield lookup: each row knows its own shield based on its segment.
+    # Falls back to class-body shield membership for rows whose segment is None
+    # (single-connection or splice-fan rows still use the existing pin-keyed flow).
+    shield_by_row_id: dict[int, ShieldGroup] = {}
+    for ri in layout.all_rows:
+        seg = ri.segment
+        if seg is not None and seg.shield_group is not None:
+            shield_by_row_id[id(ri)] = seg.shield_group
+
+    # Legacy pin-keyed shield lookup for splice-fan / single-connection rows.
     shield_by_pin: dict[int, ShieldGroup] = {}
     for sg in harness.shield_groups:
         for p in sg.pins:
@@ -119,6 +183,19 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
                     row = inst_pin_to_row.get(id(ep))
                     if row:
                         shield_by_pin[id(row.class_pin)] = sg
+                elif isinstance(ep, SpliceNode):
+                    # A shielded segment that terminates at a splice visually extends
+                    # through the splice to the upstream pin row — mark that pin so
+                    # the row's wire renders with shield ovals.
+                    for other_seg in ep._connections:
+                        if other_seg is seg:
+                            continue
+                        other_ep = other_seg.end_b if other_seg.end_a is ep else other_seg.end_a
+                        if isinstance(other_ep, Pin):
+                            shield_by_pin[id(other_ep)] = sg
+                            row = inst_pin_to_row.get(id(other_ep))
+                            if row:
+                                shield_by_pin[id(row.class_pin)] = sg
 
     min_term_cx = _compute_min_term_cx(layout, harness)
 
@@ -131,15 +208,28 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
         sect_rect = layout.section_rects[id(comp)]
         _draw_section_bg(dwg, sect_rect, comp.label)
 
+        def _resolve_shield(ri):
+            return shield_by_row_id.get(id(ri)) or shield_by_pin.get(id(ri.class_pin))
+
+        def _draw_row_and_continuations(primary):
+            sh = _resolve_shield(primary)
+            _draw_pin_row(dwg, primary, harness, sh, min_term_cx, colored, pin_shield_palette, jumper_stubs)
+            for cont in primary.continuation_rows:
+                csh = _resolve_shield(cont)
+                _draw_pin_row(dwg, cont, harness, csh, min_term_cx, colored, pin_shield_palette, jumper_stubs)
+            # Bullet + vertical drop on top of all row backgrounds and leg wires.
+            _draw_bullet_and_drop(dwg, primary, colored=colored, pin_shield_palette=pin_shield_palette)
+
         for attr_name, inst_pin in comp._direct_pins.items():
             row_info = layout.pin_rows.get(id(inst_pin))
             if row_info is None:
                 continue
-            shield = shield_by_pin.get(id(row_info.class_pin))
-            _draw_pin_row(dwg, row_info, harness, shield, min_term_cx, colored, pin_shield_palette, jumper_stubs)
+            _draw_row_and_continuations(row_info)
 
         for conn_name, conn in comp._connectors.items():
-            conn_rect = layout.connector_rects[id(conn)]
+            conn_rect = layout.connector_rects.get(id(conn))
+            if conn_rect is None:
+                continue
             _draw_connector_header(dwg, conn_rect, conn_name)
 
             for attr_name, inst_pin in vars(conn).items():
@@ -148,8 +238,7 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
                 row_info = layout.pin_rows.get(id(inst_pin))
                 if row_info is None:
                     continue
-                shield = shield_by_pin.get(id(row_info.class_pin))
-                _draw_pin_row(dwg, row_info, harness, shield, min_term_cx, colored, pin_shield_palette, jumper_stubs)
+                _draw_row_and_continuations(row_info)
 
         dwg.add(
             dwg.rect(
@@ -169,26 +258,80 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
         dl_remote = _drain_label(sg.drain_remote) if sg.drain_remote is not None else ""
 
         if sg.segments:
-            # Connection-level shield: expand to all instance rows via class_pin_to_rows,
-            # then group by component instance (same approach as class-body shields).
+            # Connection-level shield: collect rows per segment so per-leg
+            # shields don't accidentally pull in sibling legs of a multi-
+            # connection pin.
             src_rows_by_inst: dict[int, list] = {}
             rem_rows_by_inst: dict[int, list] = {}
+
+            def _add_row(target: dict, ri):
+                if ri is None:
+                    return
+                inst_key = id(ri.pin._component) if ri.pin._component is not None else id(ri.pin)
+                bucket = target.setdefault(inst_key, [])
+                if ri not in bucket:
+                    bucket.append(ri)
+
             for seg in sg.segments:
+                seg_rows = segment_to_rows.get(id(seg), [])
                 for ep, target in ((seg.end_a, src_rows_by_inst), (seg.end_b, rem_rows_by_inst)):
-                    if not isinstance(ep, Pin):
-                        continue
-                    row = _find_row(ep)
-                    if row is None:
-                        continue
-                    cp_id = id(row.class_pin)
-                    for ri in class_pin_to_rows.get(cp_id, [row]):
-                        inst_key = id(ri.pin._component) if ri.pin._component is not None else id(ri.pin)
-                        if ri not in target.setdefault(inst_key, []):
-                            target[inst_key].append(ri)
+                    if isinstance(ep, Pin):
+                        # Per-leg layout: pick the row whose pin matches this
+                        # endpoint AND whose segment is this seg. Falls back to
+                        # the pin's primary row when no per-leg row exists.
+                        matched = [ri for ri in seg_rows if ri.pin is ep or ri.class_pin is ep]
+                        if matched:
+                            for ri in matched:
+                                _add_row(target, ri)
+                        else:
+                            row = _find_row(ep)
+                            if row is not None:
+                                _add_row(target, row)
+                    elif isinstance(ep, SpliceNode):
+                        # Splice indirection: pull the splice's upstream pin
+                        # row in (the wire visually extends through the splice).
+                        for other_seg in ep._connections:
+                            if other_seg is seg:
+                                continue
+                            other_ep = other_seg.end_b if other_seg.end_a is ep else other_seg.end_a
+                            if isinstance(other_ep, Pin):
+                                # Prefer the row whose segment is the splice's upstream wire.
+                                up_rows = [
+                                    ri for ri in inst_pin_to_rows.get(id(other_ep), []) if ri.segment is other_seg
+                                ]
+                                if up_rows:
+                                    for ri in up_rows:
+                                        _add_row(target, ri)
+                                else:
+                                    for ri in inst_pin_to_rows.get(id(other_ep), []):
+                                        _add_row(target, ri)
             for inst_rows in src_rows_by_inst.values():
-                _draw_shield_ovals(dwg, inst_rows, sg.label, drain_label=dl)
+                runs = _split_contiguous(inst_rows)
+                left_run = _drain_run_index(runs, sg.drain)
+                right_run = _drain_run_index(runs, sg.drain_remote)
+                for i, run in enumerate(runs):
+                    _draw_shield_ovals(
+                        dwg,
+                        run,
+                        sg.label,
+                        drain_label=dl if i == left_run else "",
+                        drain_remote_label=dl_remote if i == right_run else "",
+                    )
             for inst_rows in rem_rows_by_inst.values():
-                _draw_shield_ovals(dwg, inst_rows, sg.label, drain_remote_label=dl_remote)
+                runs = _split_contiguous(inst_rows)
+                # On remote view: LEFT oval is local (near remote pins) so it
+                # shows drain_remote; RIGHT oval is far (toward source) so it
+                # shows drain.
+                left_run = _drain_run_index(runs, sg.drain_remote)
+                right_run = _drain_run_index(runs, sg.drain)
+                for i, run in enumerate(runs):
+                    _draw_shield_ovals(
+                        dwg,
+                        run,
+                        sg.label,
+                        drain_label=dl_remote if i == left_run else "",
+                        drain_remote_label=dl if i == right_run else "",
+                    )
         else:
             # Class-body shield: group rows from sg.pins by component instance.
             source_by_inst: dict[int, list] = {}
@@ -199,14 +342,18 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
                     inst_key = id(ri.pin._component) if ri.pin._component is not None else id(ri.pin)
                     source_by_inst.setdefault(inst_key, []).append(ri)
             for inst_rows in source_by_inst.values():
-                _draw_shield_ovals(
-                    dwg,
-                    inst_rows,
-                    sg.label,
-                    drain_label=dl,
-                    drain_remote_label=dl_remote,
-                    single_oval=sg.single_oval,
-                )
+                runs = _split_contiguous(inst_rows)
+                left_run = _drain_run_index(runs, sg.drain)
+                right_run = _drain_run_index(runs, sg.drain_remote)
+                for i, run in enumerate(runs):
+                    _draw_shield_ovals(
+                        dwg,
+                        run,
+                        sg.label,
+                        drain_label=dl if i == left_run else "",
+                        drain_remote_label=dl_remote if i == right_run else "",
+                        single_oval=sg.single_oval,
+                    )
 
             # Remote ovals only for pins whose remote endpoint has no ShieldGroup of its own.
             # When both sides define shielded pins (e.g. RS-232 helpers on both connectors),
@@ -232,7 +379,20 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
                     _add_remote_for_source(ri.pin, source_key)
 
             for rows in remote_rows_by_source.values():
-                _draw_shield_ovals(dwg, rows, sg.label, drain_remote_label=dl_remote, single_oval=sg.single_oval)
+                runs = _split_contiguous(rows)
+                # Remote-side rows: LEFT oval is local (drain_remote),
+                # RIGHT oval points back toward source (drain).
+                left_run = _drain_run_index(runs, sg.drain_remote)
+                right_run = _drain_run_index(runs, sg.drain)
+                for i, run in enumerate(runs):
+                    _draw_shield_ovals(
+                        dwg,
+                        run,
+                        sg.label,
+                        drain_label=dl_remote if i == left_run else "",
+                        drain_remote_label=dl if i == right_run else "",
+                        single_oval=sg.single_oval,
+                    )
 
     # ── jumper vertical bars ─────────────────────────────────────────────────
     for entry in jumper_stubs.values():
@@ -245,6 +405,6 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
     # ── remote component boxes ───────────────────────────────────────────────
     for group in layout.pin_groups:
         if group.target_key[0] == "component":
-            _draw_remote_box(dwg, group, harness)
+            _draw_remote_box(dwg, group, harness, layout.remote_box_w)
 
     dwg.save()

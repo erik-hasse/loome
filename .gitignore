@@ -16,3 +16,5 @@ wheels/
 # Generated outputs
 out.png
 *.svg
+
+manuals/

@@ -124,7 +124,7 @@ def _connector_owns_class_pin(conn, pin: Pin) -> bool:
 def _expand_pin_load(pin: Pin, harness: "Harness") -> list[LoadEndpoint]:
     """Turn a pin (possibly class-level) into one load endpoint per instance.
 
-    Class-level wiring like ``GSA28.J281.power.connect(ap_fuse)`` appears in
+    Class-level wiring like ``GSA28.J281.aircraft_power_2.connect(ap_fuse)`` appears in
     ``harness.segments()`` as a single segment whose ``end_a`` is the class
     pin. For the schedule we want a row per servo instance — unless that
     instance has its own instance-level override for the same pin.
