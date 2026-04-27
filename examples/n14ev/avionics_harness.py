@@ -1,5 +1,5 @@
-from examples.fuses import avionics_block_1, avionics_block_2, avionics_block_3
-from examples.lrus import (
+from examples.n14ev.fuses import avionics_block_1, avionics_block_2, avionics_block_3
+from examples.n14ev.lrus import (
     copilot_lemo,
     copilot_stick,
     g5,
