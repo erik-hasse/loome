@@ -326,34 +326,42 @@ def render_fuse_schedule_md(entries: list[FuseScheduleEntry], harness: "Harness"
     return f"{title}\n{_md_table(headers, rows)}\n"
 
 
+def _bom_wire_rows(bom: Bom, harness: "Harness") -> list[list[str]]:
+    return [
+        [r.wire_id, str(r.gauge), r.color or "", harness.format_length(r.length), r.from_label, r.to_label]
+        for r in bom.wires
+    ]
+
+
+def _bom_gauge_rows(bom: Bom, harness: "Harness") -> list[list[str]]:
+    return [
+        [g, str(t.count), harness.format_length(t.total_length if t.count > t.unresolved else None), str(t.unresolved)]
+        for g, t in sorted(bom.gauge_totals.items(), key=lambda kv: _gauge_sort_key(kv[0]))
+    ]
+
+
+def _bom_connector_rows(bom: Bom) -> list[list[str]]:
+    return [[c, n, str(p)] for c, n, p in bom.connectors]
+
+
+def _bom_terminal_rows(bom: Bom) -> list[list[str]]:
+    return [[t, str(len(ids)), ", ".join(ids)] for t, ids in sorted(bom.terminals_by_type.items())]
+
+
 def render_bom_md(bom: Bom, harness: "Harness") -> str:
     parts: list[str] = [f"# Bill of Materials — {harness.name}", ""]
 
     parts += ["## Wires", ""]
-    wire_rows = [
-        [r.wire_id, str(r.gauge), r.color or "", harness.format_length(r.length), r.from_label, r.to_label]
-        for r in bom.wires
-    ]
-    parts.append(_md_table(["Wire ID", "Gauge", "Color", "Length", "From", "To"], wire_rows))
+    parts.append(_md_table(["Wire ID", "Gauge", "Color", "Length", "From", "To"], _bom_wire_rows(bom, harness)))
 
     parts += ["", "## Totals by gauge", ""]
-    tot_rows = [
-        [
-            g,
-            str(t.count),
-            harness.format_length(t.total_length if t.count > t.unresolved else None),
-            str(t.unresolved),
-        ]
-        for g, t in sorted(bom.gauge_totals.items(), key=lambda kv: _gauge_sort_key(kv[0]))
-    ]
-    parts.append(_md_table(["Gauge", "Count", "Total Length", "Unresolved"], tot_rows))
+    parts.append(_md_table(["Gauge", "Count", "Total Length", "Unresolved"], _bom_gauge_rows(bom, harness)))
 
     parts += ["", "## Connectors", ""]
-    parts.append(_md_table(["Component", "Connector", "Pins"], [[c, n, str(p)] for c, n, p in bom.connectors]))
+    parts.append(_md_table(["Component", "Connector", "Pins"], _bom_connector_rows(bom)))
 
     parts += ["", "## Terminals", ""]
-    term_rows = [[t, str(len(ids)), ", ".join(ids)] for t, ids in sorted(bom.terminals_by_type.items())]
-    parts.append(_md_table(["Type", "Count", "IDs"], term_rows))
+    parts.append(_md_table(["Type", "Count", "IDs"], _bom_terminal_rows(bom)))
 
     return "\n".join(parts) + "\n"
 
@@ -392,42 +400,13 @@ def render_fuse_schedule_csv(entries: list[FuseScheduleEntry], harness: "Harness
 
 def render_bom_csv(bom: Bom, harness: "Harness") -> str:
     buf = io.StringIO()
-    _csv_section(
-        buf,
-        "Wires",
-        ["Wire ID", "Gauge", "Color", "Length", "From", "To"],
-        [
-            [r.wire_id, str(r.gauge), r.color or "", harness.format_length(r.length), r.from_label, r.to_label]
-            for r in bom.wires
-        ],
-    )
+    _csv_section(buf, "Wires", ["Wire ID", "Gauge", "Color", "Length", "From", "To"], _bom_wire_rows(bom, harness))
     buf.write("\n")
     _csv_section(
-        buf,
-        "Totals by gauge",
-        ["Gauge", "Count", "Total Length", "Unresolved"],
-        [
-            [
-                g,
-                str(t.count),
-                harness.format_length(t.total_length if t.count > t.unresolved else None),
-                str(t.unresolved),
-            ]
-            for g, t in sorted(bom.gauge_totals.items(), key=lambda kv: _gauge_sort_key(kv[0]))
-        ],
+        buf, "Totals by gauge", ["Gauge", "Count", "Total Length", "Unresolved"], _bom_gauge_rows(bom, harness)
     )
     buf.write("\n")
-    _csv_section(
-        buf,
-        "Connectors",
-        ["Component", "Connector", "Pins"],
-        [[c, n, str(p)] for c, n, p in bom.connectors],
-    )
+    _csv_section(buf, "Connectors", ["Component", "Connector", "Pins"], _bom_connector_rows(bom))
     buf.write("\n")
-    _csv_section(
-        buf,
-        "Terminals",
-        ["Type", "Count", "IDs"],
-        [[t, str(len(ids)), ", ".join(ids)] for t, ids in sorted(bom.terminals_by_type.items())],
-    )
+    _csv_section(buf, "Terminals", ["Type", "Count", "IDs"], _bom_terminal_rows(bom))
     return buf.getvalue()

@@ -5,18 +5,25 @@ Items are roughly in priority order within each section.
 
 ## Low effort
 
+- **`PortBuilder.__del__` deferred execution** — `port_a >> port_b` defers `connect()` until
+  garbage collection so fluent modifiers (`.ground(False)`, `.drain(local)`) can be chained
+  first. The downside is that Python silences exceptions raised inside `__del__`, so direction
+  mismatches on ARINC 429 / Ethernet ports fail silently when using `>>`. Better pattern:
+  call `connect()` immediately (like `Pin.__rshift__` does) and return a modifier object that
+  mutates the already-created segments.
+
 - **Ground Rendering** - The triangles for ground (both local and chassis) render strangely and
   should be cleaned up.
 
 - **PDF export** — `cairosvg` converts SVG → PDF in one call; very low effort once SVG output
   is solid.
 
-- Thermocouple specific wire support, similar to RS232/CAN/GPIO
-
 - **`loome validate` command** — dedicated CLI entry that runs `Harness.validate_bundles()`
   and exits non-zero on warnings, for CI use without also rendering SVG.
 
 ## Medium effort
+
+- Support multi-pin on the right hand side (e.g. GTR20 -> GMA245))
 
 - **CAN bus rendering** — data-model support is in place: `CanBusLine` captures device
   ordering, `Harness.resolved_length()` returns per-stub lengths for CAN pins, and

@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from loome import GPIO, RS232, CanBus, Component, Connector, Pin
+from loome import ARINC429, GPIO, RS232, CanBus, Component, Connector, GarminEthernet, Pin, Thermocouple
 from loome.constants import Axis
 
 
@@ -12,8 +12,8 @@ class GAD27(Component):
         can_term = Pin(3, "Can Term")
         signal_ground = Pin(4, "Signal Ground")
 
-        power_in = Pin(7, "Power In")
-        power_gnd = Pin(8, "Power Ground")
+        aircraft_power = Pin(7, "Power In")
+        ground = Pin(8, "Power Ground")
 
         discrete_in_1 = Pin(9, "Discrete In 1")
         discrete_in_2 = Pin(10, "Discrete In 2")
@@ -131,7 +131,7 @@ class _P4X02(Connector):
 
     signal_ground = Pin(44, "Signal Ground")
 
-    aircraft_power_1_ = Pin(32, "Aircraft Power 1")
+    aircraft_power_1 = Pin(32, "Aircraft Power 1")
     aircraft_power_2 = Pin(31, "Aircraft Power 2")
     ground_1 = Pin(15, "Ground 1")
     ground_2 = Pin(16, "Ground 2")
@@ -193,60 +193,34 @@ class GEA24(Component):
         ground = Pin(9, "Ground")
 
     class J242(Connector):
-        cht6_low = Pin(2, "CHT6 Low")
-        egt6_low = Pin(3, "EGT6 Low")
-        cht5_low = Pin(4, "CHT5 Low")
-        egt5_low = Pin(5, "EGT5 Low")
-        cht4_low = Pin(6, "CHT4 Low")
-        egt4_low = Pin(7, "EGT4 Low")
-        cht3_low = Pin(8, "CHT3 Low")
-        egt3_low = Pin(9, "EGT3 Low")
-        cht2_low = Pin(10, "CHT2 Low")
-        egt2_low = Pin(11, "EGT2 Low")
-        cht1_low = Pin(12, "CHT1 Low")
-        egt1_low = Pin(13, "EGT1 Low")
-        cht6_high = Pin(14, "CHT6 High")
-        egt6_high = Pin(15, "EGT6 High")
-        cht5_high = Pin(16, "CHT5 High")
-        egt5_high = Pin(17, "EGT5 High")
-        cht4_high = Pin(18, "CHT4 High")
-        egt4_high = Pin(19, "EGT4 High")
-        cht3_high = Pin(20, "CHT3 High")
-        egt3_high = Pin(21, "EGT3 High")
-        cht2_high = Pin(22, "CHT2 High")
-        egt2_high = Pin(23, "EGT2 High")
-        cht1_high = Pin(24, "CHT1 High")
-        egt1_high = Pin(25, "EGT1 High")
+        egt1 = Thermocouple(25, 13, "EGT 1")
+        egt2 = Thermocouple(23, 11, "EGT 2")
+        egt3 = Thermocouple(21, 9, "EGT 3")
+        egt4 = Thermocouple(19, 7, "EGT 4")
+        egt5 = Thermocouple(17, 5, "EGT 5")
+        egt6 = Thermocouple(15, 3, "EGT 6")
+        cht1 = Thermocouple(24, 12, "CHT 1")
+        cht2 = Thermocouple(22, 10, "CHT 2")
+        cht3 = Thermocouple(20, 8, "CHT 3")
+        cht4 = Thermocouple(18, 6, "CHT 4")
+        cht5 = Thermocouple(16, 4, "CHT 5")
+        cht6 = Thermocouple(14, 2, "CHT 6")
 
     class J243(Connector):
-        fuel_pressure_ground = Pin(1, "Fuel Pressure Ground")
-        fuel_pressure = Pin(2, "Fuel Pressure")
-        fuel_pressure_xdcr_12v = Pin(3, "Fuel Pressure Transducer +12V")
-        fuel_pressure_xdcr_5v = Pin(4, "Fuel Pressure Transducer +5V")
+        fuel_pressure_12v = GPIO(3, 2, 1, "Fuel Pressure 12V")
+        fuel_pressure_5v = GPIO(4, 2, 1, "Fuel Pressure 5V")
 
-        rpm_xdcr_gnd_2 = Pin(5, "RPM Transducer Ground 2")
-        rpm_2 = Pin(6, "RPM 2")
-        rpm_xdcr_gnd_1 = Pin(7, "RPM Transducer Ground 1")
-        rpm_1 = Pin(8, "RPM 1")
-        rpm_xdcr_12v_1 = Pin(9, "RPM Transducer +12V 1")
-        rpm_xdcr_12v_2 = Pin(10, "RPM Transducer +12V 2")
+        rpm_1 = GPIO(9, 8, 7, "RPM 1")
+        rpm_2 = GPIO(10, 6, 5, "RPM 2")
 
-        manifold_pressure_gnd = Pin(12, "Manifold Pressure Ground")
-        manifold_pressure = Pin(13, "Manifold Pressure")
-        manifold_pressure_xdcr_12v = Pin(14, "Manifold Pressure Transducer +12V")
-        manifold_pressure_xdcr_5v = Pin(15, "Manifold Pressure Transducer +5V")
+        manifold_pressure_12v = GPIO(14, 13, 23, "Manifold Pressure 12V")
+        manifold_pressure_5v = GPIO(15, 13, 12, "Manifold Pressure 5V")
 
-        oil_pressure_gnd = Pin(16, "Oil Pressure Ground")
-        oil_pressure_high = Pin(17, "Oil Pressure High")
-        oil_pressure_xdcr_12v = Pin(18, "Oil Pressure +12V")
-        oil_pressure_xdcr_5v = Pin(19, "Oil Pressure +5V")
+        oil_pressure_12v = GPIO(18, 17, 16, "Oil Pressure 12V")
+        oil_pressure_5v = GPIO(19, 17, 16, "Oil Pressure 5V")
 
-        fuel_xdcr_gnd_1 = Pin(20, "Fuel Transducer Ground 1")
-        fuel_return = Pin(21, "Fuel Return")
-        fuel_xdcr_gnd_2 = Pin(22, "Fuel Transducer Ground 2")
-        fuel_flow = Pin(23, "Fuel Flow")
-        fuel_xdcr_12v_1 = Pin(24, "Fuel Transducer +12V 1")
-        fuel_xdcr_12v_2 = Pin(25, "Fuel Transducer +12V 2")
+        fuel_flow = GPIO(25, 23, 22, "Fuel Flow")
+        fuel_return = GPIO(24, 21, 20)
 
         gp_5v_out = Pin(26, "GP 5V Out")
         gp_gnd_1 = Pin(27, "GP Ground 1")
@@ -285,12 +259,8 @@ class GEA24(Component):
         volts_2 = Pin(28, "Volts 2")
         gp_gnd_3 = Pin(29, "GP Ground 3")
 
-        fuel_xdcr_12v_3 = Pin(34, "Fuel Transducer +12V 3")
-        fuel_xdcr_12v_4 = Pin(35, "Fuel Transducer +12V 4")
-        fuel_flow = Pin(36, "Fuel Flow")
-        fuel_return = Pin(37, "Fuel Return")
-        fuel_xdcr_gnd_3 = Pin(38, "Fuel Transducer Ground 3")
-        fuel_xdcr_gnd_4 = Pin(39, "Fuel Transducer Ground 4")
+        fuel_flow = GPIO(34, 36, 38, "Fuel Flow")
+        fuel_return = GPIO(35, 37, 39, "Fuel Return")
 
         discrete_in_1 = Pin(40, "Discrete In 1")
         discrete_in_2 = Pin(41, "Discrete In 2")
@@ -422,32 +392,24 @@ class GSU25(Component):
 
 
 class _BaseJ292(Connector):
-    arinc_rx_4b = Pin(4, "Arinc RX 4B")
-    arinc_rx_3b = Pin(5, "Arinc RX 3B")
-    arinc_tx_2b_1 = Pin(6, "Arinc TX 2B 1")
-    arinc_tx_2b_2 = Pin(7, "Arinc TX 2B 2")
+    arinc_tx_1_1 = ARINC429(24, 12, "out", name="ARINC TX 1B")
+    arinc_tx_1_2 = ARINC429(25, 13, "out", name="ARINC TX 1B")
+    arinc_tx_2_1 = ARINC429(18, 6, "out", name="ARINC TX 2 #1")
+    arinc_tx_2_2 = ARINC429(19, 7, "out", name="ARINC TX 2 #1")
     can_term_1 = Pin(9, "Can Term 1")
-    arinc_rx_2b = Pin(10, "Arinc RX 2B")
-    arinc_rx_1b = Pin(11, "Arinc RX 1B")
-    arinc_tx_1b_1 = Pin(12, "Arinc TX 1B 1")
-    arinc_tx_1b_2 = Pin(13, "Arinc TX 1B 2")
-    arinc_rx_4a = Pin(16, "Arinc RX 4A")
-    arinc_rx_3a = Pin(17, "Arinc RX 3A")
-    arinc_tx_2a_1 = Pin(18, "Arinc TX 2A 1")
-    arinc_tx_2a_2 = Pin(19, "Arinc TX 2A 2")
     can_term_2 = Pin(21, "Can Term 2")
-    arinc_rx_2a = Pin(22, "Arinc RX 2A")
-    arinc_rx_1a = Pin(23, "Arinc RX 1A")
-    arinc_tx_1a_1 = Pin(24, "Arinc TX 1A 1")
-    arinc_tx_1a_2 = Pin(25, "Arinc TX 1A 2")
+    arinc_rx_1 = ARINC429(23, 11, "in", name="ARINC RX 1")
+    arinc_rx_2 = ARINC429(22, 10, "in", name="ARINC RX 2")
+    arinc_rx_3 = ARINC429(17, 5, "in", name="ARINC RX 3")
+    arinc_rx_4 = ARINC429(16, 4, "in", name="ARINC RX 4")
 
 
 class GAD29C(Component):
     class J291(Connector):
         can = CanBus(1, 2)
         ground = Pin(3, "Ground")
-        power_1 = Pin(7, "Power 1")
-        power_2 = Pin(8, "Power 2")
+        aircraft_power_1 = Pin(7, "Power 1")
+        aircraft_power_2 = Pin(8, "Power 2")
 
     class J292(_BaseJ292):
         ground_1 = Pin(14, "Ground 1")
@@ -597,8 +559,7 @@ class GAP2620(Component):
 class _BaseP3251(Connector):
     alt_encoder_clock = Pin(1, "Alt Encoder Clock")
     usb_data_high = Pin(2, "USB Data High")
-    arinc_429_out_a = Pin(5, "Arinc 429 Out A")
-    arinc_429_out_b = Pin(6, "Arinc 429 Out B")
+    arinc_429_out = ARINC429(5, 6, "out", name="ARINC 429 Out")
     rs232_1 = RS232(9, 31, 52, name="RS232 1")
     rs232_2 = RS232(8, 30, 51, name="RS232 2")
     rs232_3 = RS232(7, 29, 50, name="RS232 3")
@@ -610,8 +571,7 @@ class _BaseP3251(Connector):
     alt_encoder_data = Pin(22, "Alt Encoder Data")
     alt_encoder_ground = Pin(23, "Alt Encoder Ground")
     usb_data_low = Pin(24, "USB Data Low")
-    arinc_429_in_1a = Pin(27, "Arinc 429 In 1a")
-    arinc_429_in_1b = Pin(28, "Arinc 429 In 1b")
+    arinc_429_in_1 = ARINC429(27, 28, "in", name="ARINC 429 In 1")
     external_ident_select = Pin(36, "External Identity Select")
     power_control = Pin(38, "Power Control")
     ground_2 = Pin(41, "Ground 2")
@@ -619,8 +579,7 @@ class _BaseP3251(Connector):
     alt_encoder_power = Pin(43, "Alt Encoder Power")
     usb_vbus_power = Pin(44, "USB Vbus Power")
     usb_ground = Pin(45, "USB Ground")
-    arinc_429_in_2a = Pin(48, "Arinc 429 In 2a")
-    arinc_429_in_2b = Pin(49, "Arinc 429 In 2b")
+    arinc_429_in_2 = ARINC429(48, 49, "in", name="ARINC 429 In 2")
     power_config = Pin(59, "Power Config")
     aircraft_power_2a = Pin(61, "Aircraft Power 2a")
     aircraft_power_2b = Pin(62, "Aircraft Power 2b")
@@ -635,15 +594,11 @@ class GTX45R(Component):
         gps_keep_alive = Pin(60, "GPS Keep Alive")
 
     class P3252(Connector):
-        ethernet_out_1b = Pin(1, "Ethernet Out 1B")
-        ethernet_in_1b = Pin(2, "Ethernet In 1B")
-        ethernet_out_2b = Pin(3, "Ethernet Out 2B")
-        ethernet_in_2b = Pin(4, "Ethernet In 2B")
+        ethernet_out_1 = GarminEthernet(6, 1, "out", name="Ethernet Out 1")
+        ethernet_in_1 = GarminEthernet(7, 2, "in", name="Ethernet In 1")
+        ethernet_out_2 = GarminEthernet(8, 3, "out", name="Ethernet Out 2")
+        ethernet_in_2 = GarminEthernet(9, 4, "in", name="Ethernet In 2")
         rs232 = RS232(5, 10, 15)
-        ethernet_out_1a = Pin(6, "Ethernet Out 1A")
-        ethernet_in_1a = Pin(7, "Ethernet In 1a")
-        ethernet_out_2a = Pin(8, "Ethernet Out 2a")
-        ethernet_in_2a = Pin(9, "Ethernet In 2a")
         rs422_a = Pin(11, "RS 422 A")
         rs422_b = Pin(12, "RS 422 B")
 
@@ -656,3 +611,10 @@ class G5(Component):
         aircraft_power_1 = Pin(7, "Aircraft Power 1")
         aircraft_power_2 = Pin(8, "Aircraft Power 2")
         ground = Pin(9, "Ground")
+
+
+class ConfigModule(Component):
+    power = Pin("RED", "Power")
+    ground = Pin("BLK", "Ground")
+    data = Pin("YLW", "Data")
+    clock = Pin("WHT", "Clock")

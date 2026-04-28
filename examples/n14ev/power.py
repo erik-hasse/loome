@@ -1,4 +1,4 @@
-from loome import Fuse, FuseBlock
+from loome import Fuse, FuseBlock, GroundSymbol
 
 
 class DualFeedBlock(FuseBlock):
@@ -11,11 +11,13 @@ class DualFeedBlock(FuseBlock):
     GMC507 = Fuse("GMC507", amps=2)
     GMU11 = Fuse("GMU11", amps=2)
     GSU25 = Fuse("GSU25", amps=2)
+    GTX45R = Fuse("GTX4R", amps=3)
 
 
 class SingleFeedBlock(FuseBlock):
     GAD27_elevator_trim = Fuse("GAD", amps=2)
-    GTN650 = Fuse("GTN650", amps=5)
+    GTN650_nav = Fuse("GTN650", amps=7.5)
+    GTN650_com = Fuse("GTN650 COM", amps=10)
     GSA28_roll = Fuse("GSA28 Roll", amps=5)
     GSA28_pitch = Fuse("GSA28 Pitch", amps=5)
     GSA28_yaw = Fuse("GSA28 Yaw", amps=5)
@@ -24,8 +26,19 @@ class SingleFeedBlock(FuseBlock):
     GDL51R = Fuse("GDL51R", amps=3)
     LEMO_pilot = Fuse("LEMO Pilot", amps=0.5)
     LEMO_copilot = Fuse("LEMO Copilot", amps=0.5)
+    elt = Fuse("ELT", amps=1)
+
+
+class MainBus(FuseBlock):
+    landing_lights = Fuse("Landing Lights", amps=20)
+    taxi_lights = Fuse("Taxi Lights", amps=5)
+    flaps = Fuse("Flaps", amps=10)
+    pitot_heat = Fuse("Pitot Heat", amps=15)
 
 
 avionics_block_1 = DualFeedBlock()
 avionics_block_2 = DualFeedBlock()
 avionics_block_3 = SingleFeedBlock()
+main_block = MainBus()
+gnd = GroundSymbol("GND")
+local = GroundSymbol("local")

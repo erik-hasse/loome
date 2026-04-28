@@ -76,24 +76,14 @@ def _load_harness(spec_path: Path):
 
 
 def _cmd_render(args) -> None:
-    spec_path = Path(args.spec).resolve()
-    if not spec_path.exists():
-        print(f"Error: spec file not found: {spec_path}", file=sys.stderr)
-        sys.exit(1)
-
-    harness = _load_harness(spec_path)
+    harness = _load_spec_or_exit(args.spec)
     layout_result = layout(harness, show_unconnected=args.show_unconnected)
     render(harness, layout_result, args.output, colored=not args.no_color)
     print(f"Rendered {len(harness.components)} component(s) → {args.output}")
 
 
 def _cmd_bundle(args) -> None:
-    spec_path = Path(args.spec).resolve()
-    if not spec_path.exists():
-        print(f"Error: spec file not found: {spec_path}", file=sys.stderr)
-        sys.exit(1)
-
-    harness = _load_harness(spec_path)
+    harness = _load_spec_or_exit(args.spec)
     if not harness.bundles:
         print("Error: spec has no bundles to render", file=sys.stderr)
         sys.exit(1)

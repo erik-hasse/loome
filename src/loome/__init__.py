@@ -19,15 +19,17 @@ from .model import (
     WireColor,
     WireSegment,
 )
-from .ports import GPIO, RS232, CanBus, Port
+from .ports import ARINC429, GPIO, RS232, CanBus, GarminEthernet, Port, Thermocouple
 from .switches import DPDT, DPST, SPDT, SPST
 
 __all__ = [
+    "ARINC429",
     "Breakout",
     "Bundle",
     "BusBar",
     "CanBus",
     "CanBusLine",
+    "GarminEthernet",
     "CircuitBreaker",
     "CircuitBreakerBank",
     "Component",
@@ -49,6 +51,7 @@ __all__ = [
     "ShieldGroup",
     "SpliceNode",
     "Terminal",
+    "Thermocouple",
     "WireColor",
     "WireSegment",
 ]

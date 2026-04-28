@@ -44,3 +44,9 @@ class DPDT(Component):
     def __init__(self, label: str | None = None, *, momentary: bool = False):
         super().__init__(label)
         self.momentary = momentary
+
+
+class Rheostat(Component):
+    ground = Pin("BLK", "Ground")
+    power = Pin("RED", "Power")
+    out = Pin("BLU", "Out")

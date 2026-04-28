@@ -63,6 +63,8 @@ class PortBuilder:
 
 _CAN_DRAIN = GroundSymbol("_can_shield_drain_", "GND")
 _RS232_BACKSHELL = GroundSymbol("_rs232_backshell_", "GND")
+_ARINC_BACKSHELL = GroundSymbol("_arinc_backshell_", "GND")
+_ETHERNET_BACKSHELL = GroundSymbol("_ethernet_backshell_", "GND")
 
 
 class Port:
@@ -193,14 +195,16 @@ class RS232(Port):
             p.shield_group = sg
             sg.pins.append(p)
 
-    def connect(self, other: RS232, *, ground: bool = True, notes: str = "") -> None:
+    def connect(self, other: RS232, *, ground: bool = True, notes: str = "", drain=None, drain_remote=None) -> None:
         """Cross-connect: self.TX → other.RX and self.RX → other.TX."""
         self._tx.connect(other._rx)
         seg_rx = self._rx.connect(other._tx)
-        # Both ends are backshell-drained regardless of whether either side
-        # exposes a signal-ground pin.
-        self._sg.drain_remote = _RS232_BACKSHELL
-        other._sg.drain_remote = _RS232_BACKSHELL
+        self._sg.drain_remote = drain_remote or _RS232_BACKSHELL
+        other._sg.drain_remote = drain or _RS232_BACKSHELL
+        if drain is not None:
+            self._sg.drain = drain
+        if drain_remote is not None:
+            other._sg.drain = drain_remote
         if ground and self._gnd is not None and other._gnd is not None:
             seg_gnd = self._gnd.connect(other._gnd)
             if notes:
@@ -210,6 +214,18 @@ class RS232(Port):
 
     def __rshift__(self, other: RS232) -> PortBuilder:
         return PortBuilder(self, other)
+
+    @property
+    def tx(self) -> Pin:
+        return self._tx
+
+    @property
+    def rx(self) -> Pin:
+        return self._rx
+
+    @property
+    def gnd(self) -> Pin | None:
+        return self._gnd
 
 
 class GPIO(Port):
@@ -263,16 +279,16 @@ class GPIO(Port):
     def __rshift__(self, other: GPIO) -> PortBuilder:
         return PortBuilder(self, other)
 
-    def connect(self, other: GPIO, notes: str = "", drain=None, drain_remote=None, **kwargs) -> None:
+    def connect(self, other: GPIO, notes: str = "", drain=None, drain_remote=None, **_) -> None:
         """Connect positive↔positive, signal↔signal, ground↔ground.
 
         Args:
             drain: endpoint (e.g. GroundSymbol) that drains the shield at the local end.
             drain_remote: endpoint that drains the shield at the remote end.
         """
-        self._positive.connect(other._positive, **kwargs)
-        self._signal.connect(other._signal, **kwargs)
-        seg = self._ground.connect(other._ground, **kwargs)
+        self._positive.connect(other._positive)
+        self._signal.connect(other._signal)
+        seg = self._ground.connect(other._ground)
         if notes:
             seg.notes = notes
         if drain is not None and self._sg is not None:
@@ -282,3 +298,168 @@ class GPIO(Port):
                 self._sg.drain_remote = drain_remote
             if other._sg is not None:
                 other._sg.drain = drain_remote
+
+    @property
+    def positive(self) -> Pin:
+        return self._positive
+
+    @property
+    def signal(self) -> Pin:
+        return self._signal
+
+    @property
+    def ground(self) -> Pin:
+        return self._ground
+
+
+class ARINC429(Port):
+    """Shielded unidirectional ARINC 429 differential pair (A and B wires).
+
+    ``direction`` must be ``"in"`` or ``"out"``. Connecting two ports with the
+    same direction raises ``ValueError``.
+
+    Usage::
+
+        class MyLRU(Component):
+            class J1(Connector):
+                arinc_in = ARINC429(48, 67, "in", name="ARINC 429 In 1")
+                arinc_out = ARINC429(50, 68, "out", name="ARINC 429 Out 1")
+
+        MyLRU.J1.arinc_out >> OtherLRU.J2.arinc_in
+    """
+
+    _pin_attrs = ("a", "b")
+
+    def __init__(
+        self,
+        a_pin: int | str,
+        b_pin: int | str,
+        direction: str,
+        name: str = "ARINC 429",
+    ) -> None:
+        super().__init__()
+        if direction not in ("in", "out"):
+            raise ValueError(f"direction must be 'in' or 'out', got {direction!r}")
+        self._direction = direction
+        self._name = name
+        sg = ShieldGroup(label="", pins=[], drain=_ARINC_BACKSHELL)
+        self._sg = sg
+        self._a = Pin(a_pin, f"{name} A")
+        self._b = Pin(b_pin, f"{name} B")
+        for p in (self._a, self._b):
+            p.shield_group = sg
+            sg.pins.append(p)
+
+    def connect(self, other: "ARINC429", *, notes: str = "", drain=None, drain_remote=None, **_) -> None:
+        if self._direction == other._direction:
+            raise ValueError(f"ARINC 429 requires one 'in' and one 'out' port, but both are {self._direction!r}")
+        seg = self._a.connect(other._a)
+        self._b.connect(other._b)
+        if notes:
+            seg.notes = notes
+        self._sg.drain_remote = drain_remote or _ARINC_BACKSHELL
+        other._sg.drain_remote = drain or _ARINC_BACKSHELL
+        if drain is not None:
+            self._sg.drain = drain
+        if drain_remote is not None:
+            other._sg.drain = drain_remote
+
+    def __rshift__(self, other: "ARINC429") -> PortBuilder:
+        return PortBuilder(self, other)
+
+
+class GarminEthernet(Port):
+    """Shielded unidirectional Garmin Ethernet differential pair (A and B wires).
+
+    Identical semantics to :class:`ARINC429` — unidirectional, shielded,
+    direction-checked on connect — but labelled as Ethernet.
+
+    Usage::
+
+        class GTX45R(Component):
+            class P3252(Connector):
+                ethernet_out = GarminEthernet(6, 1, "out", name="Ethernet Out 1")
+                ethernet_in  = GarminEthernet(7, 2, "in",  name="Ethernet In 1")
+    """
+
+    _pin_attrs = ("a", "b")
+
+    def __init__(
+        self,
+        a_pin: int | str,
+        b_pin: int | str,
+        direction: str,
+        name: str = "Ethernet",
+    ) -> None:
+        super().__init__()
+        if direction not in ("in", "out"):
+            raise ValueError(f"direction must be 'in' or 'out', got {direction!r}")
+        self._direction = direction
+        self._name = name
+        sg = ShieldGroup(label="", pins=[], drain=_ETHERNET_BACKSHELL)
+        self._sg = sg
+        self._a = Pin(a_pin, f"{name} A")
+        self._b = Pin(b_pin, f"{name} B")
+        for p in (self._a, self._b):
+            p.shield_group = sg
+            sg.pins.append(p)
+
+    def connect(self, other: "GarminEthernet", *, notes: str = "", drain=None, drain_remote=None, **_) -> None:
+        if self._direction == other._direction:
+            raise ValueError(
+                f"Ethernet connection requires one 'in' and one 'out' port, but both are {self._direction!r}"
+            )
+        seg = self._a.connect(other._a)
+        self._b.connect(other._b)
+        if notes:
+            seg.notes = notes
+        self._sg.drain_remote = drain_remote or _ETHERNET_BACKSHELL
+        other._sg.drain_remote = drain or _ETHERNET_BACKSHELL
+        if drain is not None:
+            self._sg.drain = drain
+        if drain_remote is not None:
+            other._sg.drain = drain_remote
+
+    def __rshift__(self, other: "GarminEthernet") -> PortBuilder:
+        return PortBuilder(self, other)
+
+
+class Thermocouple(Port):
+    """Two-wire thermocouple connection: High (yellow) and Low (red).
+
+    Default gauge is 20. ``connect()`` wires high↔high with yellow wire and
+    low↔low with red wire.
+
+    Usage::
+
+        class GEA24(Component):
+            class J241(Connector):
+                egt1 = Thermocouple(25, 13, "EGT 1")
+
+        # creates "EGT 1 High" on pin 25 (yellow) and "EGT 1 Low" on pin 13 (red)
+        gea24.J241.egt1 >> egt1_probe.leads
+    """
+
+    _pin_attrs = ("high", "low")
+
+    def __init__(
+        self,
+        high_pin: int | str,
+        low_pin: int | str,
+        name: str = "Thermocouple",
+        gauge: int | str = 20,
+    ) -> None:
+        super().__init__()
+        self._name = name
+        self._gauge = gauge
+        self._high = Pin(high_pin, f"{name} High")
+        self._low = Pin(low_pin, f"{name} Low")
+
+    def connect(self, other: "Thermocouple", *, notes: str = "", **_) -> None:
+        seg = self._high.connect(other._high, gauge=self._gauge, color="Y")
+        self._low.connect(other._low, gauge=self._gauge, color="R")
+        if notes:
+            seg.notes = notes
+
+    def __rshift__(self, other: "Thermocouple") -> PortBuilder:
+        return PortBuilder(self, other)

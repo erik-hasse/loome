@@ -1,19 +1,36 @@
-from examples.n14ev.fuses import avionics_block_1, avionics_block_2, avionics_block_3
+from examples.n14ev.lights import (
+    cabin_lights,
+    left_landing_lights,
+    left_taxi_lights,
+    master_caution,
+    master_warning,
+    right_landing_lights,
+    right_taxi_lights,
+)
 from examples.n14ev.lrus import (
+    co2_sensor,
     copilot_lemo,
     copilot_stick,
+    elt,
+    engine,
+    flap_motor,
     g5,
     gad27,
     gad29,
+    gap26,
     gdl51r,
+    gdu460_config,
     gea24,
     gma245,
     gmc507,
     gmu11,
     gsu25,
+    gtn650_config,
+    gtn650_fan,
     gtn650xi,
     gtr20,
     gtx45r,
+    gtx_usb_config,
     mfd,
     music_in,
     oat_probe,
@@ -24,20 +41,29 @@ from examples.n14ev.lrus import (
     pitch_trim,
     roll_servo,
     roll_trim,
+    sds_ecu,
     yaw_servo,
 )
-from loome import DPST, CanBusLine, GroundSymbol, Harness, Shield
-
-gnd = GroundSymbol("GND")
-local = GroundSymbol("local")
-toga = DPST("TO/GA", momentary=True)
+from examples.n14ev.power import avionics_block_1, avionics_block_2, avionics_block_3, gnd, local, main_block
+from examples.n14ev.sensors import fuel_pressure, left_fuel, manifold_pressure, oil_pressure, oil_temp, right_fuel
+from examples.n14ev.switches import (
+    backlight_rheo,
+    cabin_light_rheo,
+    flaps_down,
+    flaps_up,
+    landing_light_switch,
+    taxi_light_switch,
+    toga,
+    wig_wag,
+)
+from loome import CanBusLine, Fuse, Harness, Shield
 
 # Page 2
 with gsu25.J251 as c:
     c.ground_a >> gnd
     c.aircraft_power_1 >> avionics_block_1.GSU25
     c.aircraft_power_2 >> avionics_block_2.GSU25
-    c.rs232 >> pfd.P4601.rs232
+    (c.rs232 >> pfd.P4601.rs232).notes("Not Configured")
 
 with gsu25.J252 as c:
     with Shield(drain=local, drain_remote=local):
@@ -81,8 +107,7 @@ copilot_stick.ap_disconnect >> pitch_servo.J281.disconnect
 pitch_servo.J281.disconnect >> yaw_servo.J281.disconnect
 yaw_servo.J281.disconnect >> roll_servo.J281.disconnect
 
-toga.com1 >> toga.com2
-toga.com1 >> gnd
+(toga.no1 >> gtn650xi.P1001[37]).notes("Reconfigure to Remote Go Around")
 
 # Page 5
 
@@ -138,6 +163,7 @@ with gma245.J2402 as c:
     c.ground_b >> gnd
 
     c.lighting_bus_high >> c.lighting_bus_14v_high_28v_low
+    c.lighting_bus_low.local_ground()
 
     c.com_swap >> pilot_stick.com_swap
     c.com_swap >> copilot_stick.com_swap
@@ -175,22 +201,261 @@ with gma245.P2401 as c:
         c.com_2_mic_audio_out_high >> gtr20.J2001.pilot_mic_in
         c.com_2_mic_key_out >> gtr20.J2001.pilot_ptt
 
+    with Shield(drain=local):
+        c.alert_1_audio_in_high >> pfd.P4602.mono_audio_out_high
+        c.alert_1_audio_in_low >> pfd.P4602.mono_audio_out_low
+
 
 # Page 10
 
 with gtr20.J2001 as c:
-    pass
+    c.ground >> gnd
+    c.aircraft_power >> avionics_block_3.GTR20
+
+# Page 11
+with gad27.J271 as c:
+    c.aircraft_power >> avionics_block_1.GAD27
+    c.ground >> gnd
+    c.flap_up_1 >> flaps_up.no
+    c.flap_down_1 >> flaps_down.no
+    c.pilot_pitch_trim_up >> pilot_stick.trim_up
+    c.pilot_pitch_trim_down >> pilot_stick.trim_down
+    c.pilot_roll_trim_left >> pilot_stick.trim_left
+    c.pilot_roll_trim_right >> pilot_stick.trim_right
+    c.copilot_pitch_trim_up >> copilot_stick.trim_up
+    c.copilot_pitch_trim_down >> copilot_stick.trim_down
+    c.copilot_roll_trim_left >> copilot_stick.trim_left
+    c.copilot_roll_trim_right >> copilot_stick.trim_right
+
+    c.discrete_in_7 >> pilot_stick.frequency_swap
+    c.discrete_in_7 >> copilot_stick.frequency_swap
+
+    # c.discrete_in_1 >> alt_regulator
+    # c.discrete_in_2 >> monkworkz_active
+
+    # Page 12
+    c.light_1_switch >> landing_light_switch.no
+    c.light_2_switch >> taxi_light_switch.no
+    c.alternating_flash_on >> wig_wag.no
+
+    c.output_12v >> backlight_rheo.power
+    c.lighting_bus_gnd >> backlight_rheo.ground
+    c.lighting_control_in_1 >> backlight_rheo.out
+
+    c.output_12v >> cabin_light_rheo.power
+    c.lighting_bus_gnd >> cabin_light_rheo.ground
+    c.lighting_control_in_2 >> cabin_light_rheo.out
+
+    c.pwm_lighting_1 >> cabin_lights.power
+
+# Page 13
+with gad27.J272 as c:
+    c.pitch_trim_power_gnd >> gnd
+    c.roll_trim_power_gnd >> gnd
+
+with gad27.TB273 as c:
+    c.keep_alive_power_in >> avionics_block_2.GAD27
+    c.keep_alive_power_out >> gad27.J272.pitch_trim_power_in
+    c.keep_alive_power_out >> gad27.J272.roll_trim_power_in
+
+    # Page 14
+    (c.light_1_power >> main_block.landing_lights).gauge(18)
+    (c.light_2_power >> main_block.taxi_lights).gauge(18)
+
+    (c.flap_power_in >> main_block.flaps).gauge(18)
+    (c.flap_power_out_1 >> main_block.flaps).gauge(18)
+    (c.flap_power_out_1 >> flap_motor.extend).gauge(18)
+    (c.flap_power_out_2 >> flap_motor.retract).gauge(18)
+
+    (c.light_1_output >> left_landing_lights.power).gauge(18)
+    (c.light_1_output >> right_landing_lights.power).gauge(18)
+
+    (c.light_2_output >> left_taxi_lights.power).gauge(18)
+    (c.light_2_output >> right_taxi_lights.power).gauge(18)
+
 
 # Page 15
-
 gad27.J271.dc_lighting_1 >> mfd.P4602.lighting_bus_high_14V
 mfd.P4602.lighting_bus_high_14V >> pfd.P4602.lighting_bus_high_14V
 pfd.P4602.lighting_bus_high_14V >> gtn650xi.P1001.lighting_bus_1_hi
 gtn650xi.P1001.lighting_bus_1_hi >> gmc507.J7001.lighting_bus_high
 gmc507.J7001.lighting_bus_high >> gma245.J2402.lighting_bus_high
 
+# TODO Add a switch
+gap26.power >> main_block.pitot_heat
+gap26.ground >> gnd
 
-# ── harness ───────────────────────────────────────────────────────────────────
+# Page 16
+with gtx45r.P3251 as c:
+    c.power_config.local_ground()
+    c.ground_1 >> gnd
+    c.ground_2 >> gnd
+    c.power_control.local_ground()
+
+    c.aircraft_power_1a >> avionics_block_1.GTX45R
+    c.aircraft_power_1b >> avionics_block_1.GTX45R
+    c.aircraft_power_2a >> avionics_block_2.GTX45R
+    c.aircraft_power_2b >> avionics_block_2.GTX45R
+
+    c.usb_vbus_power >> gtx_usb_config.power
+    c.usb_ground >> gtx_usb_config.ground
+    c.usb_data_high >> gtx_usb_config.data_high
+    c.usb_data_low >> gtx_usb_config.data_low
+
+    (c.rs232_2 >> pfd.P4602.rs232_3).notes("Connext Format 4, 115200 baud")
+    (c.rs232_3 >> gtn650xi.P1001.rs232_4).notes("ADS-B+ GPS")
+
+# Page 17
+with gtx45r.P3252 as c:
+    (c.rs232 >> mfd.P4602.rs232_2).notes("Connext Format 4, 115200 baud")
+    c.ethernet_out_1 >> gtn650xi.P1002.ethernet_in_1
+    c.ethernet_in_1 >> gtn650xi.P1002.ethernet_out_1
+
+# Page 18
+with gtn650xi.P1004 as c:
+    c.aircraft_power_a >> avionics_block_3.GTN650_nav
+    c.aircraft_power_b >> avionics_block_3.GTN650_nav
+
+with gtn650xi.P1001 as c:
+    c.aircraft_power_a >> avionics_block_3.GTN650_nav
+    c.aircraft_power_b >> avionics_block_3.GTN650_nav
+
+    c.config_module_power >> gtn650_config.power
+    c.config_module_gnd >> gtn650_config.ground
+    c.config_module_data >> gtn650_config.data
+    c.config_module_clock >> gtn650_config.clock
+
+with gtn650xi.P1003 as c:
+    c.aircraft_power_a >> avionics_block_3.GTN650_com
+    c.aircraft_power_b >> avionics_block_3.GTN650_com
+    c.aircraft_power_c >> avionics_block_3.GTN650_com
+
+# Page 19
+with gtn650xi.P1001 as c:
+    (c.arinc_429_in_1 >> gad29.J292.arinc_tx_1_1).notes("GDU Format 2")
+    (c.arinc_429_out_1 >> gad29.J292.arinc_rx_1).notes("Low + Garmin 429, SDI - LNAV1")
+
+    (c.rs232_2 >> pfd.P4602.rs232_4).notes("Input & Output Connext Format 2, 38400 baud")
+    (c.rs232_3 >> pfd.P4602.rs232_5).notes("Input & Output MapMX Format 2")
+
+
+with gtn650xi.P1004 as c:
+    c.vor_ils_arinc_429_out >> gad29.J292.arinc_rx_2
+
+# Page 20
+with gtn650xi.P1001 as c:
+    c.fan >> gtn650_fan.control
+    c.aircraft_gnd_a >> gnd
+    c.aircraft_gnd_b >> gnd
+    c.lighting_bus_1_lo.local_ground()
+
+with gtn650xi.P1003 as c:
+    c.aircraft_gnd_a >> gnd
+    c.aircraft_gnd_b >> gnd
+    c.aircraft_gnd_c >> gnd
+
+with gtn650xi.P1004 as c:
+    c.aircraft_gnd_c >> gnd
+    c.aircraft_gnd_d >> gnd
+    c.aircraft_gnd_e >> gnd
+
+# Page 21
+
+with gad29.J291 as c:
+    c.aircraft_power_1 >> avionics_block_1.GAD29
+    c.aircraft_power_2 >> avionics_block_1.GAD29
+    c.ground >> gnd
+
+# Page 22
+
+# No additional pins
+
+# Page 23
+
+with pfd.P4602 as c:
+    c.ground_1 >> gnd
+    c.aircraft_power_1 >> avionics_block_1.PFD
+    c.aircraft_power_2 >> avionics_block_1.PFD
+
+    c.config_module_power_out >> gdu460_config.power
+    c.config_module_ground >> gdu460_config.ground
+    c.config_module_data >> gdu460_config.data
+    c.config_module_clock >> gdu460_config.clock
+
+# Page 24
+with mfd.P4602 as c:
+    c.ground_1 >> gnd
+    c.aircraft_power_1 >> avionics_block_1.MFD
+    c.aircraft_power_2 >> avionics_block_1.MFD
+    (c.rs232_1 >> gea24.J241.rs232).ground(False)
+
+# Page 25
+
+with g5.J51 as c:
+    c.ground >> gnd
+    (c.aircraft_power_1 >> avionics_block_1.G5).notes("Lightning Protection Module")
+    c.aircraft_power_2 >> avionics_block_2.G5
+    c.can.note("Lightning Protection Module")
+
+# Page 26
+with gea24.J241 as c:
+    c.ground >> gnd
+    c.aircraft_power_1 >> avionics_block_1.GEA24
+    c.aircraft_power_2 >> avionics_block_2.GEA24
+
+# Page 27
+with gea24.J242 as c:
+    c.egt1 >> engine.Cylinder1.egt
+    c.cht1 >> engine.Cylinder1.cht
+    c.egt2 >> engine.Cylinder2.egt
+    c.cht2 >> engine.Cylinder2.cht
+    c.egt3 >> engine.Cylinder3.egt
+    c.cht3 >> engine.Cylinder3.cht
+    c.egt4 >> engine.Cylinder4.egt
+    c.cht4 >> engine.Cylinder4.cht
+
+# Page 28
+with gea24.J243 as c:
+    (c.fuel_pressure_5v >> fuel_pressure.gpio).drain(local).drain_remote(None)
+    with Shield(drain=local, drain_remote=local):
+        c.rpm_1.signal >> sds_ecu.tach
+    (c.oil_pressure_5v >> oil_pressure.gpio).drain(local).drain_remote(None)
+    (c.manifold_pressure_5v >> manifold_pressure.gpio).drain(local).drain_remote(None)
+    with Shield(drain=local, drain_remote=local):
+        c.fuel_flow.signal >> sds_ecu.fuel_flow
+
+    with Shield(drain=local):
+        c.oil_temp_high >> oil_temp.high
+        c.oil_temp_low >> oil_temp.low
+
+    c.shunt_1_high >> Fuse("Alternator Side", amps=1)
+    c.shunt_1_low >> Fuse("Load Side", amps=1)
+
+# Page 29
+
+with gea24.J244 as c:
+    c.fuel_quantity_1.signal >> left_fuel.power
+    c.fuel_quantity_2.signal >> right_fuel.power
+    c.gp1 >> pitch_trim.position
+    c.gp2 >> roll_trim.position
+    c.gp3 >> flap_motor.position
+
+    c.volts_1 >> Fuse("Main Bus", amps=1)
+    c.volts_2 >> Fuse("Engine Bus", amps=1)
+
+    c.discrete_in_4 >> gap26.signal
+    c.discrete_out_1 >> master_warning.power
+    c.discrete_out_2 >> master_caution.power
+
+# Page 30
+with gea24.J243 as c:
+    with Shield(drain=local):
+        c.gp_5v_out >> co2_sensor.power
+        c.gp6_high >> co2_sensor.signal
+        c.gp_gnd_1 >> co2_sensor.ground
+        c.gp6_low.local_ground()
+
+# Page 31
 
 CanBusLine(
     name="CAN Bus",
@@ -211,5 +476,15 @@ CanBusLine(
         yaw_servo.J281,
     ],
 )
+
+# Page 32
+
+with elt.DIN as c:
+    with Shield(drain_remote=local):
+        c.remote_switch >> avionics_block_3.elt
+        c.ground >> gnd
+        c.elt_rx >> gtn650xi.P1001.rs232_1.tx
+
+    # TODO: c.rs232_test
 
 harness = Harness("Avionics Harness", length_unit="in")

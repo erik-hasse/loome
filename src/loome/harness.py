@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Generator
 
 from .bundles import Bundle
 from .buses import CanBusLine
@@ -20,6 +21,18 @@ from .model import (
     Terminal,
     WireSegment,
 )
+
+
+def _iter_class_pins(cls: type, base_cls: type) -> Generator[tuple[str, Pin], None, None]:
+    """Walk the MRO of *cls* most-derived first, yielding (attr_name, Pin) once per name."""
+    seen: set[str] = set()
+    for c in cls.__mro__:
+        if not (isinstance(c, type) and issubclass(c, base_cls)):
+            continue
+        for attr_name, val in vars(c).items():
+            if isinstance(val, Pin) and attr_name not in seen:
+                seen.add(attr_name)
+                yield attr_name, val
 
 
 @dataclass
@@ -292,20 +305,12 @@ class Harness:
                 existing_ids.add(id(sg))
                 self.shield_groups.append(sg)
 
-        def _walk_pins(cls, base_cls):
-            seen: set[str] = set()
-            for c in cls.__mro__:
-                if not (isinstance(c, type) and issubclass(c, base_cls)):
-                    continue
-                for name, val in vars(c).items():
-                    if isinstance(val, Pin) and name not in seen:
-                        seen.add(name)
-                        _add(val)
-
         for conn in comp._connectors.values():
-            _walk_pins(type(conn), Connector)
+            for _, pin in _iter_class_pins(type(conn), Connector):
+                _add(pin)
 
-        _walk_pins(type(comp), Component)
+        for _, pin in _iter_class_pins(type(comp), Component):
+            _add(pin)
 
     def segments(self) -> list[WireSegment]:
         """Return all unique WireSegments.
@@ -322,17 +327,6 @@ class Harness:
                 if id(seg) not in seen:
                     seen.add(id(seg))
                     result.append(seg)
-
-        def _iter_class_pins(cls, base_cls):
-            """Walk MRO most-derived first, yielding (attr_name, class_pin) once per name."""
-            emitted: set[str] = set()
-            for c in cls.__mro__:
-                if not (isinstance(c, type) and issubclass(c, base_cls)):
-                    continue
-                for attr_name, val in vars(c).items():
-                    if isinstance(val, Pin) and attr_name not in emitted:
-                        emitted.add(attr_name)
-                        yield attr_name, val
 
         for comp in self.components:
             for attr_name, class_pin in _iter_class_pins(type(comp), Component):

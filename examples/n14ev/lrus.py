@@ -1,4 +1,16 @@
-from loome.components import LEMO, TRS, RayAllanTrim, Stick
+from loome.components import (
+    ACKE04,
+    LEMO,
+    SDSECU,
+    TRS,
+    AithreShield3,
+    Engine4Cyl,
+    Fan,
+    PHAviationFlapMotor,
+    RayAllanTrim,
+    Stick,
+    USBPort,
+)
 from loome.components.garmin import (
     G5,
     GAD27,
@@ -15,6 +27,7 @@ from loome.components.garmin import (
     GTP59,
     GTR20,
     GTX45R,
+    ConfigModule,
     GSA28RollServo,
 )
 from loome.components.gtn650 import GTN650Xi
@@ -36,10 +49,14 @@ roll_trim = RayAllanTrim("Roll Trim")
 pitch_trim = RayAllanTrim("Pitch Trim")
 gap26 = GAP2620("GAP 26-20")
 gtx45r = GTX45R("GTX 45R")
+gtx_usb_config = USBPort("GTX45R USB Config")
 
 gtn650xi = GTN650Xi("GTX 650Xi")
+gtn650_config = ConfigModule("GTN 650Xi Config")
+gtn650_fan = Fan("GTN 650Xi Fan")
 gad29 = GAD29C("GAD 29")
 pfd = GDU460("GDU 460 PFD", mode="PFD")
+gdu460_config = ConfigModule("GDU 460 Config")
 mfd = GDU460("GDU 460 MFD", mode="MFD")
 g5 = G5("G5")
 gea24 = GEA24("GEA24")
@@ -51,3 +68,11 @@ copilot_stick = Stick("Copilot Stick")
 pilot_lemo = LEMO("Pilot Lemo")
 copilot_lemo = LEMO("Copilot Lemo")
 music_in = TRS("Music In")
+
+flap_motor = PHAviationFlapMotor("Flap Motor")
+
+elt = ACKE04("ACK E-04 ELT")
+co2_sensor = AithreShield3("Aithre Shield CO2 Sensor")
+
+engine = Engine4Cyl("IO390-EXP119")
+sds_ecu = SDSECU
