@@ -5,8 +5,8 @@ from pathlib import Path
 import svgwrite
 
 from ..harness import Harness
-from ..layout.engine import LayoutResult, PinRowInfo
-from ..model import Pin, ShieldGroup, SpliceNode, Terminal
+from ..layout.engine import MARGIN, LayoutResult, PinRowInfo
+from ..model import Component, Pin, ShieldGroup, SpliceNode, Terminal
 from .colors import _SHIELD_PALETTE, _wire_attrs
 from .primitives import (
     _JUMPER_STUB_X,
@@ -114,7 +114,18 @@ def _drain_run_index(runs: list[list[PinRowInfo]], drain_endpoint) -> int:
     return len(runs) - 1 if runs else 0
 
 
-def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colored: bool = True) -> None:
+def render(
+    harness: Harness,
+    layout: LayoutResult,
+    output_path: str | Path,
+    colored: bool = True,
+    component: Component | None = None,
+) -> None:
+    """Render the harness schematic to an SVG file.
+
+    When *component* is provided only that component's section is drawn and the
+    SVG canvas is sized to fit it — useful for per-component output.
+    """
     # Build shield palette lookup: class pin id → (stroke, dasharray or None)
     # Step 1: assign canonical W→WB→WO entries from each shield group's pin order.
     pin_shield_palette: dict[int, tuple[str, str | None]] = {}
@@ -199,12 +210,26 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
 
     min_term_cx = _compute_min_term_cx(layout, harness)
 
-    dwg = svgwrite.Drawing(str(output_path), size=(layout.canvas_width, layout.canvas_height), profile="full")
+    if component is not None:
+        sect_rect = layout.section_rects[id(component)]
+        vb_y = sect_rect.y - MARGIN
+        vb_h = sect_rect.h + 2 * MARGIN
+        dwg = svgwrite.Drawing(
+            str(output_path),
+            size=(layout.canvas_width, vb_h),
+            profile="full",
+            viewBox=f"0 {vb_y} {layout.canvas_width} {vb_h}",
+        )
+        components_to_render = [component]
+    else:
+        dwg = svgwrite.Drawing(str(output_path), size=(layout.canvas_width, layout.canvas_height), profile="full")
+        components_to_render = [c for c in harness.components if c.render]
+
     dwg.add(dwg.rect(insert=(0, 0), size=("100%", "100%"), fill="white"))
 
     jumper_stubs: dict[int, list] = {}  # id(seg) -> [seg, wire_x, [cy, ...]]
 
-    for comp in harness.components:
+    for comp in components_to_render:
         sect_rect = layout.section_rects[id(comp)]
         _draw_section_bg(dwg, sect_rect, comp.label)
 
@@ -334,14 +359,39 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
                     )
         else:
             # Class-body shield: group rows from sg.pins by component instance.
+            #
+            # Two filters prevent spurious ovals:
+            # 1. Skip a row if all of its instance-pin connections are already
+            #    covered by a connection-level (with Shield()) shield group.
+            #    This prevents double-drawing when a port pin (e.g. RS-232 TX)
+            #    is wired inside an explicit Shield() block.
+            # 2. After grouping by instance, only draw if ≥2 distinct class-body
+            #    shield members are connected.  A single connected pin indicates
+            #    direct property access (e.g. gpio.signal) rather than a full
+            #    port connect(), which should not render a shield oval.
             source_by_inst: dict[int, list] = {}
             for p in sg.pins:
                 for ri in class_pin_to_rows.get(id(p), []):
                     if not ri.pin._connections and not p._connections:
                         continue
+                    # Filter 1: skip if all connections are in a different connection-level shield.
+                    if ri.pin._connections and all(
+                        seg.shield_group is not None
+                        and seg.shield_group is not sg
+                        and seg.shield_group.segments  # non-empty → connection-level
+                        for seg in ri.pin._connections
+                    ):
+                        continue
                     inst_key = id(ri.pin._component) if ri.pin._component is not None else id(ri.pin)
                     source_by_inst.setdefault(inst_key, []).append(ri)
-            for inst_rows in source_by_inst.values():
+
+            # Collect the inst_keys that actually draw ovals (for remote-oval gating below).
+            drawing_inst_keys: set[int] = set()
+            for inst_key, inst_rows in source_by_inst.items():
+                # Filter 2: require ≥2 shield-member class pins per instance.
+                if len({id(ri.class_pin) for ri in inst_rows}) < 2:
+                    continue
+                drawing_inst_keys.add(inst_key)
                 runs = _split_contiguous(inst_rows)
                 left_run = _drain_run_index(runs, sg.drain)
                 right_run = _drain_run_index(runs, sg.drain_remote)
@@ -354,6 +404,14 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
                         drain_remote_label=dl_remote if i == right_run else "",
                         single_oval=sg.single_oval,
                     )
+
+            # Restrict remote ovals to instance pins whose source oval was drawn.
+            included_inst_pins: set[int] = {
+                id(ri.pin)
+                for inst_key, inst_rows in source_by_inst.items()
+                if inst_key in drawing_inst_keys
+                for ri in inst_rows
+            }
 
             # Remote ovals only for pins whose remote endpoint has no ShieldGroup of its own.
             # When both sides define shielded pins (e.g. RS-232 helpers on both connectors),
@@ -375,6 +433,8 @@ def render(harness: Harness, layout: LayoutResult, output_path: str | Path, colo
             for p in sg.pins:
                 _add_remote_for_source(p, id(sg))
                 for ri in class_pin_to_rows.get(id(p), []):
+                    if id(ri.pin) not in included_inst_pins:
+                        continue
                     source_key = id(ri.pin._component) if ri.pin._component is not None else id(ri.pin)
                     _add_remote_for_source(ri.pin, source_key)
 

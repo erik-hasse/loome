@@ -14,6 +14,8 @@ import io
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Literal
 
+from natsort import natsort_keygen
+
 from .model import (
     BusBar,
     CircuitBreaker,
@@ -29,6 +31,8 @@ from .model import (
 if TYPE_CHECKING:
     from .harness import Harness
 
+
+_natsort_key = natsort_keygen()
 
 LoadKind = Literal["pin", "busbar", "ground", "offpage", "terminal"]
 
@@ -265,7 +269,7 @@ def build_bom(harness: "Harness") -> Bom:
             )
         )
 
-    wires.sort(key=lambda r: (_gauge_sort_key(r.gauge), r.color, r.wire_id))
+    wires.sort(key=lambda r: (_gauge_sort_key(r.gauge), r.color, _natsort_key(r.wire_id)))
 
     connectors: list[tuple[str, str, int]] = []
     for comp in harness.components:

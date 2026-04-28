@@ -17,3 +17,4 @@ master_warning = LED("Master Warning")
 master_warning.ground >> gnd
 
 master_caution = LED("Master Caution")
+master_caution.ground >> gnd

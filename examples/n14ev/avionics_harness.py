@@ -44,7 +44,7 @@ from examples.n14ev.lrus import (
     sds_ecu,
     yaw_servo,
 )
-from examples.n14ev.power import avionics_block_1, avionics_block_2, avionics_block_3, gnd, local, main_block
+from examples.n14ev.power import avionics_block_1, avionics_block_2, avionics_block_3, gnd, main_block
 from examples.n14ev.sensors import fuel_pressure, left_fuel, manifold_pressure, oil_pressure, oil_temp, right_fuel
 from examples.n14ev.switches import (
     backlight_rheo,
@@ -66,7 +66,7 @@ with gsu25.J251 as c:
     (c.rs232 >> pfd.P4601.rs232).notes("Not Configured")
 
 with gsu25.J252 as c:
-    with Shield(drain=local, drain_remote=local):
+    with Shield(drain=True, drain_remote=True):
         c.oat_probe_power >> oat_probe.oat_probe_power
         c.oat_probe_high >> oat_probe.oat_probe_sense
         c.oat_probe_low >> oat_probe.oat_probe_low
@@ -120,7 +120,7 @@ with yaw_servo.J281 as c:
 with gdl51r as c:
     c.aircraft_power >> avionics_block_3.GDL51R
     c.ground >> gnd
-    with Shield(drain_remote=local):
+    with Shield(drain_remote=True):
         c.music_out_left >> gma245.J2402.music_2_in_left
         c.music_out_common >> gma245.J2402.music_2_in_low
         c.music_out_right >> gma245.J2402.music_2_in_right
@@ -130,29 +130,29 @@ with gdl51r as c:
 
 # Page 7
 with gma245.P2401 as c:
-    with Shield(drain=local):
+    with Shield(drain=True):
         c.pilot_mic_key_in >> pilot_stick.push_to_talk
         c.pilot_mic_audio_in_high >> pilot_lemo.mic_high
         c.pilot_mic_audio_in_low >> pilot_lemo.mic_low
 
 with gma245.J2402 as c:
-    with Shield(drain=local):
+    with Shield(drain=True):
         c.pilot_headset_audio_out_left >> pilot_lemo.audio_left
         c.pilot_headset_audio_out_right >> pilot_lemo.audio_right
         c.pilot_headset_audio_out_low >> pilot_lemo.ground
 
-    with Shield(drain=local):
+    with Shield(drain=True):
         c.copilot_headset_audio_out_left >> copilot_lemo.audio_left
         c.copilot_headset_audio_out_right >> copilot_lemo.audio_right
         c.copilot_headset_audio_out_low >> copilot_lemo.ground
 
-    with Shield(drain=local):
+    with Shield(drain=True):
         c.copilot_mic_key_in >> copilot_stick.push_to_talk
         c.copilot_mic_audio_in_high >> copilot_lemo.mic_high
         c.copilot_mic_audio_in_low >> copilot_lemo.mic_low
 
     # Page 8
-    with Shield(drain=local):
+    with Shield(drain=True):
         c.music_1_in_left >> music_in.tip
         c.music_1_in_right >> music_in.ring
         c.music_1_in_low >> music_in.sleeve
@@ -174,34 +174,34 @@ with gma245.J2402 as c:
 
 # Page 9
 with gma245.P2401 as c:
-    with Shield(drain=local):
+    with Shield(drain=True):
         c.com_1_audio_in_high >> gtn650xi.P1003.com_audio_hi
         c.com_1_audio_low >> gtn650xi.P1003.com_audio_lo
 
-    with Shield(drain=local):
+    with Shield(drain=True):
         c.com_1_audio_low >> gtn650xi.P1003.mic_audio_in_lo
         c.com_1_mic_audio_out_high >> gtn650xi.P1003.com_mic_1_audio_in_hi
         c.com_1_mic_key_out >> gtn650xi.P1003.com_mic_1_key
     c.com_1_mic_key_out >> gtr20.J2001.tx_interlock_in
 
-    with Shield(drain=local):
+    with Shield(drain=True):
         c.nav_1_audio_in_high >> gtn650xi.P1004.vor_loc_audio_out_hi
         c.nav_1_audio_in_low >> gtn650xi.P1004.vor_loc_audio_out_lo
 
-    with Shield(drain=local):
+    with Shield(drain=True):
         c.alert_3_4_aux_3_audio_in_low >> gtn650xi.P1001.audio_out_lo
         c.alert_4_audio_in_high >> gtn650xi.P1001.audio_out_hi
 
-    with Shield(drain=local):
+    with Shield(drain=True):
         c.com_2_audio_in_high >> gtr20.J2001.receiver_out_high
         c.com_2_audio_low >> gtr20.J2001.receiver_audio_low
 
-    with Shield(drain=local):
+    with Shield(drain=True):
         c.com_2_audio_low >> gtr20.J2001.pilot_mic_low
         c.com_2_mic_audio_out_high >> gtr20.J2001.pilot_mic_in
         c.com_2_mic_key_out >> gtr20.J2001.pilot_ptt
 
-    with Shield(drain=local):
+    with Shield(drain=True):
         c.alert_1_audio_in_high >> pfd.P4602.mono_audio_out_high
         c.alert_1_audio_in_low >> pfd.P4602.mono_audio_out_low
 
@@ -263,7 +263,7 @@ with gad27.TB273 as c:
     (c.light_2_power >> main_block.taxi_lights).gauge(18)
 
     (c.flap_power_in >> main_block.flaps).gauge(18)
-    (c.flap_power_out_1 >> main_block.flaps).gauge(18)
+    (c.flap_power_gnd >> gnd).gauge(18)
     (c.flap_power_out_1 >> flap_motor.extend).gauge(18)
     (c.flap_power_out_2 >> flap_motor.retract).gauge(18)
 
@@ -416,15 +416,15 @@ with gea24.J242 as c:
 
 # Page 28
 with gea24.J243 as c:
-    (c.fuel_pressure_5v >> fuel_pressure.gpio).drain(local).drain_remote(None)
-    with Shield(drain=local, drain_remote=local):
+    (c.fuel_pressure_5v >> fuel_pressure.gpio).drain()
+    with Shield(drain=True, drain_remote=True):
         c.rpm_1.signal >> sds_ecu.tach
-    (c.oil_pressure_5v >> oil_pressure.gpio).drain(local).drain_remote(None)
-    (c.manifold_pressure_5v >> manifold_pressure.gpio).drain(local).drain_remote(None)
-    with Shield(drain=local, drain_remote=local):
+    (c.oil_pressure_5v >> oil_pressure.gpio).drain()
+    (c.manifold_pressure_5v >> manifold_pressure.gpio).drain()
+    with Shield(drain=True, drain_remote=True):
         c.fuel_flow.signal >> sds_ecu.fuel_flow
 
-    with Shield(drain=local):
+    with Shield(drain=True):
         c.oil_temp_high >> oil_temp.high
         c.oil_temp_low >> oil_temp.low
 
@@ -436,9 +436,9 @@ with gea24.J243 as c:
 with gea24.J244 as c:
     c.fuel_quantity_1.signal >> left_fuel.power
     c.fuel_quantity_2.signal >> right_fuel.power
-    c.gp1 >> pitch_trim.position
-    c.gp2 >> roll_trim.position
-    c.gp3 >> flap_motor.position
+    (c.gp1 >> pitch_trim.position).drain()
+    (c.gp2 >> roll_trim.position).drain()
+    (c.gp3 >> flap_motor.position).drain()
 
     c.volts_1 >> Fuse("Main Bus", amps=1)
     c.volts_2 >> Fuse("Engine Bus", amps=1)
@@ -449,11 +449,12 @@ with gea24.J244 as c:
 
 # Page 30
 with gea24.J243 as c:
-    with Shield(drain=local):
+    with Shield(drain=True):
         c.gp_5v_out >> co2_sensor.power
         c.gp6_high >> co2_sensor.signal
         c.gp_gnd_1 >> co2_sensor.ground
-        c.gp6_low.local_ground()
+
+    c.gp6_low.local_ground()
 
 # Page 31
 
@@ -480,7 +481,7 @@ CanBusLine(
 # Page 32
 
 with elt.DIN as c:
-    with Shield(drain_remote=local):
+    with Shield(drain_remote=True):
         c.remote_switch >> avionics_block_3.elt
         c.ground >> gnd
         c.elt_rx >> gtn650xi.P1001.rs232_1.tx

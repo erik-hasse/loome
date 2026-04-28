@@ -30,12 +30,14 @@ class LEMO(Component):
 
 
 class TRS(Component):
+    render = False
     tip = Pin("T", "Tip")
     ring = Pin("R", "Ring")
     sleeve = Pin("S", "Sleeve")
 
 
 class LED(Component):
+    render = False
     power = Pin(1, "Power")
     ground = Pin(2, "Ground")
 
@@ -48,6 +50,7 @@ class PHAviationFlapMotor(Component):
 
 
 class USBPort(Component):
+    render = False
     power = Pin("RED", "Power")
     ground = Pin("BLK", "Ground")
     data_high = Pin("GRN", "Data High")
@@ -55,6 +58,7 @@ class USBPort(Component):
 
 
 class Fan(Component):
+    render = False
     control = GPIO("RED", "YLW", "BLK", name="Control")
 
 
@@ -72,6 +76,8 @@ class _Cylinder(Connector):
 
 
 class Engine4Cyl(Component):
+    render = False
+
     class Cylinder1(_Cylinder):
         pass
 
@@ -86,15 +92,18 @@ class Engine4Cyl(Component):
 
 
 class GPIOSensor(Component):
+    render = False
     gpio = GPIO("RED", "GRN", "BLK", name="GPIO")
 
 
 class HighLowSensor(Component):
+    render = False
     high = Pin("RED", "High")
     low = Pin("GRN", "Low")
 
 
 class SingleInputSensor(Component):
+    render = False
     power = Pin(1, "Power")
 
 

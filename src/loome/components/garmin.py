@@ -614,6 +614,7 @@ class G5(Component):
 
 
 class ConfigModule(Component):
+    render = False
     power = Pin("RED", "Power")
     ground = Pin("BLK", "Ground")
     data = Pin("YLW", "Data")

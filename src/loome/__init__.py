@@ -1,3 +1,5 @@
+from loome.components.switches import DPDT, DPST, SPDT, SPST
+
 from .bundles import Breakout, Bundle
 from .buses import CanBusLine
 from .harness import Harness
@@ -20,7 +22,6 @@ from .model import (
     WireSegment,
 )
 from .ports import ARINC429, GPIO, RS232, CanBus, GarminEthernet, Port, Thermocouple
-from .switches import DPDT, DPST, SPDT, SPST
 
 __all__ = [
     "ARINC429",

@@ -36,9 +36,8 @@ class MainBus(FuseBlock):
     pitot_heat = Fuse("Pitot Heat", amps=15)
 
 
-avionics_block_1 = DualFeedBlock()
-avionics_block_2 = DualFeedBlock()
+avionics_block_1 = DualFeedBlock("Left Dual")
+avionics_block_2 = DualFeedBlock("Right Dual")
 avionics_block_3 = SingleFeedBlock()
 main_block = MainBus()
 gnd = GroundSymbol("GND")
-local = GroundSymbol("local")

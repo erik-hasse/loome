@@ -20,7 +20,13 @@ the descriptor plumbing is inherited.
 
 from __future__ import annotations
 
-from .model import GroundSymbol, OffPageReference, Pin, ShieldGroup
+from typing import Any
+
+from .model import GroundSymbol, OffPageReference, Pin, ShieldGroup, _resolve_drain
+
+# Sentinel meaning "caller did not supply this argument" — distinct from None
+# (which means "explicitly set to floating / no drain").
+_UNSET: Any = object()
 
 
 class PortBuilder:
@@ -48,11 +54,11 @@ class PortBuilder:
         self._kwargs["ground"] = value
         return self
 
-    def drain(self, value) -> "PortBuilder":
+    def drain(self, value=True) -> "PortBuilder":
         self._kwargs["drain"] = value
         return self
 
-    def drain_remote(self, value) -> "PortBuilder":
+    def drain_remote(self, value=True) -> "PortBuilder":
         self._kwargs["drain_remote"] = value
         return self
 
@@ -195,16 +201,16 @@ class RS232(Port):
             p.shield_group = sg
             sg.pins.append(p)
 
-    def connect(self, other: RS232, *, ground: bool = True, notes: str = "", drain=None, drain_remote=None) -> None:
+    def connect(self, other: RS232, *, ground: bool = True, notes: str = "", drain=_UNSET, drain_remote=_UNSET) -> None:
         """Cross-connect: self.TX → other.RX and self.RX → other.TX."""
         self._tx.connect(other._rx)
         seg_rx = self._rx.connect(other._tx)
-        self._sg.drain_remote = drain_remote or _RS232_BACKSHELL
-        other._sg.drain_remote = drain or _RS232_BACKSHELL
-        if drain is not None:
-            self._sg.drain = drain
-        if drain_remote is not None:
-            other._sg.drain = drain_remote
+        self._sg.drain_remote = _resolve_drain(drain_remote) if drain_remote is not _UNSET else _RS232_BACKSHELL
+        other._sg.drain_remote = _resolve_drain(drain) if drain is not _UNSET else _RS232_BACKSHELL
+        if drain is not _UNSET:
+            self._sg.drain = _resolve_drain(drain)
+        if drain_remote is not _UNSET:
+            other._sg.drain = _resolve_drain(drain_remote)
         if ground and self._gnd is not None and other._gnd is not None:
             seg_gnd = self._gnd.connect(other._gnd)
             if notes:
@@ -279,25 +285,26 @@ class GPIO(Port):
     def __rshift__(self, other: GPIO) -> PortBuilder:
         return PortBuilder(self, other)
 
-    def connect(self, other: GPIO, notes: str = "", drain=None, drain_remote=None, **_) -> None:
+    def connect(self, other: GPIO, notes: str = "", drain=_UNSET, drain_remote=_UNSET, **_) -> None:
         """Connect positive↔positive, signal↔signal, ground↔ground.
 
         Args:
-            drain: endpoint (e.g. GroundSymbol) that drains the shield at the local end.
-            drain_remote: endpoint that drains the shield at the remote end.
+            drain: drain endpoint at the local end. ``True`` = local ground,
+                ``False``/``None`` = floating, or an explicit ``WireEndpoint``.
+            drain_remote: drain endpoint at the remote end (same encoding).
         """
         self._positive.connect(other._positive)
         self._signal.connect(other._signal)
         seg = self._ground.connect(other._ground)
         if notes:
             seg.notes = notes
-        if drain is not None and self._sg is not None:
-            self._sg.drain = drain
-        if drain_remote is not None:
+        if drain is not _UNSET and self._sg is not None:
+            self._sg.drain = _resolve_drain(drain)
+        if drain_remote is not _UNSET:
             if self._sg is not None:
-                self._sg.drain_remote = drain_remote
+                self._sg.drain_remote = _resolve_drain(drain_remote)
             if other._sg is not None:
-                other._sg.drain = drain_remote
+                other._sg.drain = _resolve_drain(drain_remote)
 
     @property
     def positive(self) -> Pin:
@@ -350,19 +357,19 @@ class ARINC429(Port):
             p.shield_group = sg
             sg.pins.append(p)
 
-    def connect(self, other: "ARINC429", *, notes: str = "", drain=None, drain_remote=None, **_) -> None:
+    def connect(self, other: "ARINC429", *, notes: str = "", drain=_UNSET, drain_remote=_UNSET, **_) -> None:
         if self._direction == other._direction:
             raise ValueError(f"ARINC 429 requires one 'in' and one 'out' port, but both are {self._direction!r}")
         seg = self._a.connect(other._a)
         self._b.connect(other._b)
         if notes:
             seg.notes = notes
-        self._sg.drain_remote = drain_remote or _ARINC_BACKSHELL
-        other._sg.drain_remote = drain or _ARINC_BACKSHELL
-        if drain is not None:
-            self._sg.drain = drain
-        if drain_remote is not None:
-            other._sg.drain = drain_remote
+        self._sg.drain_remote = _resolve_drain(drain_remote) if drain_remote is not _UNSET else _ARINC_BACKSHELL
+        other._sg.drain_remote = _resolve_drain(drain) if drain is not _UNSET else _ARINC_BACKSHELL
+        if drain is not _UNSET:
+            self._sg.drain = _resolve_drain(drain)
+        if drain_remote is not _UNSET:
+            other._sg.drain = _resolve_drain(drain_remote)
 
     def __rshift__(self, other: "ARINC429") -> PortBuilder:
         return PortBuilder(self, other)
@@ -404,7 +411,7 @@ class GarminEthernet(Port):
             p.shield_group = sg
             sg.pins.append(p)
 
-    def connect(self, other: "GarminEthernet", *, notes: str = "", drain=None, drain_remote=None, **_) -> None:
+    def connect(self, other: "GarminEthernet", *, notes: str = "", drain=_UNSET, drain_remote=_UNSET, **_) -> None:
         if self._direction == other._direction:
             raise ValueError(
                 f"Ethernet connection requires one 'in' and one 'out' port, but both are {self._direction!r}"
@@ -413,12 +420,12 @@ class GarminEthernet(Port):
         self._b.connect(other._b)
         if notes:
             seg.notes = notes
-        self._sg.drain_remote = drain_remote or _ETHERNET_BACKSHELL
-        other._sg.drain_remote = drain or _ETHERNET_BACKSHELL
-        if drain is not None:
-            self._sg.drain = drain
-        if drain_remote is not None:
-            other._sg.drain = drain_remote
+        self._sg.drain_remote = _resolve_drain(drain_remote) if drain_remote is not _UNSET else _ETHERNET_BACKSHELL
+        other._sg.drain_remote = _resolve_drain(drain) if drain is not _UNSET else _ETHERNET_BACKSHELL
+        if drain is not _UNSET:
+            self._sg.drain = _resolve_drain(drain)
+        if drain_remote is not _UNSET:
+            other._sg.drain = _resolve_drain(drain_remote)
 
     def __rshift__(self, other: "GarminEthernet") -> PortBuilder:
         return PortBuilder(self, other)

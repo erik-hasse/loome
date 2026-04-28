@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -75,11 +76,26 @@ def _load_harness(spec_path: Path):
     return harness
 
 
+def _safe_filename(label: str) -> str:
+    """Convert a component label to a safe SVG filename stem."""
+    return re.sub(r"[^A-Za-z0-9]+", "_", label).strip("_") or "component"
+
+
 def _cmd_render(args) -> None:
     harness = _load_spec_or_exit(args.spec)
     layout_result = layout(harness, show_unconnected=args.show_unconnected)
-    render(harness, layout_result, args.output, colored=not args.no_color)
-    print(f"Rendered {len(harness.components)} component(s) → {args.output}")
+    output = Path(args.output)
+
+    if output.is_dir() or not output.suffix:
+        output.mkdir(parents=True, exist_ok=True)
+        rendered = [c for c in harness.components if c.render]
+        for comp in rendered:
+            out_file = output / f"{_safe_filename(comp.label)}.svg"
+            render(harness, layout_result, out_file, colored=not args.no_color, component=comp)
+        print(f"Rendered {len(rendered)} component(s) → {output}/")
+    else:
+        render(harness, layout_result, output, colored=not args.no_color)
+        print(f"Rendered {len(harness.components)} component(s) → {output}")
 
 
 def _cmd_bundle(args) -> None:

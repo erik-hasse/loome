@@ -1,8 +1,8 @@
 from examples.n14ev.power import gnd
 from loome import DPST, SPST
-from loome.switches import Rheostat
+from loome.components.switches import Rheostat
 
-toga = DPST("TO/GA", momentary=True)
+toga = DPST("TO/GA", momentary=True, render=True)
 toga.com1 >> toga.com2
 toga.com1 >> gnd
 

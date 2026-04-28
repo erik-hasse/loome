@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import itertools
 from dataclasses import dataclass, field
 from typing import Literal, Self
 
@@ -185,6 +186,23 @@ class SpliceNode:
 
 # ── shields ────────────────────────────────────────────────────────────────
 
+_lgnd_counter = itertools.count()
+
+
+def _resolve_drain(value: "WireEndpoint | bool | None") -> "WireEndpoint | None":
+    """Normalize a drain specification.
+
+    ``True``  → new open-triangle GroundSymbol (local ground).
+    ``False`` → ``None`` (floating, no drain).
+    ``None``  → ``None`` (floating, no drain).
+    Any ``WireEndpoint`` → passed through unchanged.
+    """
+    if value is True:
+        return GroundSymbol(id=f"_lgnd_{next(_lgnd_counter)}", label="GND", filled=False)
+    if value is False:
+        return None
+    return value  # type: ignore[return-value]
+
 
 @dataclass
 class ShieldGroup:
@@ -216,11 +234,13 @@ class Shield:
 
     def __init__(
         self,
-        drain: "WireEndpoint | None" = None,
-        drain_remote: "WireEndpoint | None" = None,
+        drain: "WireEndpoint | bool | None" = None,
+        drain_remote: "WireEndpoint | bool | None" = None,
         label: str = "",
     ) -> None:
-        self._sg = ShieldGroup(label=label, pins=[], drain=drain, drain_remote=drain_remote)
+        self._sg = ShieldGroup(
+            label=label, pins=[], drain=_resolve_drain(drain), drain_remote=_resolve_drain(drain_remote)
+        )
 
     def __enter__(self) -> "Shield":
         _active_shield_stack.append(self._sg)
@@ -375,6 +395,8 @@ class Connector:
 
 
 class Component:
+    render: bool = True  # set False on a subclass or instance to hide from schematic
+
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         for attr_name, val in vars(cls).items():
@@ -401,8 +423,10 @@ class Component:
                 if not val.signal_name:
                     val.signal_name = _default_signal_name(attr_name)
 
-    def __init__(self, label: str | None = None):
+    def __init__(self, label: str | None = None, *, render: bool | None = None):
         self.label = label or type(self).__name__
+        if render is not None:
+            self.render = render
         self._connectors: dict[str, Connector] = {}
         self._direct_pins: dict[str, Pin] = {}
         for cls in reversed(type(self).__mro__):

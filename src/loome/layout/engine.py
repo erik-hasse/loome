@@ -355,7 +355,8 @@ def _collect_displayed_signal_names(harness: Harness, show_unconnected: bool) ->
                         remote.append(rp.signal_name)
 
     for comp in harness.components:
-        _walk(comp)
+        if comp.render:
+            _walk(comp)
     return local, remote
 
 
@@ -480,6 +481,8 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
         return ctx, current_group
 
     for comp in harness.components:
+        if not comp.render:
+            continue
         section_start_y = y
         y += COMPONENT_HEADER_H
 
