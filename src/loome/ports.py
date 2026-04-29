@@ -316,8 +316,11 @@ class GPIO(Port):
         seg = self._ground.connect(other._ground)
         if notes:
             seg.notes = notes
-        if drain is not _UNSET and self._sg is not None:
-            self._sg.drain = _resolve_drain(drain)
+        if drain is not _UNSET:
+            if self._sg is not None:
+                self._sg.drain = _resolve_drain(drain)
+            if other._sg is not None:
+                other._sg.drain_remote = _resolve_drain(drain)
         if drain_remote is not _UNSET:
             if self._sg is not None:
                 self._sg.drain_remote = _resolve_drain(drain_remote)

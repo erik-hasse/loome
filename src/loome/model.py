@@ -383,6 +383,7 @@ class Connector:
                     pin = copy.copy(val)
                     pin._connections = []
                     pin._connector = self
+                    pin._connector_class = type(self)
                     setattr(self, attr_name, pin)
                     self._pins[pin.number] = pin
 

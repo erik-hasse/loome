@@ -5,17 +5,6 @@ Items are roughly in priority order within each section.
 
 ## Low effort
 
-- **Flap motor remote-side drain missing** — the flap-motor row on the GAD27
-  side renders the shield drain triangle, but the same shield's depiction on
-  the GEA24 side does not show the remote-end drain. Drain symmetry should be
-  restored so both ends show their respective drain symbols.
-
-- **All four ``Engine`` cylinder connectors labelled "Cylinder4"** — the
-  remote-box header on each EGT/CHT row in GEA24 J242 reads "Cylinder4"
-  regardless of which cylinder the wire actually targets. Likely a stale
-  reference to the last-iterated cylinder class in the connector-name
-  derivation path.
-
 - **Shielded wires (other than CAN) lost their coloring** — at some recent
   point, shielded wires stopped picking up the shield palette (W/WB/WO etc.)
   in the schematic. CAN still colors correctly. Probably a regression in the
@@ -41,7 +30,6 @@ Items are roughly in priority order within each section.
   cross visibly between the pin column and the splice bullet. The fan
   ordering inside ``renderers/splices.py`` doesn't sort outward legs to
   minimise crossings.
-
 
 - **Ground Rendering** - The triangles for ground (both local and chassis) render strangely and
   should be cleaned up.
