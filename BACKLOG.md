@@ -5,18 +5,6 @@ Items are roughly in priority order within each section.
 
 ## Low effort
 
-- **Shielded wires (other than CAN) lost their coloring** — at some recent
-  point, shielded wires stopped picking up the shield palette (W/WB/WO etc.)
-  in the schematic. CAN still colors correctly. Probably a regression in the
-  palette-walk in ``renderers/svg.py`` (around line 137) or the per-row
-  shield lookup.
-
-- **Shield wire color should beat power/ground color** — on the ELT
-  connection (and likely others), the explicit power-red / ground-black wire
-  color is winning over the shield palette. Shield membership should take
-  priority so a shielded power line still reads as shield-W rather than
-  flat red.
-
 - **Multi-direct primary-leg vertical alignment** — when a multi-direct pin's
   primary leg is a Terminal (e.g. TO/GA pin 1 → GND with a continuation
   jumper to COM 2), the bullet sits at ``_BULLET_CX`` but the continuation's

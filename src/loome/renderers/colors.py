@@ -39,9 +39,12 @@ def _wire_attrs(
 ) -> dict:
     """Return SVG stroke keyword args for a wire segment.
 
-    Priority: uncolored → explicit color → aircraft_power_2 (fuse/CB) → ground → shielded → white.
-    Shield palette is checked end_a-first so that a wire's color is the same at both
-    ends of the physical wire.
+    Priority: uncolored → explicit color → shielded → aircraft_power_2 (fuse/CB) → ground → white.
+    Shield palette beats power/ground so a shielded power line reads as shield-W
+    rather than flat red.  Connection-level shields (``with Shield``) derive
+    color from the segment's index in its shield group — this is per-wire, so
+    a pin with legs in two different shields (or one shielded and one not) gets
+    distinct colors.  Class-body shields fall back to the pin-keyed palette.
     """
     if not colored:
         return {"stroke": "#222222", "stroke_width": 1.5}
@@ -52,12 +55,19 @@ def _wire_attrs(
             attrs["stroke_dasharray"] = "5,3"
         return attrs
 
-    if isinstance(seg.end_a, (Fuse, CircuitBreaker)) or isinstance(seg.end_b, (Fuse, CircuitBreaker)):
-        return {"stroke": _POWER_STROKE, "stroke_width": 1.5}
+    # Connection-level shield: derive palette from segment index.
+    if seg.shield_group is not None and seg.shield_group.segments and not seg.shield_group.cable_only:
+        try:
+            idx = seg.shield_group.segments.index(seg)
+        except ValueError:
+            idx = 0
+        stroke, dash = _SHIELD_PALETTE[min(idx, len(_SHIELD_PALETTE) - 1)]
+        attrs = {"stroke": stroke, "stroke_width": 1.5}
+        if dash:
+            attrs["stroke_dasharray"] = dash
+        return attrs
 
-    if isinstance(seg.end_a, GroundSymbol) or isinstance(seg.end_b, GroundSymbol):
-        return {"stroke": _GROUND_STROKE, "stroke_width": 1.5}
-
+    # Class-body shield: pin-keyed palette.
     for endpoint in (seg.end_a, seg.end_b):
         if isinstance(endpoint, Pin):
             palette = pin_shield_palette.get(id(endpoint))
@@ -68,22 +78,32 @@ def _wire_attrs(
                     attrs["stroke_dasharray"] = dash
                 return attrs
 
+    if isinstance(seg.end_a, (Fuse, CircuitBreaker)) or isinstance(seg.end_b, (Fuse, CircuitBreaker)):
+        return {"stroke": _POWER_STROKE, "stroke_width": 1.5}
+
+    if isinstance(seg.end_a, GroundSymbol) or isinstance(seg.end_b, GroundSymbol):
+        return {"stroke": _GROUND_STROKE, "stroke_width": 1.5}
+
     return {"stroke": _WHITE_STROKE, "stroke_width": 1.5}
 
 
 def _effective_color_code(seg: WireSegment, psp: dict, colored: bool) -> str:
     """Return the color code to display on the wire label.
 
-    Mirrors the priority in _wire_attrs: explicit > aircraft_power_2 > ground > shielded.
+    Mirrors the priority in _wire_attrs: explicit > shielded > aircraft_power_2 > ground.
     """
     if not colored:
         return ""
     if seg.color:
         return seg.color
-    if isinstance(seg.end_a, (Fuse, CircuitBreaker)) or isinstance(seg.end_b, (Fuse, CircuitBreaker)):
-        return "R"
-    if isinstance(seg.end_a, GroundSymbol) or isinstance(seg.end_b, GroundSymbol):
-        return "B"
+    # Connection-level shield: derive code from segment index.
+    if seg.shield_group is not None and seg.shield_group.segments and not seg.shield_group.cable_only:
+        try:
+            idx = seg.shield_group.segments.index(seg)
+        except ValueError:
+            idx = 0
+        return _SHIELD_PALETTE_CODES[min(idx, len(_SHIELD_PALETTE_CODES) - 1)]
+    # Class-body shield: pin-keyed palette.
     for endpoint in (seg.end_a, seg.end_b):
         if isinstance(endpoint, Pin):
             palette_entry = psp.get(id(endpoint))
@@ -92,6 +112,10 @@ def _effective_color_code(seg: WireSegment, psp: dict, colored: bool) -> str:
                     return _SHIELD_PALETTE_CODES[_SHIELD_PALETTE.index(palette_entry)]
                 except ValueError:
                     pass
+    if isinstance(seg.end_a, (Fuse, CircuitBreaker)) or isinstance(seg.end_b, (Fuse, CircuitBreaker)):
+        return "R"
+    if isinstance(seg.end_a, GroundSymbol) or isinstance(seg.end_b, GroundSymbol):
+        return "B"
     return ""
 
 

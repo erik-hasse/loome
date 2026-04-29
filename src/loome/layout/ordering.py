@@ -311,17 +311,18 @@ def sort_legs(segments: list[WireSegment], source_pin: Pin) -> list[WireSegment]
 
     def key(seg: WireSegment) -> tuple:
         remote = seg.end_b if seg.end_a is source_pin else seg.end_a
+        # Shielded legs sort before unshielded so the primary row (pin label)
+        # stays with the shield-mates and the unshielded continuation goes to
+        # its own group below.
+        shield_priority = 0 if (seg.shield_group is not None and not seg.shield_group.cable_only) else 1
         if isinstance(remote, Terminal):
-            return (0, 0, id(remote))
+            return (shield_priority, 0, 0, id(remote))
         if isinstance(remote, SpliceNode):
-            # SpliceNode legs aren't reachable here today (the engine routes
-            # splice pins through a separate fan renderer), but treat them
-            # like Pin legs if they ever are.
-            return (1, id(remote), (2, 0))
+            return (shield_priority, 1, id(remote), (2, 0))
         if isinstance(remote, Pin):
             comp_key = id(remote._component) if remote._component is not None else id(remote._component_class)
             conn_key = id(remote._connector) if remote._connector is not None else id(remote._connector_class)
-            return (1, comp_key, conn_key, _pin_number_key(remote))
-        return (2, id(remote))
+            return (shield_priority, 1, comp_key, conn_key, _pin_number_key(remote))
+        return (shield_priority, 2, id(remote))
 
     return sorted(segments, key=key)

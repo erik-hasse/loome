@@ -129,14 +129,21 @@ def render(
     When *component* is provided only that component's section is drawn and the
     SVG canvas is sized to fit it — useful for per-component output.
     """
-    # Build shield palette lookup: class pin id → (stroke, dasharray or None)
-    # Step 1: assign canonical W→WB→WO entries from each shield group's pin order.
+    # Build shield palette lookup: pin id → (stroke, dasharray or None)
+    # Step 1a: assign canonical W→WB→WO entries from each shield group's pin order
+    # (class-body shields defined via ShieldGroup.pins).
     pin_shield_palette: dict[int, tuple[str, str | None]] = {}
     for sg in harness.shield_groups:
         if sg.cable_only:
             continue
         for idx, p in enumerate(sg.pins):
             pin_shield_palette[id(p)] = _SHIELD_PALETTE[min(idx, len(_SHIELD_PALETTE) - 1)]
+
+    # Step 1b: connection-level shields (``with Shield(...)``) derive color
+    # directly from seg.shield_group in _wire_attrs — no pin_shield_palette
+    # entries needed.  However, we still propagate remote-pin entries so
+    # class-body pins that cross-connect to Shield()-shielded remotes pick
+    # up a palette color.
 
     # Step 2: propagate source palette to remote pins so cross-connected wires
     # (e.g. RS-232 TX↔RX) show the same color at both ends.  The pin that
@@ -148,8 +155,17 @@ def render(
                 continue
             for seg in p._connections:
                 remote = seg.end_b if seg.end_a is p else seg.end_a
-                if isinstance(remote, Pin) and id(remote) in pin_shield_palette:
+                if isinstance(remote, Pin) and id(remote) not in pin_shield_palette:
                     pin_shield_palette[id(remote)] = src
+
+    # Step 3: propagate palette entries from class pins to their instance-pin
+    # copies.  Connections are made on instance pins (which are copy.copy'd
+    # from the class pin), so wire segment endpoints carry instance-pin ids.
+    # Without this step non-CAN shielded wires fail the palette lookup.
+    for ri in layout.all_rows:
+        class_entry = pin_shield_palette.get(id(ri.class_pin))
+        if class_entry is not None and id(ri.pin) not in pin_shield_palette:
+            pin_shield_palette[id(ri.pin)] = class_entry
 
     # Build pin→row lookups (primary row only — for legacy lookup paths).
     class_pin_to_row: dict[int, object] = {}
