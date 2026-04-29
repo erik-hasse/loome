@@ -214,6 +214,7 @@ class ShieldGroup:
     drain: "WireEndpoint | None" = None  # drain at source/near end (None = floating)
     drain_remote: "WireEndpoint | None" = None  # drain at remote end (None = floating)
     single_oval: bool = False  # draw only the left/near oval (e.g. CAN bus)
+    cable_only: bool = False  # group pins for layout but skip oval/palette (twisted pairs, etc.)
 
 
 _active_shield_stack: list[ShieldGroup] = []

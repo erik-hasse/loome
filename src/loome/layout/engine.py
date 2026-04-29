@@ -3,8 +3,23 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from ..harness import Harness
-from ..model import Component, Connector, Pin, SpliceNode, Terminal, WireSegment
+from ..model import Component, Connector, Pin, SpliceNode, WireSegment
 from .geometry import Rect
+from .ordering import (
+    _shield_ids as _pin_shield_ids,
+)
+from .ordering import (
+    pin_sort_keys as _sort_pin_attrs,
+)
+from .ordering import (
+    pin_target_key as _pin_target_key,
+)
+from .ordering import (
+    segment_target_key as _segment_target_key,
+)
+from .ordering import (
+    sort_legs as _sort_legs,
+)
 
 MARGIN = 20
 SECTION_GAP = 14
@@ -170,76 +185,17 @@ def _has_splice_connection(class_pin: Pin, inst_pin: Pin | None = None) -> bool:
 
 
 def _pin_outgoing_segments(class_pin: Pin, inst_pin: Pin | None = None) -> list[WireSegment]:
-    """Return the segments outgoing from this pin (preferring instance over class)."""
-    use = _effective_pin(class_pin, inst_pin)
-    return list(use._connections)
+    """Return the segments outgoing from this pin (preferring instance over class).
 
-
-def _pin_shield_order(class_pin: Pin, inst_pin: Pin | None = None) -> int:
-    """Sort key for shield ordering within a group.
-
-    For class-body shields, returns the pin's position in ``sg.pins``.
-    For connection-level shields (``with Shield(...)`` blocks), returns the
-    segment's position in ``sg.segments`` — preserving the order pins were
-    written in the shield block.
-    Returns 999 when the pin is unshielded.
+    Multi-leg pins are reordered per the rules in ``ordering.sort_legs``: terminal
+    legs first (so the terminal wire takes the primary row), then by remote
+    connector, then by remote pin number.
     """
     use = _effective_pin(class_pin, inst_pin)
-    # Connection-level shield: position by segment index.
-    for seg in use._connections:
-        sg = seg.shield_group
-        if sg is not None:
-            for idx, s in enumerate(sg.segments):
-                if s is seg:
-                    return idx
-    # Class-body shield: source-pin index in sg.pins (so remote pins inherit
-    # the order of their source).
-    for seg in use._connections:
-        if seg.end_b is use or seg.end_b is class_pin:
-            src = seg.end_a
-        else:
-            src = class_pin
-        if isinstance(src, Pin) and src.shield_group is not None:
-            for idx, p in enumerate(src.shield_group.pins):
-                if p is src:
-                    return idx
-    sg = class_pin.shield_group
-    if sg is not None:
-        for idx, p in enumerate(sg.pins):
-            if p is class_pin:
-                return idx
-    return 999
-
-
-def _sort_pin_attrs(
-    pin_attrs: list[str],
-    get_class_pin,
-    get_inst_pin,
-) -> list[str]:
-    """Sort pin attribute names by (group order, shield order, original index).
-
-    A pin's "group" is its shield (when shielded) or its remote target (when
-    unshielded). Shield-mates therefore stay adjacent even when they target
-    different remotes, which lets a single shield oval wrap them all.
-    """
-    group_order: dict[tuple, int] = {}
-    keyed: list[tuple] = []
-    for orig_idx, attr_name in enumerate(pin_attrs):
-        cp = get_class_pin(attr_name)
-        ip = get_inst_pin(attr_name)
-        if cp is None:
-            keyed.append((999, 999, orig_idx, attr_name))
-            continue
-        sids = _pin_shield_ids(cp, ip)
-        if sids:
-            gkey: tuple = ("shield", min(sids))
-        else:
-            gkey = _pin_target_key(cp, ip)
-        if gkey not in group_order:
-            group_order[gkey] = len(group_order)
-        keyed.append((group_order[gkey], _pin_shield_order(cp, ip), orig_idx, attr_name))
-    keyed.sort(key=lambda x: x[:3])
-    return [x[3] for x in keyed]
+    segments = list(use._connections)
+    if len(segments) <= 1:
+        return segments
+    return _sort_legs(segments, use)
 
 
 def _iter_class_pins(cls, base_cls):
@@ -265,59 +221,6 @@ def _components_differ(k1: tuple | None, k2: tuple | None) -> bool:
     if len(k1) < 2 or len(k2) < 2:
         return False
     return k1[0] == "component" and k2[0] == "component" and k1[1] != k2[1]
-
-
-def _pin_target_key(class_pin: Pin, inst_pin: Pin | None = None) -> tuple:
-    """Return a stable grouping key based on where this pin's first connection leads.
-
-    Prefers instance-pin connections (wired at instance level) over class-pin connections.
-    """
-    use = _effective_pin(class_pin, inst_pin)
-    if not use._connections:
-        return ("unconnected",)
-    return _segment_target_key(use._connections[0], use, inst_pin)
-
-
-def _segment_target_key(seg: WireSegment, source_pin: Pin, inst_pin: Pin | None = None) -> tuple:
-    """Grouping key for a single segment's remote endpoint.
-
-    Lets multi-direct-connection pins assign each leg its own remote-box group
-    (so two legs to two different remotes get two correctly-labeled boxes).
-    """
-    remote = seg.end_b if seg.end_a is source_pin else seg.end_a
-    if isinstance(remote, Pin):
-        if inst_pin is not None:
-            if inst_pin._connector is not None and inst_pin._connector is remote._connector:
-                return ("jumper",)
-            if (
-                inst_pin._component is not None
-                and inst_pin._component is remote._component
-                and inst_pin._connector is None
-                and remote._connector is None
-            ):
-                return ("jumper",)
-        comp_key = id(remote._component) if remote._component is not None else id(remote._component_class)
-        return ("component", comp_key, id(remote._connector_class))
-    elif isinstance(remote, Terminal):
-        return ("terminal", id(remote))
-    return ("other", id(remote))
-
-
-def _pin_shield_ids(class_pin: Pin, inst_pin: Pin | None = None) -> set[int]:
-    """Return the set of shield-group ids this pin participates in.
-
-    Includes the class-body shield (``pin.shield_group``) and any
-    connection-level shields attached to its outgoing segments.
-    """
-    ids: set[int] = set()
-    sg = class_pin.shield_group
-    if sg is not None:
-        ids.add(id(sg))
-    use = _effective_pin(class_pin, inst_pin)
-    for seg in use._connections:
-        if seg.shield_group is not None:
-            ids.add(id(seg.shield_group))
-    return ids
 
 
 def _collect_displayed_signal_names(harness: Harness, show_unconnected: bool) -> tuple[list[str], list[str]]:

@@ -51,7 +51,7 @@ gap26 = GAP2620("GAP 26-20")
 gtx45r = GTX45R("GTX 45R")
 gtx_usb_config = USBPort("GTX45R USB Config")
 
-gtn650xi = GTN650Xi("GTX 650Xi")
+gtn650xi = GTN650Xi("GTN 650Xi")
 gtn650_config = ConfigModule("GTN 650Xi Config")
 gtn650_fan = Fan("GTN 650Xi Fan")
 gad29 = GAD29C("GAD 29")

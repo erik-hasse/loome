@@ -479,6 +479,10 @@ class Thermocouple(Port):
         self._gauge = gauge
         self._high = Pin(high_pin, f"{name} High")
         self._low = Pin(low_pin, f"{name} Low")
+        sg = ShieldGroup(label="", pins=[], cable_only=True)
+        for p in (self._high, self._low):
+            p.shield_group = sg
+            sg.pins.append(p)
 
     def connect(self, other: "Thermocouple", *, notes: str = "", **_) -> None:
         seg = self._high.connect(other._high, gauge=self._gauge, color="Y")

@@ -4,15 +4,65 @@ Items are roughly in priority order within each section.
 
 
 ## Low effort
+- **Fix the four pre-existing ``test_can_bus_line.py`` failures** — the test
+  fixtures use a bare ``_Node`` class without a ``can_terminate`` method, so
+  ``CanBusLine.__post_init__`` raises ``ValueError: Can't terminate <_Node>,
+  it must have a can_terminate method``. Either teach ``CanBusLine`` to skip
+  termination on devices that don't support it (and emit a warning) or add a
+  no-op ``can_terminate`` to the test fixture. Affects:
+  ``test_can_bus_resolved_length_is_trunk_sum``,
+  ``test_can_pin_segment_length_is_leg``,
+  ``test_can_bus_warns_if_device_unattached``,
+  ``test_warns_if_can_capable_connector_not_in_bus``.
 
-- **Wire-crossing jumper ordering** — when a pin fans out to two targets and one of them
-  is a ground symbol, the jumper bar can hop over the ground stub or over the other leg
-  depending on connection order, and both orderings look awkward (see TO/GA COM1 example).
-  The layout engine should order fan-out legs so that short stubs (ground symbols, off-page
-  refs) are placed last, minimising the height of the jumper bar that other legs must cross.
+- **Flap motor remote-side drain missing** — the flap-motor row on the GAD27
+  side renders the shield drain triangle, but the same shield's depiction on
+  the GEA24 side does not show the remote-end drain. Drain symmetry should be
+  restored so both ends show their respective drain symbols.
+
+- **All four ``Engine`` cylinder connectors labelled "Cylinder4"** — the
+  remote-box header on each EGT/CHT row in GEA24 J242 reads "Cylinder4"
+  regardless of which cylinder the wire actually targets. Likely a stale
+  reference to the last-iterated cylinder class in the connector-name
+  derivation path.
+
+- **Shielded wires (other than CAN) lost their coloring** — at some recent
+  point, shielded wires stopped picking up the shield palette (W/WB/WO etc.)
+  in the schematic. CAN still colors correctly. Probably a regression in the
+  palette-walk in ``renderers/svg.py`` (around line 137) or the per-row
+  shield lookup.
+
+- **Shield wire color should beat power/ground color** — on the ELT
+  connection (and likely others), the explicit power-red / ground-black wire
+  color is winning over the shield palette. Shield membership should take
+  priority so a shielded power line still reads as shield-W rather than
+  flat red.
+
+- **Multi-direct primary-leg vertical alignment** — when a multi-direct pin's
+  primary leg is a Terminal (e.g. TO/GA pin 1 → GND with a continuation
+  jumper to COM 2), the bullet sits at ``_BULLET_CX`` but the continuation's
+  jumper bar drops at ``_JUMPER_STUB_X``, so the vertical drop and the bar
+  are at different x positions and look disjoint. Drop the bar at
+  ``_BULLET_CX`` (or shift the bullet to ``_JUMPER_STUB_X``) when any
+  continuation leg is a same-connector jumper.
+
+- **GMA245 J2402 splice fan-out crossover** — pin 6 (Lighting Bus 14v High)
+  and pin 7 (Lighting Bus High) both feed a shared splice; the two stubs
+  cross visibly between the pin column and the splice bullet. The fan
+  ordering inside ``renderers/splices.py`` doesn't sort outward legs to
+  minimise crossings.
+
 
 - **Ground Rendering** - The triangles for ground (both local and chassis) render strangely and
   should be cleaned up.
+
+- **Splice-fan grouping with their direct siblings** — when several pins on a
+  connector fan through a shared splice to multiple remotes (e.g. GAD27 J271
+  pin 37/38 → splice → Cabin Light + Backlight) and adjacent pins go directly
+  to one of those same remotes (pin 39 → Backlight, pin 40 → Cabin Light), the
+  direct pins land in their own remote-only clusters and don't sit next to the
+  splice-fan rows. Layout would feel tighter if direct-to-X rows were drawn
+  into the cluster of any splice-fan that targets X.
 
 - **`PortBuilder.__del__` deferred execution** — `port_a >> port_b` defers `connect()` until
   garbage collection so fluent modifiers (`.ground(False)`, `.drain(local)`) can be chained

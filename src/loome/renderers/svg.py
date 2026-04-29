@@ -133,6 +133,8 @@ def render(
     # Step 1: assign canonical W→WB→WO entries from each shield group's pin order.
     pin_shield_palette: dict[int, tuple[str, str | None]] = {}
     for sg in harness.shield_groups:
+        if sg.cable_only:
+            continue
         for idx, p in enumerate(sg.pins):
             pin_shield_palette[id(p)] = _SHIELD_PALETTE[min(idx, len(_SHIELD_PALETTE) - 1)]
 
@@ -175,12 +177,14 @@ def render(
     shield_by_row_id: dict[int, ShieldGroup] = {}
     for ri in layout.all_rows:
         seg = ri.segment
-        if seg is not None and seg.shield_group is not None:
+        if seg is not None and seg.shield_group is not None and not seg.shield_group.cable_only:
             shield_by_row_id[id(ri)] = seg.shield_group
 
     # Legacy pin-keyed shield lookup for splice-fan / single-connection rows.
     shield_by_pin: dict[int, ShieldGroup] = {}
     for sg in harness.shield_groups:
+        if sg.cable_only:
+            continue
         for p in sg.pins:
             shield_by_pin[id(p)] = sg
             for seg in p._connections:
@@ -282,6 +286,8 @@ def render(
 
     # ── shield ovals ────────────────────────────────────────────────────────
     for sg in harness.shield_groups:
+        if sg.cable_only:
+            continue
         dl = _drain_label(sg.drain) if sg.drain is not None else ""
         dl_remote = _drain_label(sg.drain_remote) if sg.drain_remote is not None else ""
 
