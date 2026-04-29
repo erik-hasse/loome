@@ -4,16 +4,6 @@ Items are roughly in priority order within each section.
 
 
 ## Low effort
-- **Fix the four pre-existing ``test_can_bus_line.py`` failures** — the test
-  fixtures use a bare ``_Node`` class without a ``can_terminate`` method, so
-  ``CanBusLine.__post_init__`` raises ``ValueError: Can't terminate <_Node>,
-  it must have a can_terminate method``. Either teach ``CanBusLine`` to skip
-  termination on devices that don't support it (and emit a warning) or add a
-  no-op ``can_terminate`` to the test fixture. Affects:
-  ``test_can_bus_resolved_length_is_trunk_sum``,
-  ``test_can_pin_segment_length_is_leg``,
-  ``test_can_bus_warns_if_device_unattached``,
-  ``test_warns_if_can_capable_connector_not_in_bus``.
 
 - **Flap motor remote-side drain missing** — the flap-motor row on the GAD27
   side renders the shield drain triangle, but the same shield's depiction on

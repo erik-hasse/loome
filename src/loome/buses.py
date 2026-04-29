@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 @dataclass
 class CanBusLine:
     name: str
-    devices: list[Connector]
+    devices: list[type[Connector]]
     terminations: tuple[Connector, Connector] = field(init=False)
     _pin_ids: set[int] = field(default_factory=set, init=False, repr=False)
     _connector_of_pin: dict[int, Connector] = field(default_factory=dict, init=False, repr=False)

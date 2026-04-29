@@ -5,6 +5,9 @@ from loome.model import Component, Connector
 
 
 class _Node(Component):
+    def can_terminate(self):
+        self.J1.can.terminate()
+
     class J1(Connector):
         can = CanBus(1, 2)
 
@@ -19,7 +22,7 @@ def test_can_bus_resolved_length_is_trunk_sum():
     bb.attach(b.J1, leg_length=2)
     bc.attach(c.J1, leg_length=3)
 
-    bus = CanBusLine("Main CAN", devices=[a.J1, b.J1, c.J1], terminations=(a.J1, c.J1))
+    bus = CanBusLine("Main CAN", devices=[a.J1, b.J1, c.J1])
 
     h = Harness("h")
     h.autodetect({"a": a, "b": b, "c": c, "trunk": bundle, "bus": bus})
