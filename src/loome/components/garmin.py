@@ -7,6 +7,9 @@ from loome.constants import Axis
 class GAD27(Component):
     """Flap, Lights, Trim Controller"""
 
+    def can_terminate(self) -> None:
+        self.J271.can.low >> self.J271.can_term
+
     class J271(Connector):
         can = CanBus(1, 2)
         can_term = Pin(3, "Can Term")
@@ -153,6 +156,9 @@ class GDUMode(StrEnum):
 class GDU460(Component):
     """Display Unit, automatically connects CDU pins based on mode and display number"""
 
+    def can_terminate(self) -> None:
+        self.P4602.can.low >> self.P4602.can_bus_term
+
     def __init__(self, name: str, mode: GDUMode, number: int = 1):
         super().__init__(name)
         self.mode = mode
@@ -184,6 +190,9 @@ class GDU460(Component):
 
 class GEA24(Component):
     """EIS Interface"""
+
+    def can_terminate(self) -> None:
+        self.J241.can.terminate()
 
     class J241(Connector):
         can = CanBus(1, 2)
@@ -279,6 +288,9 @@ class GEA24(Component):
 class GMC507(Component):
     """Autopilot controller"""
 
+    def _terminate(self) -> None:
+        self.J7001.can_term_1 >> self.J7001.can_term_2
+
     class J7001(Connector):
         unit_id_1 = Pin(1, "Unit ID 1")
         unit_id_2 = Pin(2, "Unit ID 2")
@@ -294,6 +306,9 @@ class GMC507(Component):
 
 class GMU11(Component):
     """Magnetometer"""
+
+    def can_terminate(self):
+        self.J441.can.terminate()
 
     class J441(Connector):
         can = CanBus(1, 2)
@@ -324,6 +339,9 @@ class _BaseJ281(Connector):
 class GSA28(Component):
     """Autopilot Servo (pitch/yaw variant). If axis is provided, strap jumpers will be
     connected automatically."""
+
+    def can_terminate(self) -> None:
+        self.J281.can_term_1 >> self.J281.can_term_2
 
     def __init__(self, name: str, axis: Axis | None = None, is_trim: bool = False):
         super().__init__(name)
@@ -363,6 +381,9 @@ class GSA28RollServo(GSA28):
 
 class GSU25(Component):
     """Air Data Unit"""
+
+    def can_terminate(self) -> None:
+        self.J251.can.terminate()
 
     class J251(Connector):
         can = CanBus(1, 2)
@@ -405,6 +426,9 @@ class _BaseJ292(Connector):
 
 
 class GAD29C(Component):
+    def can_terminate(self) -> None:
+        self.J292.can_term_1 >> self.J292.can_term_2
+
     class J291(Connector):
         can = CanBus(1, 2)
         ground = Pin(3, "Ground")
@@ -425,6 +449,9 @@ class GTP59(Component):
 
 
 class GTR20(Component):
+    def can_terminate(self) -> None:
+        self.J2001.can_term_a >> self.J2001.can_term_b
+
     class J2001(Connector):
         aircraft_power = Pin(1, "Aircraft Power 1")
         disconnect_1 = Pin(2, "Disconnect 1")
@@ -471,6 +498,9 @@ class GDL51R(Component):
 
 
 class GMA245(Component):
+    def can_terminate(self) -> None:
+        self.P2401.can.terminate()
+
     class P2401(Connector):
         transceiver_3_audio_in = Pin(3, "Transceiver 3 Audio In")
         transceiver_3_audio_low = Pin(4, "Transceiver 3 Audio Low")
@@ -604,6 +634,9 @@ class GTX45R(Component):
 
 
 class G5(Component):
+    def can_terminate(self) -> None:
+        self.J51.can.terminate()
+
     class J51(Connector):
         can = CanBus(1, 2)
         unit_id = Pin(3, "Unit ID")

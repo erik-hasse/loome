@@ -1,5 +1,3 @@
-from loome.components.switches import DPDT, DPST, SPDT, SPST
-
 from .bundles import Breakout, Bundle
 from .buses import CanBusLine
 from .harness import Harness
@@ -35,8 +33,6 @@ __all__ = [
     "CircuitBreakerBank",
     "Component",
     "Connector",
-    "DPDT",
-    "DPST",
     "Fuse",
     "FuseBlock",
     "GPIO",
@@ -46,8 +42,6 @@ __all__ = [
     "Pin",
     "Port",
     "RS232",
-    "SPDT",
-    "SPST",
     "Shield",
     "ShieldGroup",
     "SpliceNode",

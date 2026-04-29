@@ -8,6 +8,8 @@ from ..model import Pin, ShieldGroup, SpliceNode, Terminal, WireSegment
 from .colors import _wire_attrs
 from .primitives import (
     _BULLET_CX,
+    _CAN_TERM_SHIELD_SHIFT,
+    _CAN_TERM_WIRE_START,
     _JUMPER_STUB_X,
     _MONO_CHAR_W,
     _REMOTE_BOX_PIN_NUM_W,
@@ -82,6 +84,7 @@ def _draw_connection(
     pin_shield_palette: dict | None = None,
     start_x_offset: float = _WIRE_PAD,
     wire_end_x: float | None = None,
+    shield_x_offset: float = 0,
 ) -> None:
     """Draw the leg of wire from ``wx + start_x_offset`` to the remote endpoint.
 
@@ -99,7 +102,7 @@ def _draw_connection(
         term_cx = max(term_cx, start_x + 20)
         wire_end = term_cx - 12
         dwg.add(dwg.line(start=(start_x, cy), end=(wire_end, cy), **attrs))
-        label_x1 = wx + _SHIELD_LEFT_CX + _SHIELD_RX if shield is not None else start_x
+        label_x1 = wx + _SHIELD_LEFT_CX + _SHIELD_RX + shield_x_offset if shield is not None else start_x
         _draw_wire_label(dwg, seg, label_x1, wire_end, cy, psp, colored, harness=harness)
         _draw_terminal(dwg, remote, term_cx, cy)
         dwg.add(
@@ -381,6 +384,7 @@ def _draw_pin_row(
                 entry = jumper_stubs.setdefault(id(seg), [seg, wire_x, []])
                 entry[2].append(cy)
         else:
+            terminated = pin._can_terminated
             _draw_connection(
                 dwg,
                 seg,
@@ -393,7 +397,9 @@ def _draw_pin_row(
                 min_term_cx,
                 colored,
                 psp,
+                start_x_offset=_CAN_TERM_WIRE_START if terminated else _WIRE_PAD,
                 wire_end_x=row_info.wire_end_x,
+                shield_x_offset=_CAN_TERM_SHIELD_SHIFT if terminated else 0,
             )
         return
 

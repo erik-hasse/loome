@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 class CanBusLine:
     name: str
     devices: list[Connector]
-    terminations: tuple[Connector, Connector] | None = None
+    terminations: tuple[Connector, Connector] = field(init=False)
     _pin_ids: set[int] = field(default_factory=set, init=False, repr=False)
     _connector_of_pin: dict[int, Connector] = field(default_factory=dict, init=False, repr=False)
 
@@ -49,6 +49,16 @@ class CanBusLine:
                         seen.add(name)
                         self._pin_ids.add(id(pv))
                         self._connector_of_pin.setdefault(id(pv), dev)
+
+        self.terminations = (self.devices[0], self.devices[-1])
+
+        for conn in self.terminations:
+            comp = getattr(conn, "_component", None)
+            if comp is not None:
+                if hasattr(comp, "can_terminate"):
+                    comp.can_terminate()
+                else:
+                    raise ValueError(f"Can't terminate {comp}, it must have a can_terminate method")
 
     def covers_pin(self, pin: Pin) -> bool:
         return id(pin) in self._pin_ids

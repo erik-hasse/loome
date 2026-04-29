@@ -287,6 +287,7 @@ class Pin:
     _component: object | None = field(default=None, repr=False)
     _connections: list[WireSegment] = field(default_factory=list, repr=False)
     shield_group: "ShieldGroup | None" = field(default=None, repr=False)
+    _can_terminated: bool = field(default=False, repr=False)
 
     def local_ground(self, label: str = "GND") -> None:
         sym = GroundSymbol(id=f"lgnd_{id(self)}", label=label, filled=False)

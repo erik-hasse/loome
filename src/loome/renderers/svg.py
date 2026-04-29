@@ -9,9 +9,12 @@ from ..layout.engine import MARGIN, LayoutResult, PinRowInfo
 from ..model import Component, Pin, ShieldGroup, SpliceNode, Terminal
 from .colors import _SHIELD_PALETTE, _wire_attrs
 from .primitives import (
+    _CAN_TERM_BOX_CX,
+    _CAN_TERM_SHIELD_SHIFT,
     _JUMPER_STUB_X,
     _MONO_CHAR_W,
     _TERM_SYMBOL_W,
+    _draw_can_term_box,
     _draw_connector_header,
     _draw_section_bg,
     _draw_shield_ovals,
@@ -395,6 +398,7 @@ def render(
                 runs = _split_contiguous(inst_rows)
                 left_run = _drain_run_index(runs, sg.drain)
                 right_run = _drain_run_index(runs, sg.drain_remote)
+                term_shift = _CAN_TERM_SHIELD_SHIFT if any(ri.pin._can_terminated for ri in inst_rows) else 0
                 for i, run in enumerate(runs):
                     _draw_shield_ovals(
                         dwg,
@@ -403,6 +407,7 @@ def render(
                         drain_label=dl if i == left_run else "",
                         drain_remote_label=dl_remote if i == right_run else "",
                         single_oval=sg.single_oval,
+                        x_offset=term_shift,
                     )
 
             # Restrict remote ovals to instance pins whose source oval was drawn.
@@ -466,5 +471,20 @@ def render(
     for group in layout.pin_groups:
         if group.target_key[0] == "component":
             _draw_remote_box(dwg, group, harness, layout.remote_box_w)
+
+    # ── CAN TERM boxes ───────────────────────────────────────────────────────
+    for comp in components_to_render:
+        for conn in comp._connectors.values():
+            term_rows = []
+            for inst_pin in vars(conn).values():
+                if isinstance(inst_pin, Pin) and inst_pin._can_terminated:
+                    row = inst_pin_to_row.get(id(inst_pin))
+                    if row is not None:
+                        term_rows.append(row)
+            if len(term_rows) >= 2:
+                wx = term_rows[0].wire_start_x
+                y_top = min(r.rect.y for r in term_rows)
+                y_bot = max(r.rect.y + r.rect.h for r in term_rows)
+                _draw_can_term_box(dwg, wx + _CAN_TERM_BOX_CX, y_top, y_bot)
 
     dwg.save()

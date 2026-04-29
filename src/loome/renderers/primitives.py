@@ -24,6 +24,10 @@ _SHIELD_RIGHT_CX = 322  # center x of right shield oval (just inside _REMOTE_BOX
 _SHIELD_RX = 7  # half-width of each oval
 _MONO_CHAR_W = 5.4  # estimated px width of one monospace char at 9px
 _TERM_SYMBOL_W = 22  # px from wire end to symbol center (gap + half symbol width)
+_CAN_TERM_BOX_W = 18  # width of the spanning TERM box
+_CAN_TERM_BOX_CX = _WIRE_PAD + _CAN_TERM_BOX_W // 2  # box center, left-justified in wire area (= 15)
+_CAN_TERM_WIRE_START = _WIRE_PAD + _CAN_TERM_BOX_W + 4  # wire start for terminated pins (= 28)
+_CAN_TERM_SHIELD_SHIFT = _CAN_TERM_WIRE_START - _WIRE_PAD  # how far right the shield moves (= 22)
 
 # Remote component box (drawn to the right of the wire / shield area)
 _REMOTE_BOX_X = 340  # left edge of box, relative to wire_start_x
@@ -258,6 +262,35 @@ def _draw_terminal(dwg: svgwrite.Drawing, remote: Terminal, x: float, y: float) 
         dwg.add(dwg.line(start=(x - 4, y + 4), end=(x + 4, y - 4), stroke="#c2410c", stroke_width=1.5))
 
 
+def _draw_can_term_box(dwg: svgwrite.Drawing, cx: float, y_top: float, y_bot: float) -> None:
+    """Draw a single spanning TERM box for a CAN bus termination point."""
+    h = y_bot - y_top
+    mid_y = (y_top + y_bot) / 2
+    dwg.add(
+        dwg.rect(
+            insert=(cx - _CAN_TERM_BOX_W / 2, y_top),
+            size=(_CAN_TERM_BOX_W, h),
+            rx=2,
+            ry=2,
+            fill="#f0fdf4",
+            stroke="#166534",
+            stroke_width=1.5,
+        )
+    )
+    dwg.add(
+        dwg.text(
+            "TERM",
+            insert=(cx, mid_y + 2),
+            text_anchor="middle",
+            fill="#166534",
+            font_size="7px",
+            font_weight="bold",
+            font_family="ui-monospace, monospace",
+            transform=f"rotate(90, {cx}, {mid_y})",
+        )
+    )
+
+
 # ── section / connector chrome ─────────────────────────────────────────────
 
 
@@ -321,6 +354,7 @@ def _draw_shield_ovals(
     drain_label: str = "",
     drain_remote_label: str = "",
     single_oval: bool = False,
+    x_offset: float = 0,
 ) -> None:
     wx = rows[0].wire_start_x
     y_top = min(r.rect.y for r in rows)
@@ -329,7 +363,8 @@ def _draw_shield_ovals(
     ry = (y_bot - y_top) / 2 + 2
     oval_bottom = cy + ry
 
-    cx_offsets = [_SHIELD_LEFT_CX] if single_oval else [_SHIELD_LEFT_CX, _SHIELD_RIGHT_CX]
+    left_cx = _SHIELD_LEFT_CX + x_offset
+    cx_offsets = [left_cx] if single_oval else [left_cx, _SHIELD_RIGHT_CX]
     for cx_off in cx_offsets:
         dwg.add(
             dwg.ellipse(
@@ -357,7 +392,7 @@ def _draw_shield_ovals(
     # Ground symbol: stem + open downward triangle.
     # drain_label → left oval (source/component-proximal side)
     # drain_remote_label → right oval (remote/cable-exit side)
-    for cx_off, dlabel in ((_SHIELD_LEFT_CX, drain_label), (_SHIELD_RIGHT_CX, drain_remote_label)):
+    for cx_off, dlabel in ((left_cx, drain_label), (_SHIELD_RIGHT_CX, drain_remote_label)):
         if not dlabel:
             continue
         tx = wx + cx_off

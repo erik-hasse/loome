@@ -149,9 +149,27 @@ class CanBus(Port):
         self._high.connect(ref)
         self._seg_low = self._low.connect(ref)
 
+    def terminate(self) -> None:
+        """Mark this CAN port as externally terminated (120Ω adapter).
+
+        Must be called on a bound port (i.e. from a component instance method
+        via ``self.J1.can.terminate()``). The renderer draws a TERM box spanning
+        the H/L rows for any connector whose CAN pins are marked terminated.
+        """
+        self._high._can_terminated = True
+        self._low._can_terminated = True
+
     def note(self, text: str) -> None:
         """Set a note on the CAN Low wire (bottom of the shielded pair)."""
         self._seg_low.notes = text
+
+    @property
+    def high(self) -> Pin:
+        return self._high
+
+    @property
+    def low(self) -> Pin:
+        return self._low
 
 
 class RS232(Port):
