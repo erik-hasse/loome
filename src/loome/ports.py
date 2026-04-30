@@ -221,8 +221,10 @@ class RS232(Port):
 
     def connect(self, other: RS232, *, ground: bool = True, notes: str = "", drain=_UNSET, drain_remote=_UNSET) -> None:
         """Cross-connect: self.TX → other.RX and self.RX → other.TX."""
-        self._tx.connect(other._rx)
+        seg_tx = self._tx.connect(other._rx)
+        seg_tx.port_order = 0
         seg_rx = self._rx.connect(other._tx)
+        seg_rx.port_order = 1
         self._sg.drain_remote = _resolve_drain(drain_remote) if drain_remote is not _UNSET else _RS232_BACKSHELL
         other._sg.drain_remote = _resolve_drain(drain) if drain is not _UNSET else _RS232_BACKSHELL
         if drain is not _UNSET:
@@ -231,6 +233,7 @@ class RS232(Port):
             other._sg.drain = _resolve_drain(drain_remote)
         if ground and self._gnd is not None and other._gnd is not None:
             seg_gnd = self._gnd.connect(other._gnd)
+            seg_gnd.port_order = 2
             if notes:
                 seg_gnd.notes = notes
         elif notes:

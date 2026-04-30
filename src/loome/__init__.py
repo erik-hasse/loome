@@ -1,5 +1,6 @@
 from .bundles import Breakout, Bundle
 from .buses import CanBusLine
+from .components.switches import DPDT, DPST, SPDT, SPST
 from .harness import Harness
 from .model import (
     BusBar,
@@ -25,6 +26,10 @@ __all__ = [
     "ARINC429",
     "Breakout",
     "Bundle",
+    "DPDT",
+    "DPST",
+    "SPDT",
+    "SPST",
     "BusBar",
     "CanBus",
     "CanBusLine",

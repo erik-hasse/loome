@@ -37,11 +37,25 @@ Items are roughly in priority order within each section.
   call `connect()` immediately (like `Pin.__rshift__` does) and return a modifier object that
   mutates the already-created segments.
 
+- **Switch schematic symbols** — `SPST`, `SPDT`, `DPST`, `DPDT` all default to
+  `render=False` and have no SVG symbol. Adding simple line-art symbols (single-pole
+  arc, double-pole arc) would let users put `render=True` and see switch positions in
+  the schematic.
+
 - **PDF export** — `cairosvg` converts SVG → PDF in one call; very low effort once SVG output
   is solid.
 
-- **`loome validate` command** — dedicated CLI entry that runs `Harness.validate_bundles()`
-  and exits non-zero on warnings, for CI use without also rendering SVG.
+- **`SDSECU` incomplete pin numbers** — `tach` and `fuel_flow` pins use placeholder numbers
+  `"TBD1"` / `"TBD2"`. Look up the actual SDS ECU wiring diagram and replace with real pin
+  identifiers.
+
+- **`PortBuilder` missing `.gauge()` / `.color()` modifiers** — `WireBuilder` (returned by
+  `pin_a >> pin_b`) supports `.gauge()` and `.color()`, but `PortBuilder` (returned by
+  `port_a >> port_b`) does not. Both modifiers should be chainable on port connections too.
+
+- **`BusBar` schematic symbol** — `BusBar` currently renders as a small filled rectangle
+  (`primitives.py`). Should instead draw a labeled horizontal bar with tap-point markers,
+  matching its role as a shared power rail.
 
 ## Medium effort
 
@@ -77,6 +91,33 @@ Items are roughly in priority order within each section.
   to attach a block or bank to a breakout as a single unit and draw the member fuses/CBs
   inside it, respecting `positions`. Groups that aren't attached fall back to the current
   per-fuse behavior.
+
+## Test coverage
+
+- **Port type tests** — no tests cover `RS232.connect`, `ARINC429.connect`, `GPIO.connect`,
+  `Thermocouple.connect`, or `GarminEthernet.connect`. Should verify pin injection,
+  cross-wiring, and direction validation.
+
+- **`PortBuilder.__del__` silent-failure test** — the known bug where direction mismatches on
+  `ARINC429`/`GarminEthernet` port connections swallow exceptions is untested. A test that
+  asserts the exception is eventually surfaced will also drive fixing the underlying `__del__`
+  pattern.
+
+- **Shield / `ShieldGroup` context manager** — no tests for `Shield` as a context manager,
+  for `ShieldGroup.pins` population, or for `cable_only` / `single_oval` flags.
+
+- **`FuseBlock` declarative subclass** — no tests for the class-body fuse-declaration style
+  or `CircuitBreakerBank`.
+
+- **CLI subcommand tests** — `bundle`, `bom`, and `fuses` subcommands have no CLI-level tests.
+  At minimum, confirm each exits 0 and produces non-empty output on the fixture spec.
+  `loome validate` (newly added) also needs both passing and failing cases.
+
+- **`WireBuilder` fluent API** — `.gauge()`, `.color()`, `.wire_id()`, `.notes()` are
+  untested; verify they mutate the underlying `WireSegment` correctly.
+
+- **Layout ordering rules** — `layout/ordering.py` has no tests; the sort-key functions are
+  load-bearing for schematic readability.
 
 ## Larger features
 

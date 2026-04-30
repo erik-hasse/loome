@@ -89,6 +89,20 @@ class Harness:
                         return f"{bank.id}:{pos}"
         return ""
 
+    def block_label_for(self, device: Fuse | CircuitBreaker) -> str:
+        """Return the containing block/bank label for a fuse/CB, or ``""``."""
+        if isinstance(device, Fuse):
+            for block in self.fuse_blocks:
+                for f in block.positions.values():
+                    if f is device:
+                        return block.label
+        elif isinstance(device, CircuitBreaker):
+            for bank in self.cb_banks:
+                for cb in bank.positions.values():
+                    if cb is device:
+                        return bank.label
+        return ""
+
     def add(self, *items) -> None:
         for item in items:
             if isinstance(item, Component):

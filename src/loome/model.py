@@ -268,6 +268,7 @@ class WireSegment:
     shielded: bool = False
     notes: str = ""
     shield_group: "ShieldGroup | None" = field(default=None, repr=False)
+    port_order: int | None = field(default=None, repr=False)
 
     @property
     def label(self) -> str:

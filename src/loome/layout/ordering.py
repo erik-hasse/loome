@@ -76,7 +76,11 @@ def _shield_ids(class_pin: Pin, inst_pin: Pin | None) -> set[int]:
 
 
 def _shield_order(class_pin: Pin, inst_pin: Pin | None) -> int:
-    """Position within the pin's shield (drives wire color)."""
+    """Position within the pin's shield (drives wire color and row order).
+
+    Returns the canonical wire index (0=W, 1=WB, 2=WO) for this pin so that
+    row order always matches wire color on both sides of a cross-connect.
+    """
     use = _effective(class_pin, inst_pin)
     # Connection-level shield: position by segment index in sg.segments.
     for seg in use._connections:
@@ -86,16 +90,13 @@ def _shield_order(class_pin: Pin, inst_pin: Pin | None) -> int:
         for idx, s in enumerate(sg.segments):
             if s is seg:
                 return idx
-    # Class-body shield: source-pin index in sg.pins.
+    # Class-body shield with explicit port_order: use it directly.  This
+    # handles RS-232 cross-connects where the receiving pin (end_b) has a
+    # different class-body index than the wire it carries.
     for seg in use._connections:
-        if seg.end_b is use or seg.end_b is class_pin:
-            src = seg.end_a
-        else:
-            src = class_pin
-        if isinstance(src, Pin) and src.shield_group is not None:
-            for idx, p in enumerate(src.shield_group.pins):
-                if p is src:
-                    return idx
+        if seg.shield_group is None and seg.port_order is not None:
+            return seg.port_order
+    # Class-body shield: own index in sg.pins.
     sg = class_pin.shield_group
     if sg is not None:
         for idx, p in enumerate(sg.pins):

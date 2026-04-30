@@ -75,6 +75,10 @@ def _remote_label(remote, class_pin: Pin, harness: Harness) -> str:
         return f"{comp_label}.{remote.number}"
     if isinstance(remote, SpliceNode):
         return remote.label or remote.id
+    if isinstance(remote, (Fuse, CircuitBreaker)):
+        block = harness.block_label_for(remote)
+        base = remote.display_name()
+        return f"{block} · {base}" if block else base
     if isinstance(remote, Terminal):
         return remote.display_name()
     return "[–]"
@@ -119,9 +123,9 @@ def _draw_wire_label(
         dwg.add(
             dwg.text(
                 seg.notes,
-                insert=(label_x, cy + 8),
-                fill="#94a3b8",
-                font_size="7px",
+                insert=(label_x, cy + 9),
+                fill="#475569",
+                font_size="9px",
                 font_style="italic",
                 font_family="ui-monospace, monospace",
             )

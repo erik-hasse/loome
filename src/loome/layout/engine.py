@@ -29,7 +29,7 @@ PIN_ROW_H = 22
 GROUP_GAP = 14  # vertical gap inserted between pin groups with different remote targets
 COMPONENT_GAP_EXTRA = 12  # added on top of GROUP_GAP when groups target different remote components
 FIRST_GROUP_PAD = 12  # extra top padding before the first group when it needs a label above it
-SHIELD_HEADER_PAD = 16  # gap when shield-mates cross to a different remote component (room for header label)
+SHIELD_HEADER_PAD = 20  # gap when shield-mates cross to a different remote component (room for header label)
 CONNECTOR_BOTTOM_PAD = 6  # breathing room after last pin row in a connector (before next header)
 SECTION_BOTTOM_PAD = 6  # breathing room between last pin row and section border bottom
 DRAIN_STUB_H = 16  # extra bottom padding when a shield group has a drain terminal
@@ -128,9 +128,12 @@ def _row_separator(prev: _RowCtx | None, new: _RowCtx) -> int:
     shield_overlap = bool(prev.shield_ids & new.shield_ids)
     comp_extra = COMPONENT_GAP_EXTRA if _components_differ(prev.target_key, new.target_key) else 0
     if shield_overlap:
-        # Shield-mates: keep close so a single oval can wrap them; only insert
-        # header room if the remote component changes.
-        return max(drain_floor, SHIELD_HEADER_PAD if comp_extra else 0)
+        # Shield-mates: keep close so a single oval can wrap them; insert header
+        # room when the remote component changes OR when we're entering a component
+        # group from a non-component group (e.g. terminal→component in a mixed
+        # connection-level shield — the remote box still needs a label above it).
+        needs_header = comp_extra or (new.target_key[0] == "component" and prev.target_key[0] != "component")
+        return max(drain_floor, SHIELD_HEADER_PAD if needs_header else 0)
     return max(drain_floor, GROUP_GAP) + comp_extra
 
 

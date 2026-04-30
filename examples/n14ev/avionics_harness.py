@@ -363,7 +363,7 @@ with gtn650xi.P1004 as c:
 
 with gad29.J291 as c:
     c.aircraft_power_1 >> avionics_block_1.GAD29
-    c.aircraft_power_2 >> avionics_block_1.GAD29
+    c.aircraft_power_2 >> avionics_block_2.GAD29
     c.ground >> gnd
 
 # Page 22
@@ -375,7 +375,7 @@ with gad29.J291 as c:
 with pfd.P4602 as c:
     c.ground_1 >> gnd
     c.aircraft_power_1 >> avionics_block_1.PFD
-    c.aircraft_power_2 >> avionics_block_1.PFD
+    c.aircraft_power_2 >> avionics_block_2.PFD
 
     c.config_module_power_out >> gdu460_config.power
     c.config_module_ground >> gdu460_config.ground
@@ -386,7 +386,7 @@ with pfd.P4602 as c:
 with mfd.P4602 as c:
     c.ground_1 >> gnd
     c.aircraft_power_1 >> avionics_block_1.MFD
-    c.aircraft_power_2 >> avionics_block_1.MFD
+    c.aircraft_power_2 >> avionics_block_2.MFD
     (c.rs232_1 >> gea24.J241.rs232).ground(False)
 
 # Page 25

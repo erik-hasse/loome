@@ -51,6 +51,9 @@ def main() -> None:
     fuses_cmd.add_argument("-o", "--output", default=None, help="Output file (default: stdout)")
     fuses_cmd.add_argument("--format", choices=("md", "csv"), default="md", help="Output format")
 
+    validate_cmd = sub.add_parser("validate", help="Validate bundle topology; exit non-zero on warnings")
+    validate_cmd.add_argument("spec", help="Python harness spec file")
+
     args = parser.parse_args()
 
     if args.cmd == "render":
@@ -61,6 +64,8 @@ def main() -> None:
         _cmd_bom(args)
     elif args.cmd == "fuses":
         _cmd_fuses(args)
+    elif args.cmd == "validate":
+        _cmd_validate(args)
 
 
 def _load_harness(spec_path: Path):
@@ -163,6 +168,16 @@ def _cmd_fuses(args) -> None:
         else render_fuse_schedule_csv(schedule, harness)
     )
     _emit(rendered, args.output)
+
+
+def _cmd_validate(args) -> None:
+    harness = _load_spec_or_exit(args.spec)
+    warnings = harness.validate_bundles()
+    for w in warnings:
+        print(f"warning: {w}", file=sys.stderr)
+    if warnings:
+        sys.exit(1)
+    print("OK")
 
 
 if __name__ == "__main__":

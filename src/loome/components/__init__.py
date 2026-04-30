@@ -1,4 +1,5 @@
-from loome import GPIO, Component, Connector, Pin, Thermocouple
+from loome.model import Component, Connector, Pin
+from loome.ports import GPIO, Thermocouple
 
 
 class RayAllanTrim(Component):
