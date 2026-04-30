@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import svgwrite
+from svgwrite.container import Style
 
 from ..harness import Harness
 from ..layout.engine import MARGIN, LayoutResult, PinRowInfo
@@ -248,6 +249,8 @@ def render(
         dwg = svgwrite.Drawing(str(output_path), size=(layout.canvas_width, layout.canvas_height), profile="full")
         components_to_render = [c for c in harness.components if c.render]
 
+    dwg.defs.add(Style("a.pin-link { cursor: pointer; } a.pin-link:hover rect { fill: #bfdbfe; fill-opacity: 0.45; }"))
+
     dwg.add(dwg.rect(insert=(0, 0), size=("100%", "100%"), fill="white"))
 
     jumper_stubs: dict[int, list] = {}  # id(seg) -> [seg, wire_x, [cy, ...]]
@@ -490,9 +493,10 @@ def render(
             dwg.add(dwg.line(start=(bar_x, min(cys)), end=(bar_x, max(cys)), **attrs))
 
     # ── remote component boxes ───────────────────────────────────────────────
+    rendered_pin_ids = set(inst_pin_to_row.keys())
     for group in layout.pin_groups:
         if group.target_key[0] == "component":
-            _draw_remote_box(dwg, group, harness, layout.remote_box_w)
+            _draw_remote_box(dwg, group, harness, layout.remote_box_w, rendered_pin_ids)
 
     # ── CAN TERM boxes ───────────────────────────────────────────────────────
     for comp in components_to_render:

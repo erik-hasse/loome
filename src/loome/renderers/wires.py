@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 import svgwrite
 
 from ..harness import Harness
@@ -27,6 +29,18 @@ from .primitives import (
     _remote_label,
 )
 from .splices import _draw_splice_connection, _draw_splice_fan
+
+
+def _pin_row_id(pin: Pin) -> str:
+    """Return a stable SVG element ID for the left-side row of *pin*."""
+    parts: list[str] = []
+    if pin._component is not None:
+        parts.append(pin._component.label)
+    if pin._connector_class is not None:
+        parts.append(pin._connector_class._connector_name)
+    parts.append(str(pin.number))
+    return "pr-" + re.sub(r"[^a-zA-Z0-9_-]", "_", "-".join(parts))
+
 
 # ── connection expansion ────────────────────────────────────────────────────
 
@@ -144,7 +158,13 @@ def _draw_connection(
 # ── remote component boxes ─────────────────────────────────────────────────
 
 
-def _draw_remote_box(dwg: svgwrite.Drawing, group: PinGroup, harness: Harness, remote_box_w: float) -> None:
+def _draw_remote_box(
+    dwg: svgwrite.Drawing,
+    group: PinGroup,
+    harness: Harness,
+    remote_box_w: float,
+    rendered_pin_ids: set[int] | None = None,
+) -> None:
     rows = group.rows
     if not rows:
         return
@@ -237,6 +257,22 @@ def _draw_remote_box(dwg: svgwrite.Drawing, group: PinGroup, harness: Harness, r
                     font_family="ui-monospace, monospace",
                 )
             )
+            if rendered_pin_ids is None or id(rpin) in rendered_pin_ids:
+                target_id = _pin_row_id(rpin)
+                link = dwg.a(
+                    href=f"#{target_id}",
+                    target="_self",
+                    **{"class": "pin-link"},
+                )
+                link.add(
+                    dwg.rect(
+                        insert=(box_x, row.rect.y),
+                        size=(box_w, row.rect.h),
+                        fill="none",
+                        **{"pointer-events": "all"},
+                    )
+                )
+                dwg.add(link)
         if i < len(rows) - 1:
             div_y = row.rect.y + row.rect.h
             dwg.add(
@@ -267,6 +303,7 @@ def _draw_pin_row(
     class_pin = row_info.class_pin
     cy = rect.y + rect.h / 2
 
+    row_id = _pin_row_id(pin) if not row_info.is_continuation else None
     dwg.add(
         dwg.rect(
             insert=(rect.x, rect.y),
@@ -274,6 +311,7 @@ def _draw_pin_row(
             fill="#ffffff",
             stroke="#e2e8f0",
             stroke_width=0.5,
+            **({"id": row_id} if row_id is not None else {}),
         )
     )
 
