@@ -300,10 +300,11 @@ def _draw_can_term_box(dwg: svgwrite.Drawing, cx: float, y_top: float, y_bot: fl
 
 def _draw_section_bg(dwg: svgwrite.Drawing, rect, label: str) -> None:
     dwg.add(dwg.rect(insert=(rect.x, rect.y), size=(rect.w, rect.h), rx=6, ry=6, fill="#f8fafc", stroke="none"))
-    # Dark header with rounded top corners; square rect fills in the rounded bottom corners.
-    dwg.add(dwg.rect(insert=(rect.x, rect.y), size=(rect.w, COMPONENT_HEADER_H), rx=6, ry=6, fill="#334155"))
-    dwg.add(dwg.rect(insert=(rect.x, rect.y + COMPONENT_HEADER_H - 6), size=(rect.w, 6), fill="#334155"))
-    dwg.add(
+    # Dark header wrapped in a sticky group so it can float with the viewport.
+    g = dwg.g(id=f"sh-comp-{int(rect.y)}")
+    g.add(dwg.rect(insert=(rect.x, rect.y), size=(rect.w, COMPONENT_HEADER_H), rx=6, ry=6, fill="#334155"))
+    g.add(dwg.rect(insert=(rect.x, rect.y + COMPONENT_HEADER_H - 6), size=(rect.w, 6), fill="#334155"))
+    g.add(
         dwg.text(
             label,
             insert=(rect.x + 12, rect.y + COMPONENT_HEADER_H - 8),
@@ -313,10 +314,12 @@ def _draw_section_bg(dwg: svgwrite.Drawing, rect, label: str) -> None:
             font_family="ui-monospace, monospace",
         )
     )
+    dwg.add(g)
 
 
 def _draw_connector_header(dwg: svgwrite.Drawing, rect, conn_name: str) -> None:
-    dwg.add(
+    g = dwg.g(id=f"sh-conn-{int(rect.y)}")
+    g.add(
         dwg.rect(
             insert=(rect.x, rect.y),
             size=(rect.w, CONNECTOR_HEADER_H),
@@ -326,7 +329,7 @@ def _draw_connector_header(dwg: svgwrite.Drawing, rect, conn_name: str) -> None:
         )
     )
     mid_y = rect.y + CONNECTOR_HEADER_H - 7
-    dwg.add(
+    g.add(
         dwg.text(
             "#",
             insert=(rect.x + PIN_NUM_W / 2, mid_y),
@@ -336,7 +339,7 @@ def _draw_connector_header(dwg: svgwrite.Drawing, rect, conn_name: str) -> None:
             font_family="ui-monospace, monospace",
         )
     )
-    dwg.add(
+    g.add(
         dwg.text(
             conn_name,
             insert=(rect.x + PIN_NUM_W + 6, mid_y),
@@ -346,6 +349,7 @@ def _draw_connector_header(dwg: svgwrite.Drawing, rect, conn_name: str) -> None:
             font_family="ui-monospace, monospace",
         )
     )
+    dwg.add(g)
 
 
 # ── shield ovals ────────────────────────────────────────────────────────────

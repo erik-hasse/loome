@@ -118,6 +118,60 @@ def _drain_run_index(runs: list[list[PinRowInfo]], drain_endpoint) -> int:
     return len(runs) - 1 if runs else 0
 
 
+_STICKY_JS = """\
+(function(){
+  var svg=document.querySelector('svg');
+  var CH=28;
+  var ol=document.createElementNS('http://www.w3.org/2000/svg','g');
+  ol.setAttribute('pointer-events','none');
+  svg.appendChild(ol);
+  function mk(el){var y=+el.id.split('-')[2];return{el:el,y:y,p:el.parentNode,ns:el.nextSibling};}
+  var cs=Array.from(document.querySelectorAll('[id^="sh-comp-"]')).map(mk).sort(function(a,b){return a.y-b.y;});
+  var ks=Array.from(document.querySelectorAll('[id^="sh-conn-"]')).map(mk).sort(function(a,b){return a.y-b.y;});
+  function sc(){return+svg.getAttribute('height')/svg.getBoundingClientRect().height;}
+  function find(arr,thr){var r=null;for(var i=0;i<arr.length;i++){if(arr[i].y<=thr)r=arr[i];else break;}return r;}
+  var pc=null,pk=null;
+  function sqr(h){
+    h.el.querySelectorAll('rect').forEach(function(r){
+      var rx=r.getAttribute('rx');
+      if(rx){r._rx=rx;r._ry=r.getAttribute('ry');r.removeAttribute('rx');r.removeAttribute('ry');}
+    });
+  }
+  function unsqr(h){
+    h.el.querySelectorAll('rect').forEach(function(r){
+      if(r._rx){r.setAttribute('rx',r._rx);r.setAttribute('ry',r._ry);delete r._rx;delete r._ry;}
+    });
+  }
+  function stick(h,dy){ol.appendChild(h.el);h.el.setAttribute('transform','translate(0,'+(dy-h.y)+')');sqr(h);}
+  function unstick(h){
+    unsqr(h);
+    var ref=h.ns;
+    if(ref&&ref.parentNode===h.p)h.p.insertBefore(h.el,ref);else h.p.appendChild(h.el);
+    h.el.removeAttribute('transform');
+  }
+  function update(){
+    var s=sc(),vt=window.scrollY*s;
+    var ac=find(cs,vt),ak=find(ks,vt+CH);
+    if(ac&&ak&&ak.y<=ac.y)ak=null;
+    if(ac!==pc){if(pc)unstick(pc);pc=ac;}
+    if(ak!==pk){if(pk)unstick(pk);pk=ak;}
+    if(ac)stick(ac,vt);
+    if(ak)stick(ak,vt+CH);
+  }
+  window.addEventListener('scroll',update,{passive:true});
+  window.addEventListener('resize',update,{passive:true});
+  update();
+})();
+"""
+
+
+def _inject_sticky_script(output_path: str | Path) -> None:
+    p = Path(output_path)
+    text = p.read_text(encoding="utf-8")
+    tag = '<script type="text/ecmascript"><![CDATA[\n' + _STICKY_JS + "]]></script>"
+    p.write_text(text.replace("</svg>", tag + "</svg>", 1), encoding="utf-8")
+
+
 def render(
     harness: Harness,
     layout: LayoutResult,
@@ -249,7 +303,13 @@ def render(
         dwg = svgwrite.Drawing(str(output_path), size=(layout.canvas_width, layout.canvas_height), profile="full")
         components_to_render = [c for c in harness.components if c.render]
 
-    dwg.defs.add(Style("a.pin-link { cursor: pointer; } a.pin-link:hover rect { fill: #bfdbfe; fill-opacity: 0.45; }"))
+    dwg.defs.add(
+        Style(
+            "a.pin-link { cursor: pointer; }"
+            " a.pin-link:hover rect { fill: #bfdbfe; fill-opacity: 0.45; }"
+            " [id^='pr-'] { scroll-margin-top: 56px; }"
+        )
+    )
 
     dwg.add(dwg.rect(insert=(0, 0), size=("100%", "100%"), fill="white"))
 
@@ -514,3 +574,6 @@ def render(
                 _draw_can_term_box(dwg, wx + _CAN_TERM_BOX_CX, y_top, y_bot)
 
     dwg.save()
+
+    if component is None:
+        _inject_sticky_script(output_path)
