@@ -1,5 +1,91 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<svg baseProfile="full" height="352" version="1.1" width="736" xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"><![CDATA[a.pin-link { cursor: pointer; } a.pin-link:hover rect { fill: #bfdbfe; fill-opacity: 0.45; } [id^='pr-'] { scroll-margin-top: 56px; }]]></style></defs><rect fill="white" height="100%" width="100%" x="0" y="0" /><rect fill="#f8fafc" height="142" rx="6" ry="6" stroke="none" width="696" x="20" y="20" /><g id="sh-comp-20"><rect fill="#334155" height="28" rx="6" ry="6" width="696" x="20" y="20" /><rect fill="#334155" height="6" width="696" x="20" y="42" /><text fill="white" font-family="ui-monospace, monospace" font-size="13px" font-weight="bold" x="32" y="40">Widget</text></g><g id="sh-conn-48"><rect fill="#dbeafe" height="22" stroke="#93c5fd" stroke-width="1" width="696" x="20" y="48" /><text fill="#1e3a5f" font-family="ui-monospace, monospace" font-size="10px" text-anchor="middle" x="38.0" y="63">#</text><text fill="#1e3a5f" font-family="ui-monospace, monospace" font-size="10px" font-weight="bold" x="62" y="63">J1</text></g><rect fill="#ffffff" height="44" id="pr-Widget-J1-1" stroke="#e2e8f0" stroke-width="0.5" width="696" x="20" y="70" /><line stroke="#cbd5e1" stroke-width="0.5" x1="56" x2="56" y1="70" y2="114" /><line stroke="#cbd5e1" stroke-width="0.5" x1="216" x2="216" y1="70" y2="114" /><text fill="#64748b" font-family="ui-monospace, monospace" font-size="10px" text-anchor="middle" x="38.0" y="96.0">1</text><text fill="#1e293b" font-family="ui-monospace, monospace" font-size="10px" x="62" y="96.0">Power</text><line stroke="#dc2626" stroke-width="1.5" x1="222" x2="290" y1="92.0" y2="92.0" /><text fill="#94a3b8" font-family="ui-monospace, monospace" font-size="7px" x="226" y="89.0">22R</text><line stroke="#475569" stroke-width="1.5" x1="292" x2="300" y1="88.0" y2="96.0" /><line stroke="#475569" stroke-width="1.5" x1="300" x2="292" y1="88.0" y2="96.0" /><line stroke="#dc2626" stroke-width="1.5" x1="301" x2="316" y1="92.0" y2="81.0" /><line stroke="#dc2626" stroke-width="1.5" x1="316" x2="640.2" y1="81.0" y2="81.0" /><text fill="#94a3b8" font-family="ui-monospace, monospace" font-size="7px" x="320" y="78.0">22R</text><rect fill="#fef9c3" height="10" rx="2" ry="2" stroke="#a16207" stroke-width="1.5" width="18" x="643.2" y="76.0" /><line stroke="#a16207" stroke-width="1.5" x1="647.2" x2="657.2" y1="81.0" y2="81.0" /><text fill="#1e293b" font-family="ui-monospace, monospace" font-size="9px" x="664.2" y="85.0">Main 5A</text><line stroke="#9ca3af" stroke-width="1.5" x1="301" x2="316" y1="92.0" y2="103.0" /><line stroke="#9ca3af" stroke-width="1.5" x1="316" x2="640.2" y1="103.0" y2="103.0" /><text fill="#94a3b8" font-family="ui-monospace, monospace" font-size="7px" x="320" y="100.0">22</text><text fill="#1e3a5f" font-family="ui-monospace, monospace" font-size="9px" x="648.2" y="107.0">Display P1.1</text><rect fill="#ffffff" height="22" id="pr-Widget-J1-2" stroke="#e2e8f0" stroke-width="0.5" width="696" x="20" y="128" /><line stroke="#cbd5e1" stroke-width="0.5" x1="56" x2="56" y1="128" y2="150" /><line stroke="#cbd5e1" stroke-width="0.5" x1="216" x2="216" y1="128" y2="150" /><text fill="#64748b" font-family="ui-monospace, monospace" font-size="10px" text-anchor="middle" x="38.0" y="143.0">2</text><text fill="#1e293b" font-family="ui-monospace, monospace" font-size="10px" x="62" y="143.0">Ground</text><line stroke="#111111" stroke-width="1.5" x1="222" x2="640.2" y1="139.0" y2="139.0" /><text fill="#94a3b8" font-family="ui-monospace, monospace" font-size="7px" x="226" y="136.0">22B</text><polygon fill="#334155" points="652.2,149.0 645.2,137.0 659.2,137.0" stroke="#334155" stroke-width="1" /><text fill="#1e293b" font-family="ui-monospace, monospace" font-size="9px" x="664.2" y="143.0">GND</text><rect fill="none" height="142" rx="6" ry="6" stroke="#334155" stroke-width="2" width="696" x="20" y="20" /><rect fill="#f8fafc" height="142" rx="6" ry="6" stroke="none" width="696" x="20" y="176" /><g id="sh-comp-176"><rect fill="#334155" height="28" rx="6" ry="6" width="696" x="20" y="176" /><rect fill="#334155" height="6" width="696" x="20" y="198" /><text fill="white" font-family="ui-monospace, monospace" font-size="13px" font-weight="bold" x="32" y="196">Display</text></g><g id="sh-conn-204"><rect fill="#dbeafe" height="22" stroke="#93c5fd" stroke-width="1" width="696" x="20" y="204" /><text fill="#1e3a5f" font-family="ui-monospace, monospace" font-size="10px" text-anchor="middle" x="38.0" y="219">#</text><text fill="#1e3a5f" font-family="ui-monospace, monospace" font-size="10px" font-weight="bold" x="62" y="219">P1</text></g><rect fill="#ffffff" height="44" id="pr-Display-P1-1" stroke="#e2e8f0" stroke-width="0.5" width="696" x="20" y="226" /><line stroke="#cbd5e1" stroke-width="0.5" x1="56" x2="56" y1="226" y2="270" /><line stroke="#cbd5e1" stroke-width="0.5" x1="216" x2="216" y1="226" y2="270" /><text fill="#64748b" font-family="ui-monospace, monospace" font-size="10px" text-anchor="middle" x="38.0" y="252.0">1</text><text fill="#1e293b" font-family="ui-monospace, monospace" font-size="10px" x="62" y="252.0">Power In</text><line stroke="#dc2626" stroke-width="1.5" x1="222" x2="290" y1="248.0" y2="248.0" /><text fill="#94a3b8" font-family="ui-monospace, monospace" font-size="7px" x="226" y="245.0">22R</text><line stroke="#475569" stroke-width="1.5" x1="292" x2="300" y1="244.0" y2="252.0" /><line stroke="#475569" stroke-width="1.5" x1="300" x2="292" y1="244.0" y2="252.0" /><line stroke="#9ca3af" stroke-width="1.5" x1="301" x2="316" y1="248.0" y2="237.0" /><line stroke="#9ca3af" stroke-width="1.5" x1="316" x2="640.2" y1="237.0" y2="237.0" /><text fill="#94a3b8" font-family="ui-monospace, monospace" font-size="7px" x="320" y="234.0">22</text><text fill="#1e3a5f" font-family="ui-monospace, monospace" font-size="9px" x="648.2" y="241.0">Widget J1.1</text><line stroke="#dc2626" stroke-width="1.5" x1="301" x2="316" y1="248.0" y2="259.0" /><line stroke="#dc2626" stroke-width="1.5" x1="316" x2="640.2" y1="259.0" y2="259.0" /><text fill="#94a3b8" font-family="ui-monospace, monospace" font-size="7px" x="320" y="256.0">22R</text><rect fill="#fef9c3" height="10" rx="2" ry="2" stroke="#a16207" stroke-width="1.5" width="18" x="643.2" y="254.0" /><line stroke="#a16207" stroke-width="1.5" x1="647.2" x2="657.2" y1="259.0" y2="259.0" /><text fill="#1e293b" font-family="ui-monospace, monospace" font-size="9px" x="664.2" y="263.0">Main 5A</text><rect fill="#ffffff" height="22" id="pr-Display-P1-2" stroke="#e2e8f0" stroke-width="0.5" width="696" x="20" y="284" /><line stroke="#cbd5e1" stroke-width="0.5" x1="56" x2="56" y1="284" y2="306" /><line stroke="#cbd5e1" stroke-width="0.5" x1="216" x2="216" y1="284" y2="306" /><text fill="#64748b" font-family="ui-monospace, monospace" font-size="10px" text-anchor="middle" x="38.0" y="299.0">2</text><text fill="#1e293b" font-family="ui-monospace, monospace" font-size="10px" x="62" y="299.0">Ground In</text><line stroke="#111111" stroke-width="1.5" x1="222" x2="640.2" y1="295.0" y2="295.0" /><text fill="#94a3b8" font-family="ui-monospace, monospace" font-size="7px" x="226" y="292.0">22B</text><polygon fill="#334155" points="652.2,305.0 645.2,293.0 659.2,293.0" stroke="#334155" stroke-width="1" /><text fill="#1e293b" font-family="ui-monospace, monospace" font-size="9px" x="664.2" y="299.0">GND</text><rect fill="none" height="142" rx="6" ry="6" stroke="#334155" stroke-width="2" width="696" x="20" y="176" /><script type="text/ecmascript"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="736" height="352" viewBox="0 0 736 352">
+<defs>
+</defs>
+<style>a.pin-link { cursor: pointer; } a.pin-link:hover rect { fill: #bfdbfe; fill-opacity: 0.45; } [id^='pr-'] { scroll-margin-top: 56px; }</style>
+<rect x="0" y="0" width="736" height="352" fill="white" />
+<rect x="20" y="20" width="696" height="142" rx="6" fill="#f8fafc" stroke="none" />
+<g id="sh-comp-20">
+<rect x="20" y="20" width="696" height="28" rx="6" fill="#334155" />
+<rect x="20" y="42" width="696" height="6" fill="#334155" />
+<text x="32" y="40" font-size="13" fill="white" font-weight="bold" font-family="ui-monospace, monospace">Widget</text>
+</g>
+<g id="sh-conn-48">
+<rect x="20" y="48" width="696" height="22" fill="#dbeafe" stroke="#93c5fd" stroke-width="1" />
+<text x="38.0" y="63" font-size="10" text-anchor="middle" fill="#1e3a5f" font-family="ui-monospace, monospace">#</text>
+<text x="62" y="63" font-size="10" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">J1</text>
+</g>
+<rect x="20" y="70" width="696" height="44" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Widget-J1-1" />
+<path d="M56,70 L56,114" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M216,70 L216,114" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="96.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">1</text>
+<text x="62" y="96.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Power</text>
+<path d="M222,92.0 L290,92.0" stroke="#dc2626" stroke-width="1.5" />
+<text x="226" y="89.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22R</text>
+<path d="M292,88.0 L300,96.0" stroke="#475569" stroke-width="1.5" />
+<path d="M300,88.0 L292,96.0" stroke="#475569" stroke-width="1.5" />
+<path d="M301,92.0 L316,81.0" stroke="#dc2626" stroke-width="1.5" />
+<path d="M316,81.0 L640.2,81.0" stroke="#dc2626" stroke-width="1.5" />
+<text x="320" y="78.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22R</text>
+<rect x="643.2" y="76.0" width="18" height="10" rx="2" fill="#fef9c3" stroke="#a16207" stroke-width="1.5" />
+<path d="M647.2,81.0 L657.2,81.0" stroke="#a16207" stroke-width="1.5" />
+<text x="664.2" y="85.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Main 5A</text>
+<path d="M301,92.0 L316,103.0" stroke="#9ca3af" stroke-width="1.5" />
+<path d="M316,103.0 L640.2,103.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="320" y="100.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<text x="648.2" y="107.0" font-size="9" fill="#1e3a5f" font-family="ui-monospace, monospace">Display P1.1</text>
+<rect x="20" y="128" width="696" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Widget-J1-2" />
+<path d="M56,128 L56,150" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M216,128 L216,150" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="143.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
+<text x="62" y="143.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Ground</text>
+<path d="M222,139.0 L640.2,139.0" stroke="#111111" stroke-width="1.5" />
+<text x="226" y="136.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22B</text>
+<path d="M652.2,149.0 L645.2,137.0 L659.2,137.0 Z" fill="#334155" stroke="#334155" stroke-width="1" />
+<text x="664.2" y="143.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">GND</text>
+<rect x="20" y="20" width="696" height="142" rx="6" fill="none" stroke="#334155" stroke-width="2" />
+<rect x="20" y="176" width="696" height="142" rx="6" fill="#f8fafc" stroke="none" />
+<g id="sh-comp-176">
+<rect x="20" y="176" width="696" height="28" rx="6" fill="#334155" />
+<rect x="20" y="198" width="696" height="6" fill="#334155" />
+<text x="32" y="196" font-size="13" fill="white" font-weight="bold" font-family="ui-monospace, monospace">Display</text>
+</g>
+<g id="sh-conn-204">
+<rect x="20" y="204" width="696" height="22" fill="#dbeafe" stroke="#93c5fd" stroke-width="1" />
+<text x="38.0" y="219" font-size="10" text-anchor="middle" fill="#1e3a5f" font-family="ui-monospace, monospace">#</text>
+<text x="62" y="219" font-size="10" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">P1</text>
+</g>
+<rect x="20" y="226" width="696" height="44" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Display-P1-1" />
+<path d="M56,226 L56,270" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M216,226 L216,270" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="252.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">1</text>
+<text x="62" y="252.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Power In</text>
+<path d="M222,248.0 L290,248.0" stroke="#dc2626" stroke-width="1.5" />
+<text x="226" y="245.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22R</text>
+<path d="M292,244.0 L300,252.0" stroke="#475569" stroke-width="1.5" />
+<path d="M300,244.0 L292,252.0" stroke="#475569" stroke-width="1.5" />
+<path d="M301,248.0 L316,237.0" stroke="#9ca3af" stroke-width="1.5" />
+<path d="M316,237.0 L640.2,237.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="320" y="234.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<text x="648.2" y="241.0" font-size="9" fill="#1e3a5f" font-family="ui-monospace, monospace">Widget J1.1</text>
+<path d="M301,248.0 L316,259.0" stroke="#dc2626" stroke-width="1.5" />
+<path d="M316,259.0 L640.2,259.0" stroke="#dc2626" stroke-width="1.5" />
+<text x="320" y="256.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22R</text>
+<rect x="643.2" y="254.0" width="18" height="10" rx="2" fill="#fef9c3" stroke="#a16207" stroke-width="1.5" />
+<path d="M647.2,259.0 L657.2,259.0" stroke="#a16207" stroke-width="1.5" />
+<text x="664.2" y="263.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Main 5A</text>
+<rect x="20" y="284" width="696" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Display-P1-2" />
+<path d="M56,284 L56,306" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M216,284 L216,306" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="299.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
+<text x="62" y="299.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Ground In</text>
+<path d="M222,295.0 L640.2,295.0" stroke="#111111" stroke-width="1.5" />
+<text x="226" y="292.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22B</text>
+<path d="M652.2,305.0 L645.2,293.0 L659.2,293.0 Z" fill="#334155" stroke="#334155" stroke-width="1" />
+<text x="664.2" y="299.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">GND</text>
+<rect x="20" y="176" width="696" height="142" rx="6" fill="none" stroke="#334155" stroke-width="2" />
+<script type="text/ecmascript"><![CDATA[
 (function(){
   var svg=document.querySelector('svg');
   var CH=28;

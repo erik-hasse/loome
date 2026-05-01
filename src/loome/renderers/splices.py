@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import svgwrite
+import drawsvg as draw
 
 from ..harness import Harness
 from ..layout.engine import WIRE_AREA_W
@@ -23,21 +23,22 @@ from .primitives import (
 )
 
 
-def _draw_dead_end_splice(dwg: svgwrite.Drawing, splice: SpliceNode, x: float, cy: float) -> None:
+def _draw_dead_end_splice(dwg: draw.Drawing, splice: SpliceNode, x: float, cy: float) -> None:
     """Draw the splice's label text (when the splice has no outward wires)."""
-    dwg.add(
-        dwg.text(
+    dwg.append(
+        draw.Text(
             splice.label or splice.id,
-            insert=(x, cy + 4),
+            9,
+            x,
+            cy + 4,
             fill="#94a3b8",
-            font_size="9px",
             font_family="ui-monospace, monospace",
         )
     )
 
 
 def _draw_splice_out_leg(
-    dwg: svgwrite.Drawing,
+    dwg: draw.Drawing,
     out_seg: WireSegment,
     out_remote,
     start_x: float,
@@ -61,32 +62,35 @@ def _draw_splice_out_leg(
         label_text = _remote_label(out_remote, class_pin, harness)
         term_cx = common_wire_end + 12
         _draw_terminal(dwg, out_remote, term_cx, cy)
-        dwg.add(
-            dwg.text(
+        dwg.append(
+            draw.Text(
                 label_text,
-                insert=(term_cx + 12, cy + 4),
+                9,
+                term_cx + 12,
+                cy + 4,
                 fill="#1e293b",
-                font_size="9px",
                 font_family="ui-monospace, monospace",
             )
         )
     elif isinstance(out_remote, Pin):
-        dwg.add(
-            dwg.text(
+        dwg.append(
+            draw.Text(
                 _remote_label(out_remote, class_pin, harness),
-                insert=(common_wire_end + pin_label_offset, cy + 4),
+                9,
+                common_wire_end + pin_label_offset,
+                cy + 4,
                 fill="#1e3a5f",
-                font_size="9px",
                 font_family="ui-monospace, monospace",
             )
         )
     else:
-        dwg.add(
-            dwg.text(
+        dwg.append(
+            draw.Text(
                 _remote_label(out_remote, class_pin, harness),
-                insert=(common_wire_end + pin_label_offset, cy + 4),
+                9,
+                common_wire_end + pin_label_offset,
+                cy + 4,
                 fill="#1e293b",
-                font_size="9px",
                 font_family="ui-monospace, monospace",
             )
         )
@@ -115,7 +119,7 @@ def _splice_leg_wire_end(
 
 
 def _draw_splice_connection(
-    dwg: svgwrite.Drawing,
+    dwg: draw.Drawing,
     incoming_seg: WireSegment,
     splice: SpliceNode,
     out_seg: WireSegment | None,
@@ -178,7 +182,7 @@ def _draw_splice_connection(
 
 
 def _draw_splice_fan(
-    dwg: svgwrite.Drawing,
+    dwg: draw.Drawing,
     expanded: list[tuple],
     wx: float,
     rect,
@@ -233,7 +237,7 @@ def _draw_splice_fan(
             out_attrs = splice_attrs
             out_cc = cc
 
-        dwg.add(dwg.line(start=(splice_cx + 5, center_y), end=(fan_x, sub_y), **out_attrs))
+        dwg.append(draw.Line(splice_cx + 5, center_y, fan_x, sub_y, **out_attrs))
 
         if out_seg is None:
             _draw_dead_end_splice(dwg, sp, fan_x + 4, sub_y)

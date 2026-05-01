@@ -9,7 +9,7 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "natsort>=8.4.0",
-    "svgwrite>=1.4.3",
+    "drawsvg>=2.0",
 ]
 
 [dependency-groups]

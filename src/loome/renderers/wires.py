@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-import svgwrite
+import drawsvg as draw
 
 from ..harness import Harness
 from ..layout.engine import PIN_NUM_W, WIRE_AREA_W, PinGroup, PinRowInfo
@@ -28,6 +28,10 @@ from .primitives import (
     _remote_label,
 )
 from .splices import _draw_splice_connection, _draw_splice_fan
+
+
+class _AnchorLink(draw.DrawingParentElement):
+    TAG_NAME = "a"
 
 
 def _pin_row_id(pin: Pin) -> str:
@@ -84,7 +88,7 @@ def _is_jumper(pin: Pin, remote: Pin) -> bool:
 
 
 def _draw_connection(
-    dwg: svgwrite.Drawing,
+    dwg: draw.Drawing,
     seg: WireSegment,
     remote,
     wx: float,
@@ -114,22 +118,23 @@ def _draw_connection(
         term_cx = min_term_cx if min_term_cx > 0 else (right_edge - 4 - len(label_text) * _MONO_CHAR_W - _TERM_SYMBOL_W)
         term_cx = max(term_cx, start_x + 20)
         wire_end = term_cx - 12
-        dwg.add(dwg.line(start=(start_x, cy), end=(wire_end, cy), **attrs))
+        dwg.append(draw.Line(start_x, cy, wire_end, cy, **attrs))
         label_x1 = wx + _SHIELD_LEFT_CX + _SHIELD_RX + shield_x_offset if shield is not None else start_x
         _draw_wire_label(dwg, seg, label_x1, wire_end, cy, psp, colored, harness=harness)
         _draw_terminal(dwg, remote, term_cx, cy)
-        dwg.add(
-            dwg.text(
+        dwg.append(
+            draw.Text(
                 label_text,
-                insert=(term_cx + 12, cy + 4),
+                9,
+                term_cx + 12,
+                cy + 4,
                 fill="#1e293b",
-                font_size="9px",
                 font_family="ui-monospace, monospace",
             )
         )
     elif isinstance(remote, Pin):
         wire_end = wx + _REMOTE_BOX_X - 4
-        dwg.add(dwg.line(start=(start_x, cy), end=(wire_end, cy), **attrs))
+        dwg.append(draw.Line(start_x, cy, wire_end, cy, **attrs))
         if shield is not None:
             lo_right = wx + _SHIELD_LEFT_CX + _SHIELD_RX
             if shield.single_oval:
@@ -141,14 +146,15 @@ def _draw_connection(
             _draw_wire_label(dwg, seg, start_x, wire_end, cy, psp, colored, harness=harness)
     else:
         label_x = wx + _REMOTE_BOX_X
-        dwg.add(dwg.line(start=(start_x, cy), end=(label_x - 4, cy), **attrs))
+        dwg.append(draw.Line(start_x, cy, label_x - 4, cy, **attrs))
         _draw_wire_label(dwg, seg, start_x, label_x - 4, cy, psp, colored, harness=harness)
-        dwg.add(
-            dwg.text(
+        dwg.append(
+            draw.Text(
                 _remote_label(remote, class_pin, harness),
-                insert=(label_x, cy + 4),
+                9,
+                label_x,
+                cy + 4,
                 fill="#1e293b",
-                font_size="9px",
                 font_family="ui-monospace, monospace",
             )
         )
@@ -158,7 +164,7 @@ def _draw_connection(
 
 
 def _draw_remote_box(
-    dwg: svgwrite.Drawing,
+    dwg: draw.Drawing,
     group: PinGroup,
     harness: Harness,
     remote_box_w: float,
@@ -203,32 +209,36 @@ def _draw_remote_box(
     if conn_name:
         header += f" · {conn_name}"
     if header:
-        dwg.add(
-            dwg.text(
+        dwg.append(
+            draw.Text(
                 header,
-                insert=(box_x + 4, y_top - 3),
+                8,
+                box_x + 4,
+                y_top - 3,
                 fill="#1e3a5f",
-                font_size="8px",
                 font_weight="bold",
                 font_family="ui-monospace, monospace",
             )
         )
 
-    dwg.add(
-        dwg.rect(
-            insert=(box_x, y_top),
-            size=(box_w, box_h),
+    dwg.append(
+        draw.Rectangle(
+            box_x,
+            y_top,
+            box_w,
+            box_h,
             rx=3,
-            ry=3,
             fill="#eff6ff",
             stroke="#93c5fd",
             stroke_width=1,
         )
     )
-    dwg.add(
-        dwg.line(
-            start=(box_x + _REMOTE_BOX_PIN_NUM_W, y_top),
-            end=(box_x + _REMOTE_BOX_PIN_NUM_W, y_bot),
+    dwg.append(
+        draw.Line(
+            box_x + _REMOTE_BOX_PIN_NUM_W,
+            y_top,
+            box_x + _REMOTE_BOX_PIN_NUM_W,
+            y_bot,
             stroke="#93c5fd",
             stroke_width=0.5,
         )
@@ -237,47 +247,53 @@ def _draw_remote_box(
     for i, (row, rpin) in enumerate(zip(rows, row_remotes)):
         cy = row.rect.y + row.rect.h / 2
         if rpin is not None:
-            dwg.add(
-                dwg.text(
+            dwg.append(
+                draw.Text(
                     str(rpin.number),
-                    insert=(box_x + _REMOTE_BOX_PIN_NUM_W / 2, cy + 4),
+                    10,
+                    box_x + _REMOTE_BOX_PIN_NUM_W / 2,
+                    cy + 4,
                     text_anchor="middle",
                     fill="#64748b",
-                    font_size="10px",
                     font_family="ui-monospace, monospace",
                 )
             )
-            dwg.add(
-                dwg.text(
+            dwg.append(
+                draw.Text(
                     rpin.signal_name,
-                    insert=(box_x + _REMOTE_BOX_PIN_NUM_W + 5, cy + 4),
+                    9,
+                    box_x + _REMOTE_BOX_PIN_NUM_W + 5,
+                    cy + 4,
                     fill="#1e293b",
-                    font_size="9px",
                     font_family="ui-monospace, monospace",
                 )
             )
             if rendered_pin_ids is None or id(rpin) in rendered_pin_ids:
                 target_id = _pin_row_id(rpin)
-                link = dwg.a(
+                link = _AnchorLink(
                     href=f"#{target_id}",
                     target="_self",
                     **{"class": "pin-link"},
                 )
-                link.add(
-                    dwg.rect(
-                        insert=(box_x, row.rect.y),
-                        size=(box_w, row.rect.h),
+                link.append(
+                    draw.Rectangle(
+                        box_x,
+                        row.rect.y,
+                        box_w,
+                        row.rect.h,
                         fill="none",
                         **{"pointer-events": "all"},
                     )
                 )
-                dwg.add(link)
+                dwg.append(link)
         if i < len(rows) - 1:
             div_y = row.rect.y + row.rect.h
-            dwg.add(
-                dwg.line(
-                    start=(box_x, div_y),
-                    end=(box_x + box_w, div_y),
+            dwg.append(
+                draw.Line(
+                    box_x,
+                    div_y,
+                    box_x + box_w,
+                    div_y,
                     stroke="#bfdbfe",
                     stroke_width=0.5,
                 )
@@ -288,7 +304,7 @@ def _draw_remote_box(
 
 
 def _draw_pin_row(
-    dwg: svgwrite.Drawing,
+    dwg: draw.Drawing,
     row_info: PinRowInfo,
     harness: Harness,
     shield: ShieldGroup | None,
@@ -303,10 +319,12 @@ def _draw_pin_row(
     cy = rect.y + rect.h / 2
 
     row_id = _pin_row_id(pin) if not row_info.is_continuation else None
-    dwg.add(
-        dwg.rect(
-            insert=(rect.x, rect.y),
-            size=(rect.w, rect.h),
+    dwg.append(
+        draw.Rectangle(
+            rect.x,
+            rect.y,
+            rect.w,
+            rect.h,
             fill="#ffffff",
             stroke="#e2e8f0",
             stroke_width=0.5,
@@ -318,25 +336,27 @@ def _draw_pin_row(
     wire_x = row_info.wire_start_x
 
     for lx in [name_x, wire_x]:
-        dwg.add(dwg.line(start=(lx, rect.y), end=(lx, rect.y + rect.h), stroke="#cbd5e1", stroke_width=0.5))
+        dwg.append(draw.Line(lx, rect.y, lx, rect.y + rect.h, stroke="#cbd5e1", stroke_width=0.5))
 
     if not row_info.is_continuation:
-        dwg.add(
-            dwg.text(
+        dwg.append(
+            draw.Text(
                 str(pin.number),
-                insert=(rect.x + PIN_NUM_W / 2, cy + 4),
+                10,
+                rect.x + PIN_NUM_W / 2,
+                cy + 4,
                 text_anchor="middle",
                 fill="#64748b",
-                font_size="10px",
                 font_family="ui-monospace, monospace",
             )
         )
-        dwg.add(
-            dwg.text(
+        dwg.append(
+            draw.Text(
                 pin.signal_name,
-                insert=(name_x + 6, cy + 4),
+                10,
+                name_x + 6,
+                cy + 4,
                 fill="#1e293b",
-                font_size="10px",
                 font_family="ui-monospace, monospace",
             )
         )
@@ -358,10 +378,10 @@ def _draw_pin_row(
             # the continuation rows' backgrounds and the leg wire.
             bullet_cx = wire_x + _BULLET_CX
             attrs = _wire_attrs(seg, psp, colored)
-            dwg.add(dwg.line(start=(wire_x + _WIRE_PAD, cy), end=(bullet_cx, cy), **attrs))
+            dwg.append(draw.Line(wire_x + _WIRE_PAD, cy, bullet_cx, cy, **attrs))
             if isinstance(remote, Pin) and _is_jumper(pin, remote):
                 bar_x = wire_x + _JUMPER_STUB_X
-                dwg.add(dwg.line(start=(bullet_cx, cy), end=(bar_x, cy), **attrs))
+                dwg.append(draw.Line(bullet_cx, cy, bar_x, cy, **attrs))
                 _draw_wire_label(dwg, seg, bullet_cx, bar_x, cy, psp, colored, harness=harness)
                 if jumper_stubs is not None:
                     entry = jumper_stubs.setdefault(id(seg), [seg, wire_x, bar_x, []])
@@ -422,7 +442,7 @@ def _draw_pin_row(
             # _BULLET_CX; meet that drop there instead of extending to _JUMPER_STUB_X.
             remote_is_multi = len(remote._connections) > 1
             bar_x = wire_x + (_BULLET_CX if remote_is_multi else _JUMPER_STUB_X)
-            dwg.add(dwg.line(start=(wire_x + _WIRE_PAD, cy), end=(bar_x, cy), **attrs))
+            dwg.append(draw.Line(wire_x + _WIRE_PAD, cy, bar_x, cy, **attrs))
             _draw_wire_label(dwg, seg, wire_x + _WIRE_PAD, bar_x, cy, psp, colored, harness=harness)
             if jumper_stubs is not None:
                 entry = jumper_stubs.setdefault(id(seg), [seg, wire_x, bar_x, []])
@@ -497,7 +517,7 @@ def _draw_pin_row(
                     attrs = _wire_attrs(seg, psp, colored)
                     remote_is_multi = len(remote._connections) > 1
                     bar_x = wire_x + (_BULLET_CX if remote_is_multi else _JUMPER_STUB_X)
-                    dwg.add(dwg.line(start=(wire_x + _WIRE_PAD, line_y), end=(bar_x, line_y), **attrs))
+                    dwg.append(draw.Line(wire_x + _WIRE_PAD, line_y, bar_x, line_y, **attrs))
                     _draw_wire_label(dwg, seg, wire_x + _WIRE_PAD, bar_x, line_y, psp, colored, harness=harness)
                     if jumper_stubs is not None:
                         entry = jumper_stubs.setdefault(id(seg), [seg, wire_x, bar_x, []])
@@ -526,7 +546,7 @@ def _segment_terminates_at_splice(seg: WireSegment, class_pin: Pin, pin: Pin) ->
 
 
 def _draw_bullet_and_drop(
-    dwg: svgwrite.Drawing,
+    dwg: draw.Drawing,
     primary: PinRowInfo,
     colored: bool = True,
     pin_shield_palette: dict | None = None,
@@ -558,8 +578,6 @@ def _draw_bullet_and_drop(
                 prev_y = cont_cy
                 continue
         seg_for_color = cont.segment if cont.segment is not None else primary.segment
-        dwg.add(
-            dwg.line(start=(bullet_cx, prev_y), end=(bullet_cx, cont_cy), **_wire_attrs(seg_for_color, psp, colored))
-        )
+        dwg.append(draw.Line(bullet_cx, prev_y, bullet_cx, cont_cy, **_wire_attrs(seg_for_color, psp, colored)))
         prev_y = cont_cy
     return bullet_cx, cy

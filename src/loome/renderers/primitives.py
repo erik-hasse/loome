@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import svgwrite
+import drawsvg as draw
 
 from ..harness import Harness
 from ..layout.engine import COMPONENT_HEADER_H, CONNECTOR_HEADER_H, PIN_NUM_W, PinRowInfo
@@ -88,7 +88,7 @@ def _remote_label(remote, class_pin: Pin, harness: Harness) -> str:
 
 
 def _draw_wire_label(
-    dwg: svgwrite.Drawing,
+    dwg: draw.Drawing,
     seg: WireSegment,
     x1: float,
     x2: float,
@@ -110,41 +110,43 @@ def _draw_wire_label(
     # x1 is already lo_right (just past the left oval), so this stays clear of the ovals.
     label_x = x1 + 4
     if label:
-        dwg.add(
-            dwg.text(
+        dwg.append(
+            draw.Text(
                 label,
-                insert=(label_x, cy - 3),
+                7,
+                label_x,
+                cy - 3,
                 fill="#94a3b8",
-                font_size="7px",
                 font_family="ui-monospace, monospace",
             )
         )
     if seg.notes:
-        dwg.add(
-            dwg.text(
+        dwg.append(
+            draw.Text(
                 seg.notes,
-                insert=(label_x, cy + 9),
+                9,
+                label_x,
+                cy + 9,
                 fill="#475569",
-                font_size="9px",
                 font_style="italic",
                 font_family="ui-monospace, monospace",
             )
         )
 
 
-def _draw_splice_symbol(dwg: svgwrite.Drawing, cx: float, cy: float) -> None:
+def _draw_splice_symbol(dwg: draw.Drawing, cx: float, cy: float) -> None:
     r = 4
-    dwg.add(dwg.line(start=(cx - r, cy - r), end=(cx + r, cy + r), stroke="#475569", stroke_width=1.5))
-    dwg.add(dwg.line(start=(cx + r, cy - r), end=(cx - r, cy + r), stroke="#475569", stroke_width=1.5))
+    dwg.append(draw.Line(cx - r, cy - r, cx + r, cy + r, stroke="#475569", stroke_width=1.5))
+    dwg.append(draw.Line(cx + r, cy - r, cx - r, cy + r, stroke="#475569", stroke_width=1.5))
 
 
-def _draw_bullet(dwg: svgwrite.Drawing, cx: float, cy: float) -> None:
+def _draw_bullet(dwg: draw.Drawing, cx: float, cy: float) -> None:
     """Filled dot marking a junction where one pin's wire branches to multiple destinations."""
-    dwg.add(dwg.circle(center=(cx, cy), r=3.5, fill="#334155", stroke="#334155"))
+    dwg.append(draw.Circle(cx, cy, 3.5, fill="#334155", stroke="#334155"))
 
 
 def _draw_wire_around_ovals(
-    dwg: svgwrite.Drawing,
+    dwg: draw.Drawing,
     x1: float,
     x2: float,
     cy: float,
@@ -160,7 +162,7 @@ def _draw_wire_around_ovals(
     """
     if shield is None or x2 <= x1:
         if x2 > x1:
-            dwg.add(dwg.line(start=(x1, cy), end=(x2, cy), **attrs))
+            dwg.append(draw.Line(x1, cy, x2, cy, **attrs))
         return
 
     spans: list[tuple[float, float]] = []
@@ -177,34 +179,37 @@ def _draw_wire_around_ovals(
     cursor = x1
     for span_l, span_r in spans:
         if span_l > cursor:
-            dwg.add(dwg.line(start=(cursor, cy), end=(span_l, cy), **attrs))
+            dwg.append(draw.Line(cursor, cy, span_l, cy, **attrs))
         cursor = max(cursor, span_r)
     if cursor < x2:
-        dwg.add(dwg.line(start=(cursor, cy), end=(x2, cy), **attrs))
+        dwg.append(draw.Line(cursor, cy, x2, cy, **attrs))
 
 
-def _draw_unconnected(dwg: svgwrite.Drawing, wx: float, cy: float) -> None:
-    dwg.add(
-        dwg.line(
-            start=(wx + _WIRE_PAD, cy),
-            end=(wx + _REMOTE_BOX_X - 4, cy),
+def _draw_unconnected(dwg: draw.Drawing, wx: float, cy: float) -> None:
+    dwg.append(
+        draw.Line(
+            wx + _WIRE_PAD,
+            cy,
+            wx + _REMOTE_BOX_X - 4,
+            cy,
             stroke="#cbd5e1",
             stroke_width=1,
             stroke_dasharray="4,3",
         )
     )
-    dwg.add(
-        dwg.text(
+    dwg.append(
+        draw.Text(
             "[–]",
-            insert=(wx + _REMOTE_BOX_X, cy + 4),
+            9,
+            wx + _REMOTE_BOX_X,
+            cy + 4,
             fill="#94a3b8",
-            font_size="9px",
             font_family="ui-monospace, monospace",
         )
     )
 
 
-def _draw_terminal(dwg: svgwrite.Drawing, remote: Terminal, x: float, y: float) -> None:
+def _draw_terminal(dwg: draw.Drawing, remote: Terminal, x: float, y: float) -> None:
     """Draw the terminal's symbol at (x, y). Dispatched on concrete subclass.
 
     Extension point: new Terminal subclasses add a case here (and can be
@@ -212,82 +217,122 @@ def _draw_terminal(dwg: svgwrite.Drawing, remote: Terminal, x: float, y: float) 
     """
     if isinstance(remote, GroundSymbol):
         if remote.filled:
-            pts = [(x, y + 10), (x - 7, y - 2), (x + 7, y - 2)]
-            dwg.add(dwg.polygon(points=pts, fill="#334155", stroke="#334155", stroke_width=1))
+            dwg.append(
+                draw.Lines(
+                    x,
+                    y + 10,
+                    x - 7,
+                    y - 2,
+                    x + 7,
+                    y - 2,
+                    close=True,
+                    fill="#334155",
+                    stroke="#334155",
+                    stroke_width=1,
+                )
+            )
         else:
             stem_end = y + 4
-            dwg.add(dwg.line(start=(x, y - 2), end=(x, stem_end), stroke="#475569", stroke_width=1))
-            dwg.add(
-                dwg.polygon(
-                    points=[(x - 5, stem_end), (x + 5, stem_end), (x, stem_end + 8)],
+            dwg.append(draw.Line(x, y - 2, x, stem_end, stroke="#475569", stroke_width=1))
+            dwg.append(
+                draw.Lines(
+                    x - 5,
+                    stem_end,
+                    x + 5,
+                    stem_end,
+                    x,
+                    stem_end + 8,
+                    close=True,
                     fill="white",
                     stroke="#475569",
                     stroke_width=1,
                 )
             )
     elif isinstance(remote, BusBar):
-        dwg.add(
-            dwg.rect(
-                insert=(x - 10, y - 3),
-                size=(20, 6),
+        dwg.append(
+            draw.Rectangle(
+                x - 10,
+                y - 3,
+                20,
+                6,
                 fill="#1e293b",
                 stroke="#1e293b",
                 stroke_width=1,
             )
         )
     elif isinstance(remote, OffPageReference):
-        pts = [(x - 7, y - 5), (x + 2, y - 5), (x + 8, y), (x + 2, y + 5), (x - 7, y + 5)]
-        dwg.add(dwg.polygon(points=pts, fill="#dcfce7", stroke="#166534", stroke_width=1))
+        dwg.append(
+            draw.Lines(
+                x - 7,
+                y - 5,
+                x + 2,
+                y - 5,
+                x + 8,
+                y,
+                x + 2,
+                y + 5,
+                x - 7,
+                y + 5,
+                close=True,
+                fill="#dcfce7",
+                stroke="#166534",
+                stroke_width=1,
+            )
+        )
     elif isinstance(remote, Fuse):
-        dwg.add(
-            dwg.rect(
-                insert=(x - 9, y - 5),
-                size=(18, 10),
+        dwg.append(
+            draw.Rectangle(
+                x - 9,
+                y - 5,
+                18,
+                10,
                 rx=2,
-                ry=2,
                 fill="#fef9c3",
                 stroke="#a16207",
                 stroke_width=1.5,
             )
         )
-        dwg.add(dwg.line(start=(x - 5, y), end=(x + 5, y), stroke="#a16207", stroke_width=1.5))
+        dwg.append(draw.Line(x - 5, y, x + 5, y, stroke="#a16207", stroke_width=1.5))
     elif isinstance(remote, CircuitBreaker):
-        dwg.add(
-            dwg.rect(
-                insert=(x - 9, y - 5),
-                size=(18, 10),
+        dwg.append(
+            draw.Rectangle(
+                x - 9,
+                y - 5,
+                18,
+                10,
                 rx=2,
-                ry=2,
                 fill="#fff7ed",
                 stroke="#c2410c",
                 stroke_width=1.5,
             )
         )
-        dwg.add(dwg.line(start=(x - 4, y + 4), end=(x + 4, y - 4), stroke="#c2410c", stroke_width=1.5))
+        dwg.append(draw.Line(x - 4, y + 4, x + 4, y - 4, stroke="#c2410c", stroke_width=1.5))
 
 
-def _draw_can_term_box(dwg: svgwrite.Drawing, cx: float, y_top: float, y_bot: float) -> None:
+def _draw_can_term_box(dwg: draw.Drawing, cx: float, y_top: float, y_bot: float) -> None:
     """Draw a single spanning TERM box for a CAN bus termination point."""
     h = y_bot - y_top
     mid_y = (y_top + y_bot) / 2
-    dwg.add(
-        dwg.rect(
-            insert=(cx - _CAN_TERM_BOX_W / 2, y_top),
-            size=(_CAN_TERM_BOX_W, h),
+    dwg.append(
+        draw.Rectangle(
+            cx - _CAN_TERM_BOX_W / 2,
+            y_top,
+            _CAN_TERM_BOX_W,
+            h,
             rx=2,
-            ry=2,
             fill="#f0fdf4",
             stroke="#166534",
             stroke_width=1.5,
         )
     )
-    dwg.add(
-        dwg.text(
+    dwg.append(
+        draw.Text(
             "TERM",
-            insert=(cx, mid_y + 2),
+            7,
+            cx,
+            mid_y + 2,
             text_anchor="middle",
             fill="#166534",
-            font_size="7px",
             font_weight="bold",
             font_family="ui-monospace, monospace",
             transform=f"rotate(90, {cx}, {mid_y})",
@@ -298,65 +343,70 @@ def _draw_can_term_box(dwg: svgwrite.Drawing, cx: float, y_top: float, y_bot: fl
 # ── section / connector chrome ─────────────────────────────────────────────
 
 
-def _draw_section_bg(dwg: svgwrite.Drawing, rect, label: str) -> None:
-    dwg.add(dwg.rect(insert=(rect.x, rect.y), size=(rect.w, rect.h), rx=6, ry=6, fill="#f8fafc", stroke="none"))
+def _draw_section_bg(dwg: draw.Drawing, rect, label: str) -> None:
+    dwg.append(draw.Rectangle(rect.x, rect.y, rect.w, rect.h, rx=6, fill="#f8fafc", stroke="none"))
     # Dark header wrapped in a sticky group so it can float with the viewport.
-    g = dwg.g(id=f"sh-comp-{int(rect.y)}")
-    g.add(dwg.rect(insert=(rect.x, rect.y), size=(rect.w, COMPONENT_HEADER_H), rx=6, ry=6, fill="#334155"))
-    g.add(dwg.rect(insert=(rect.x, rect.y + COMPONENT_HEADER_H - 6), size=(rect.w, 6), fill="#334155"))
-    g.add(
-        dwg.text(
+    g = draw.Group(id=f"sh-comp-{int(rect.y)}")
+    g.append(draw.Rectangle(rect.x, rect.y, rect.w, COMPONENT_HEADER_H, rx=6, fill="#334155"))
+    g.append(draw.Rectangle(rect.x, rect.y + COMPONENT_HEADER_H - 6, rect.w, 6, fill="#334155"))
+    g.append(
+        draw.Text(
             label,
-            insert=(rect.x + 12, rect.y + COMPONENT_HEADER_H - 8),
+            13,
+            rect.x + 12,
+            rect.y + COMPONENT_HEADER_H - 8,
             fill="white",
-            font_size="13px",
             font_weight="bold",
             font_family="ui-monospace, monospace",
         )
     )
-    dwg.add(g)
+    dwg.append(g)
 
 
-def _draw_connector_header(dwg: svgwrite.Drawing, rect, conn_name: str) -> None:
-    g = dwg.g(id=f"sh-conn-{int(rect.y)}")
-    g.add(
-        dwg.rect(
-            insert=(rect.x, rect.y),
-            size=(rect.w, CONNECTOR_HEADER_H),
+def _draw_connector_header(dwg: draw.Drawing, rect, conn_name: str) -> None:
+    g = draw.Group(id=f"sh-conn-{int(rect.y)}")
+    g.append(
+        draw.Rectangle(
+            rect.x,
+            rect.y,
+            rect.w,
+            CONNECTOR_HEADER_H,
             fill="#dbeafe",
             stroke="#93c5fd",
             stroke_width=1,
         )
     )
     mid_y = rect.y + CONNECTOR_HEADER_H - 7
-    g.add(
-        dwg.text(
+    g.append(
+        draw.Text(
             "#",
-            insert=(rect.x + PIN_NUM_W / 2, mid_y),
+            10,
+            rect.x + PIN_NUM_W / 2,
+            mid_y,
             text_anchor="middle",
             fill="#1e3a5f",
-            font_size="10px",
             font_family="ui-monospace, monospace",
         )
     )
-    g.add(
-        dwg.text(
+    g.append(
+        draw.Text(
             conn_name,
-            insert=(rect.x + PIN_NUM_W + 6, mid_y),
+            10,
+            rect.x + PIN_NUM_W + 6,
+            mid_y,
             fill="#1e3a5f",
-            font_size="10px",
             font_weight="bold",
             font_family="ui-monospace, monospace",
         )
     )
-    dwg.add(g)
+    dwg.append(g)
 
 
 # ── shield ovals ────────────────────────────────────────────────────────────
 
 
 def _draw_shield_ovals(
-    dwg: svgwrite.Drawing,
+    dwg: draw.Drawing,
     rows: list[PinRowInfo],
     label: str,
     drain_label: str = "",
@@ -374,10 +424,12 @@ def _draw_shield_ovals(
     left_cx = _SHIELD_LEFT_CX + x_offset
     cx_offsets = [left_cx] if single_oval else [left_cx, _SHIELD_RIGHT_CX]
     for cx_off in cx_offsets:
-        dwg.add(
-            dwg.ellipse(
-                center=(wx + cx_off, cy),
-                r=(_SHIELD_RX, ry),
+        dwg.append(
+            draw.Ellipse(
+                wx + cx_off,
+                cy,
+                _SHIELD_RX,
+                ry,
                 fill="#f1f5f9",
                 stroke="#475569",
                 stroke_width=1,
@@ -385,13 +437,14 @@ def _draw_shield_ovals(
         )
 
     if label:
-        dwg.add(
-            dwg.text(
+        dwg.append(
+            draw.Text(
                 label,
-                insert=(wx + _SHIELD_RIGHT_CX, y_top - 2),
+                8,
+                wx + _SHIELD_RIGHT_CX,
+                y_top - 2,
                 text_anchor="middle",
                 fill="#475569",
-                font_size="8px",
                 font_weight="bold",
                 font_family="ui-monospace, monospace",
             )
@@ -406,10 +459,16 @@ def _draw_shield_ovals(
         tx = wx + cx_off
         stem_end = oval_bottom + 4
         tri_h = 8
-        dwg.add(dwg.line(start=(tx, oval_bottom), end=(tx, stem_end), stroke="#475569", stroke_width=1))
-        dwg.add(
-            dwg.polygon(
-                points=[(tx - 5, stem_end), (tx + 5, stem_end), (tx, stem_end + tri_h)],
+        dwg.append(draw.Line(tx, oval_bottom, tx, stem_end, stroke="#475569", stroke_width=1))
+        dwg.append(
+            draw.Lines(
+                tx - 5,
+                stem_end,
+                tx + 5,
+                stem_end,
+                tx,
+                stem_end + tri_h,
+                close=True,
                 fill="white",
                 stroke="#475569",
                 stroke_width=1,

@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import svgwrite
-from svgwrite.container import Style
+import drawsvg as draw
 
 from ..harness import Harness
 from ..layout.engine import MARGIN, LayoutResult, PinRowInfo
@@ -292,26 +291,25 @@ def render(
         sect_rect = layout.section_rects[id(component)]
         vb_y = sect_rect.y - MARGIN
         vb_h = sect_rect.h + 2 * MARGIN
-        dwg = svgwrite.Drawing(
-            str(output_path),
-            size=(layout.canvas_width, vb_h),
-            profile="full",
-            viewBox=f"0 {vb_y} {layout.canvas_width} {vb_h}",
-        )
+        dwg = draw.Drawing(layout.canvas_width, vb_h, origin=(0, vb_y))
         components_to_render = [component]
+        bg = draw.Rectangle(0, vb_y, layout.canvas_width, vb_h, fill="white")
     else:
-        dwg = svgwrite.Drawing(str(output_path), size=(layout.canvas_width, layout.canvas_height), profile="full")
+        dwg = draw.Drawing(layout.canvas_width, layout.canvas_height)
         components_to_render = [c for c in harness.components if c.render]
+        bg = draw.Rectangle(0, 0, layout.canvas_width, layout.canvas_height, fill="white")
 
-    dwg.defs.add(
-        Style(
+    dwg.append(
+        draw.Raw(
+            "<style>"
             "a.pin-link { cursor: pointer; }"
             " a.pin-link:hover rect { fill: #bfdbfe; fill-opacity: 0.45; }"
             " [id^='pr-'] { scroll-margin-top: 56px; }"
+            "</style>"
         )
     )
 
-    dwg.add(dwg.rect(insert=(0, 0), size=("100%", "100%"), fill="white"))
+    dwg.append(bg)
 
     jumper_stubs: dict[int, list] = {}  # id(seg) -> [seg, wire_x, bar_x, [cy, ...]]
     deferred_bullets: list[tuple[float, float]] = []  # (cx, cy) drawn after jumper bars
@@ -354,12 +352,13 @@ def render(
                     continue
                 _draw_row_and_continuations(row_info)
 
-        dwg.add(
-            dwg.rect(
-                insert=(sect_rect.x, sect_rect.y),
-                size=(sect_rect.w, sect_rect.h),
+        dwg.append(
+            draw.Rectangle(
+                sect_rect.x,
+                sect_rect.y,
+                sect_rect.w,
+                sect_rect.h,
                 rx=6,
-                ry=6,
                 fill="none",
                 stroke="#334155",
                 stroke_width=2,
@@ -552,7 +551,7 @@ def render(
         seg, wx, bar_x, cys = entry
         if len(cys) == 2:
             attrs = _wire_attrs(seg, pin_shield_palette, colored)
-            dwg.add(dwg.line(start=(bar_x, min(cys)), end=(bar_x, max(cys)), **attrs))
+            dwg.append(draw.Line(bar_x, min(cys), bar_x, max(cys), **attrs))
 
     # ── bullets (on top of jumper bars) ──────────────────────────────────────
     for bullet_cx, bullet_cy in deferred_bullets:
@@ -579,7 +578,7 @@ def render(
                 y_bot = max(r.rect.y + r.rect.h for r in term_rows)
                 _draw_can_term_box(dwg, wx + _CAN_TERM_BOX_CX, y_top, y_bot)
 
-    dwg.save()
+    dwg.save_svg(str(output_path))
 
     if component is None:
         _inject_sticky_script(output_path)
