@@ -40,9 +40,12 @@
 <path d="M216,128 L216,150" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="143.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
 <text x="62" y="143.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Ground</text>
-<path d="M222,139.0 L640.2,139.0" stroke="#111111" stroke-width="1.5" />
+<path d="M222,139.0 L652.2,139.0" stroke="#111111" stroke-width="1.5" />
 <text x="226" y="136.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22B</text>
-<path d="M652.2,149.0 L645.2,137.0 L659.2,137.0 Z" fill="#334155" stroke="#334155" stroke-width="1" />
+<path d="M652.2,139.0 L652.2,143.0" stroke="#111111" stroke-width="1" />
+<path d="M646.2,143.0 L658.2,143.0" stroke="#111111" stroke-width="1.5" />
+<path d="M648.2,147.0 L656.2,147.0" stroke="#111111" stroke-width="1.5" />
+<path d="M650.2,151.0 L654.2,151.0" stroke="#111111" stroke-width="1.5" />
 <text x="664.2" y="143.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">GND</text>
 <rect x="20" y="20" width="696" height="142" rx="6" fill="none" stroke="#334155" stroke-width="2" />
 <rect x="20" y="176" width="696" height="142" rx="6" fill="#f8fafc" stroke="none" />
@@ -80,9 +83,12 @@
 <path d="M216,284 L216,306" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="299.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
 <text x="62" y="299.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Ground In</text>
-<path d="M222,295.0 L640.2,295.0" stroke="#111111" stroke-width="1.5" />
+<path d="M222,295.0 L652.2,295.0" stroke="#111111" stroke-width="1.5" />
 <text x="226" y="292.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22B</text>
-<path d="M652.2,305.0 L645.2,293.0 L659.2,293.0 Z" fill="#334155" stroke="#334155" stroke-width="1" />
+<path d="M652.2,295.0 L652.2,299.0" stroke="#111111" stroke-width="1" />
+<path d="M646.2,299.0 L658.2,299.0" stroke="#111111" stroke-width="1.5" />
+<path d="M648.2,303.0 L656.2,303.0" stroke="#111111" stroke-width="1.5" />
+<path d="M650.2,307.0 L654.2,307.0" stroke="#111111" stroke-width="1.5" />
 <text x="664.2" y="299.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">GND</text>
 <rect x="20" y="176" width="696" height="142" rx="6" fill="none" stroke="#334155" stroke-width="2" />
 <script type="text/ecmascript"><![CDATA[

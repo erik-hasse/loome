@@ -13,9 +13,10 @@ from ..model import (
     Pin,
     SpliceNode,
     Terminal,
+    WireEndpoint,
     WireSegment,
 )
-from .colors import _effective_color_code
+from .colors import _GROUND_STROKE, _effective_color_code
 
 # X offsets within the wire column (relative to wire_start_x)
 _WIRE_PAD = 6  # gap before wire begins
@@ -209,6 +210,18 @@ def _draw_unconnected(dwg: draw.Drawing, wx: float, cy: float) -> None:
     )
 
 
+def _draw_earth_ground(dwg: draw.Drawing, x: float, top: float) -> None:
+    """Three-line earth ground symbol. Vertical stem from (x, top); three bars below.
+
+    Total height 12px — fits within the 17px below cy in a GROUND_ROW_H=34 row.
+    """
+    stem_end = top + 4
+    dwg.append(draw.Line(x, top, x, stem_end, stroke=_GROUND_STROKE, stroke_width=1))
+    for i, hw in enumerate((6, 4, 2)):
+        bar_y = stem_end + i * 4
+        dwg.append(draw.Line(x - hw, bar_y, x + hw, bar_y, stroke=_GROUND_STROKE, stroke_width=1.5))
+
+
 def _draw_terminal(dwg: draw.Drawing, remote: Terminal, x: float, y: float) -> None:
     """Draw the terminal's symbol at (x, y). Dispatched on concrete subclass.
 
@@ -216,38 +229,25 @@ def _draw_terminal(dwg: draw.Drawing, remote: Terminal, x: float, y: float) -> N
     exported from the public API without touching layout or wire drawing).
     """
     if isinstance(remote, GroundSymbol):
-        if remote.filled:
+        if remote.style == "open":
+            stem_end = y + 5
+            dwg.append(draw.Line(x, y, x, stem_end, stroke=_GROUND_STROKE, stroke_width=1))
             dwg.append(
                 draw.Lines(
+                    x - 6,
+                    stem_end,
+                    x + 6,
+                    stem_end,
                     x,
-                    y + 10,
-                    x - 7,
-                    y - 2,
-                    x + 7,
-                    y - 2,
+                    stem_end + 9,
                     close=True,
-                    fill="#334155",
-                    stroke="#334155",
+                    fill="white",
+                    stroke=_GROUND_STROKE,
                     stroke_width=1,
                 )
             )
         else:
-            stem_end = y + 4
-            dwg.append(draw.Line(x, y - 2, x, stem_end, stroke="#475569", stroke_width=1))
-            dwg.append(
-                draw.Lines(
-                    x - 5,
-                    stem_end,
-                    x + 5,
-                    stem_end,
-                    x,
-                    stem_end + 8,
-                    close=True,
-                    fill="white",
-                    stroke="#475569",
-                    stroke_width=1,
-                )
-            )
+            _draw_earth_ground(dwg, x, y)
     elif isinstance(remote, BusBar):
         dwg.append(
             draw.Rectangle(
@@ -405,12 +405,20 @@ def _draw_connector_header(dwg: draw.Drawing, rect, conn_name: str) -> None:
 # ── shield ovals ────────────────────────────────────────────────────────────
 
 
+def _drain_label(endpoint: "WireEndpoint | None") -> str:
+    if isinstance(endpoint, Terminal):
+        return endpoint.display_name()
+    if isinstance(endpoint, Pin):
+        return endpoint.signal_name or str(endpoint.number)
+    return ""
+
+
 def _draw_shield_ovals(
     dwg: draw.Drawing,
     rows: list[PinRowInfo],
     label: str,
-    drain_label: str = "",
-    drain_remote_label: str = "",
+    drain: "WireEndpoint | None" = None,
+    drain_remote: "WireEndpoint | None" = None,
     single_oval: bool = False,
     x_offset: float = 0,
 ) -> None:
@@ -450,27 +458,31 @@ def _draw_shield_ovals(
             )
         )
 
-    # Ground symbol: stem + open downward triangle.
-    # drain_label → left oval (source/component-proximal side)
-    # drain_remote_label → right oval (remote/cable-exit side)
-    for cx_off, dlabel in ((left_cx, drain_label), (_SHIELD_RIGHT_CX, drain_remote_label)):
+    # Drain symbol below each oval that has a drain endpoint.
+    # drain → left oval (source/component-proximal side)
+    # drain_remote → right oval (remote/cable-exit side)
+    for cx_off, endpoint in ((left_cx, drain), (_SHIELD_RIGHT_CX, drain_remote)):
+        dlabel = _drain_label(endpoint)
         if not dlabel:
             continue
         tx = wx + cx_off
-        stem_end = oval_bottom + 4
-        tri_h = 8
-        dwg.append(draw.Line(tx, oval_bottom, tx, stem_end, stroke="#475569", stroke_width=1))
-        dwg.append(
-            draw.Lines(
-                tx - 5,
-                stem_end,
-                tx + 5,
-                stem_end,
-                tx,
-                stem_end + tri_h,
-                close=True,
-                fill="white",
-                stroke="#475569",
-                stroke_width=1,
+        is_earth = isinstance(endpoint, GroundSymbol) and endpoint.style == "earth"
+        if is_earth:
+            _draw_earth_ground(dwg, tx, oval_bottom)
+        else:
+            stem_end = oval_bottom + 4
+            dwg.append(draw.Line(tx, oval_bottom, tx, stem_end, stroke="#475569", stroke_width=1))
+            dwg.append(
+                draw.Lines(
+                    tx - 5,
+                    stem_end,
+                    tx + 5,
+                    stem_end,
+                    tx,
+                    stem_end + 8,
+                    close=True,
+                    fill="white",
+                    stroke="#475569",
+                    stroke_width=1,
+                )
             )
-        )

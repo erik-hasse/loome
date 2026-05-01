@@ -5,6 +5,8 @@ import itertools
 from dataclasses import dataclass, field
 from typing import Literal, Self
 
+DrainSpec = Literal["block", "ground"] | None
+
 WireColor = Literal[
     "",  # auto (default)
     "W",  # White  → medium gray
@@ -44,7 +46,7 @@ class Terminal:
 @dataclass
 class GroundSymbol(Terminal):
     label: str = "GND"
-    filled: bool = True
+    style: Literal["filled", "open", "earth"] = "filled"
 
     def display_name(self) -> str:
         return self.label
@@ -189,19 +191,18 @@ class SpliceNode:
 _lgnd_counter = itertools.count()
 
 
-def _resolve_drain(value: "WireEndpoint | bool | None") -> "WireEndpoint | None":
+def _resolve_drain(value: "DrainSpec") -> "WireEndpoint | None":
     """Normalize a drain specification.
 
-    ``True``  → new open-triangle GroundSymbol (local ground).
-    ``False`` → ``None`` (floating, no drain).
-    ``None``  → ``None`` (floating, no drain).
-    Any ``WireEndpoint`` → passed through unchanged.
+    ``"block"``  → new open-triangle GroundSymbol.
+    ``"ground"`` → new three-line earth GroundSymbol.
+    ``None``     → ``None`` (floating, no drain).
     """
-    if value is True:
-        return GroundSymbol(id=f"_lgnd_{next(_lgnd_counter)}", label="GND", filled=False)
-    if value is False:
-        return None
-    return value  # type: ignore[return-value]
+    if value == "block":
+        return GroundSymbol(id=f"_lgnd_{next(_lgnd_counter)}", label="GND", style="open")
+    if value == "ground":
+        return GroundSymbol(id=f"_lgnd_{next(_lgnd_counter)}", label="GND", style="earth")
+    return None
 
 
 @dataclass
@@ -235,8 +236,8 @@ class Shield:
 
     def __init__(
         self,
-        drain: "WireEndpoint | bool | None" = None,
-        drain_remote: "WireEndpoint | bool | None" = None,
+        drain: "DrainSpec" = None,
+        drain_remote: "DrainSpec" = None,
         label: str = "",
     ) -> None:
         self._sg = ShieldGroup(
@@ -291,8 +292,8 @@ class Pin:
     shield_group: "ShieldGroup | None" = field(default=None, repr=False)
     _can_terminated: bool = field(default=False, repr=False)
 
-    def local_ground(self, label: str = "GND") -> None:
-        sym = GroundSymbol(id=f"lgnd_{id(self)}", label=label, filled=False)
+    def local_ground(self, label: str = "") -> None:
+        sym = GroundSymbol(id=f"lgnd_{id(self)}", label=label, style="open")
         self.connect(sym)
 
     def connect(

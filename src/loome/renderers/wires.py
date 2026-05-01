@@ -6,7 +6,7 @@ import drawsvg as draw
 
 from ..harness import Harness
 from ..layout.engine import PIN_NUM_W, WIRE_AREA_W, PinGroup, PinRowInfo
-from ..model import Pin, ShieldGroup, SpliceNode, Terminal, WireSegment
+from ..model import GroundSymbol, Pin, ShieldGroup, SpliceNode, Terminal, WireSegment
 from .colors import _wire_attrs
 from .primitives import (
     _BULLET_CX,
@@ -115,9 +115,17 @@ def _draw_connection(
 
     if isinstance(remote, Terminal):
         label_text = _remote_label(remote, class_pin, harness)
-        term_cx = min_term_cx if min_term_cx > 0 else (right_edge - 4 - len(label_text) * _MONO_CHAR_W - _TERM_SYMBOL_W)
-        term_cx = max(term_cx, start_x + 20)
-        wire_end = term_cx - 12
+        if isinstance(remote, GroundSymbol) and remote.style == "open":
+            # Local ground: place close to connector, similar to a jumper stub.
+            term_cx = start_x + 30
+        else:
+            term_cx = (
+                min_term_cx if min_term_cx > 0 else (right_edge - 4 - len(label_text) * _MONO_CHAR_W - _TERM_SYMBOL_W)
+            )
+            term_cx = max(term_cx, start_x + 20)
+        # GroundSymbol drops downward from the wire, so the wire extends to term_cx.
+        # Other terminals are sideways symbols that occupy the 12px gap before term_cx.
+        wire_end = term_cx if isinstance(remote, GroundSymbol) else term_cx - 12
         dwg.append(draw.Line(start_x, cy, wire_end, cy, **attrs))
         label_x1 = wx + _SHIELD_LEFT_CX + _SHIELD_RX + shield_x_offset if shield is not None else start_x
         _draw_wire_label(dwg, seg, label_x1, wire_end, cy, psp, colored, harness=harness)
@@ -317,6 +325,20 @@ def _draw_pin_row(
     pin = row_info.pin
     class_pin = row_info.class_pin
     cy = rect.y + rect.h / 2
+
+    if rect.h == 0:
+        # Zero-height jumper continuation: no visual row, but still record in jumper_stubs
+        # so the bar connecting primary cy → target pin cy can be drawn.
+        if row_info.is_continuation and row_info.segment is not None and jumper_stubs is not None:
+            seg = row_info.segment
+            remote = seg.end_b if (seg.end_a is class_pin or seg.end_a is pin) else seg.end_a
+            if isinstance(remote, Pin) and _is_jumper(pin, remote):
+                bar_x = row_info.wire_start_x + _BULLET_CX
+                primary = row_info.primary_row
+                bar_cy = (primary.rect.y + primary.rect.h / 2) if primary is not None else cy
+                entry = jumper_stubs.setdefault(id(seg), [seg, row_info.wire_start_x, bar_x, []])
+                entry[3].append(bar_cy)
+        return
 
     row_id = _pin_row_id(pin) if not row_info.is_continuation else None
     dwg.append(
@@ -567,6 +589,8 @@ def _draw_bullet_and_drop(
     # already shows the connection going upward; no downward drop is needed.
     prev_y = cy
     for cont in primary.continuation_rows:
+        if cont.rect.h == 0:
+            continue  # zero-height jumper row — no drop to draw
         cont_cy = cont.rect.y + cont.rect.h / 2
         if cont.segment is not None:
             remote = (

@@ -8,6 +8,7 @@ from .model import (
     CircuitBreakerBank,
     Component,
     Connector,
+    DrainSpec,
     Fuse,
     FuseBlock,
     GroundSymbol,
@@ -25,6 +26,7 @@ from .ports import ARINC429, GPIO, RS232, CanBus, GarminEthernet, Port, Thermoco
 __all__ = [
     "ARINC429",
     "Breakout",
+    "DrainSpec",
     "Bundle",
     "DPDT",
     "DPST",

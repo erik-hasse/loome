@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from ..harness import Harness
-from ..model import Component, Connector, Pin, SpliceNode, WireSegment
+from ..model import Component, Connector, GroundSymbol, Pin, SpliceNode, WireSegment
 from .geometry import Rect
 from .ordering import (
     _shield_ids as _pin_shield_ids,
@@ -33,6 +33,7 @@ SHIELD_HEADER_PAD = 20  # gap when shield-mates cross to a different remote comp
 CONNECTOR_BOTTOM_PAD = 6  # breathing room after last pin row in a connector (before next header)
 SECTION_BOTTOM_PAD = 6  # breathing room between last pin row and section border bottom
 DRAIN_STUB_H = 16  # extra bottom padding when a shield group has a drain terminal
+GROUND_ROW_H = 34  # taller row for pins that connect directly to a GroundSymbol
 DRAIN_GROUP_GAP = 22  # minimum clearance after a pin group that ends with a drained shield (drain stem + triangle)
 PIN_NUM_W = 36
 PIN_NAME_W = 160  # default; layout() may widen based on actual pin names
@@ -189,6 +190,12 @@ def _has_splice_connection(class_pin: Pin, inst_pin: Pin | None = None) -> bool:
     return False
 
 
+def _seg_ends_at_ground(seg: WireSegment, pin: Pin) -> bool:
+    """True when the far end of seg (away from pin) is a GroundSymbol."""
+    remote = seg.end_b if seg.end_a is pin else seg.end_a
+    return isinstance(remote, GroundSymbol)
+
+
 def _pin_outgoing_segments(class_pin: Pin, inst_pin: Pin | None = None) -> list[WireSegment]:
     """Return the segments outgoing from this pin (preferring instance over class).
 
@@ -335,7 +342,8 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
             if current_group is None or current_group.target_key != key:
                 current_group = PinGroup(rows=[], target_key=key, first_in_section=(prev_ctx is None))
                 pin_groups.append(current_group)
-            row_h = _pin_display_rows(class_pin, inst_pin) * PIN_ROW_H
+            is_ground_row = seg0 is not None and _seg_ends_at_ground(seg0, inst_pin or class_pin)
+            row_h = GROUND_ROW_H if is_ground_row else _pin_display_rows(class_pin, inst_pin) * PIN_ROW_H
             row_info = PinRowInfo(
                 pin=inst_pin,
                 class_pin=class_pin,
@@ -366,10 +374,20 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
             if current_group is None or current_group.target_key != leg_key:
                 current_group = PinGroup(rows=[], target_key=leg_key, first_in_section=(prev_ctx is None))
                 pin_groups.append(current_group)
+            # Jumper continuation legs have no independent visual; the jumper bar
+            # drawn between the two pin rows is the only connection shown. Use
+            # height=0 so no blank row appears between the primary and its target.
+            is_jumper_leg = leg_key == ("jumper",)
+            if i > 0 and is_jumper_leg:
+                leg_h = 0
+            elif i == 0 and _seg_ends_at_ground(seg, inst_pin or class_pin):
+                leg_h = GROUND_ROW_H
+            else:
+                leg_h = PIN_ROW_H
             sub = PinRowInfo(
                 pin=inst_pin,
                 class_pin=class_pin,
-                rect=Rect(inner_x, y, inner_w, PIN_ROW_H),
+                rect=Rect(inner_x, y, inner_w, leg_h),
                 wire_start_x=wire_start_x,
                 wire_end_x=wire_end_x,
                 segment=seg,
@@ -384,7 +402,7 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
                 sub.primary_row = primary
             all_rows.append(sub)
             current_group.rows.append(sub)
-            y += PIN_ROW_H
+            y += leg_h
             prev_ctx = ctx
         assert ctx is not None and current_group is not None
         return ctx, current_group

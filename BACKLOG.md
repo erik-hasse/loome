@@ -5,9 +5,6 @@ Items are roughly in priority order within each section.
 
 ## Low effort
 
-- **Ground Rendering** - The triangles for ground (both local and chassis) render strangely and
-  should be cleaned up.
-
 - **Splice-fan grouping with their direct siblings** — when several pins on a
   connector fan through a shared splice to multiple remotes (e.g. GAD27 J271
   pin 37/38 → splice → Cabin Light + Backlight) and adjacent pins go directly

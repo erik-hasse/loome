@@ -64,7 +64,7 @@ with gsu25.J251 as c:
     (c.rs232 >> pfd.P4601.rs232).notes("Not Configured")
 
 with gsu25.J252 as c:
-    with Shield(drain=True, drain_remote=True):
+    with Shield(drain="block", drain_remote="block"):
         c.oat_probe_power >> gtp59.oat_probe_power
         c.oat_probe_high >> gtp59.oat_probe_sense
         c.oat_probe_low >> gtp59.oat_probe_low
@@ -82,8 +82,9 @@ with gsa28_roll.J281 as c:
     c.power >> avionics_block_3.GSA28_roll
     c.trim_in_1 >> gad27.J272.roll_trim_out_1
     c.trim_in_2 >> gad27.J272.roll_trim_out_2
-    c.trim_out_1 >> roll_trim.trim_1
-    c.trim_out_2 >> roll_trim.trim_2
+    with Shield(drain="block", drain_remote="ground"):
+        c.trim_out_1 >> roll_trim.trim_1
+        c.trim_out_2 >> roll_trim.trim_2
 
 with gmc507.J7001 as c:
     c.aircraft_power_1 >> avionics_block_1.GMC507
@@ -97,8 +98,9 @@ with gsa28_pitch.J281 as c:
     c.power >> avionics_block_3.GSA28_pitch
     c.trim_in_1 >> gad27.J272.pitch_trim_out_1
     c.trim_in_2 >> gad27.J272.pitch_trim_out_2
-    c.trim_out_1 >> pitch_trim.trim_1
-    c.trim_out_2 >> pitch_trim.trim_2
+    with Shield(drain="block", drain_remote="ground"):
+        c.trim_out_1 >> pitch_trim.trim_1
+        c.trim_out_2 >> pitch_trim.trim_2
 
 pilot_stick.ap_disconnect >> copilot_stick.ap_disconnect
 copilot_stick.ap_disconnect >> gsa28_pitch.J281.disconnect
@@ -118,7 +120,7 @@ with gsa28_yaw.J281 as c:
 with gdl51r as c:
     c.aircraft_power >> avionics_block_3.GDL51R
     c.ground >> gnd
-    with Shield(drain_remote=True):
+    with Shield(drain_remote="block"):
         c.music_out_left >> gma245.J2402.music_2_in_left
         c.music_out_right >> gma245.J2402.music_2_in_right
         c.music_out_common >> gma245.J2402.music_2_in_low
@@ -128,29 +130,29 @@ with gdl51r as c:
 
 # Page 7
 with gma245.P2401 as c:
-    with Shield(drain=True):
+    with Shield(drain="block"):
         c.pilot_mic_key_in >> pilot_stick.push_to_talk
         c.pilot_mic_audio_in_high >> pilot_lemo.mic_high
         c.pilot_mic_audio_in_low >> pilot_lemo.mic_low
 
 with gma245.J2402 as c:
-    with Shield(drain=True):
+    with Shield(drain="block"):
         c.pilot_headset_audio_out_left >> pilot_lemo.audio_left
         c.pilot_headset_audio_out_right >> pilot_lemo.audio_right
         c.pilot_headset_audio_out_low >> pilot_lemo.ground
 
-    with Shield(drain=True):
+    with Shield(drain="block"):
         c.copilot_headset_audio_out_left >> copilot_lemo.audio_left
         c.copilot_headset_audio_out_right >> copilot_lemo.audio_right
         c.copilot_headset_audio_out_low >> copilot_lemo.ground
 
-    with Shield(drain=True):
+    with Shield(drain="block"):
         c.copilot_mic_key_in >> copilot_stick.push_to_talk
         c.copilot_mic_audio_in_high >> copilot_lemo.mic_high
         c.copilot_mic_audio_in_low >> copilot_lemo.mic_low
 
     # Page 8
-    with Shield(drain=True):
+    with Shield(drain="block"):
         c.music_1_in_left >> music_in.tip
         c.music_1_in_right >> music_in.ring
         c.music_1_in_low >> music_in.sleeve
@@ -172,34 +174,34 @@ with gma245.J2402 as c:
 
 # Page 9
 with gma245.P2401 as c:
-    with Shield(drain=True):
+    with Shield(drain="block"):
         c.com_1_audio_in_high >> gtn650xi.P1003.com_audio_hi
         c.com_1_audio_low >> gtn650xi.P1003.com_audio_lo
 
-    with Shield(drain=True):
+    with Shield(drain="block"):
         c.com_1_audio_low >> gtn650xi.P1003.mic_audio_in_lo
         c.com_1_mic_audio_out_high >> gtn650xi.P1003.com_mic_1_audio_in_hi
         c.com_1_mic_key_out >> gtn650xi.P1003.com_mic_1_key
     c.com_1_mic_key_out >> gtr20.J2001.tx_interlock_in
 
-    with Shield(drain=True):
+    with Shield(drain="block"):
         c.nav_1_audio_in_high >> gtn650xi.P1004.vor_loc_audio_out_hi
         c.nav_1_audio_in_low >> gtn650xi.P1004.vor_loc_audio_out_lo
 
-    with Shield(drain=True):
+    with Shield(drain="block"):
         c.alert_3_4_aux_3_audio_in_low >> gtn650xi.P1001.audio_out_lo
         c.alert_4_audio_in_high >> gtn650xi.P1001.audio_out_hi
 
-    with Shield(drain=True):
+    with Shield(drain="block"):
         c.com_2_audio_in_high >> gtr20.J2001.receiver_out_high
         c.com_2_audio_low >> gtr20.J2001.receiver_audio_low
 
-    with Shield(drain=True):
+    with Shield(drain="block"):
         c.com_2_audio_low >> gtr20.J2001.pilot_mic_low
         c.com_2_mic_audio_out_high >> gtr20.J2001.pilot_mic_in
         c.com_2_mic_key_out >> gtr20.J2001.pilot_ptt
 
-    with Shield(drain=True):
+    with Shield(drain="block"):
         c.alert_1_audio_in_high >> pfd.P4602.mono_audio_out_high
         c.alert_1_audio_in_low >> pfd.P4602.mono_audio_out_low
 
@@ -416,14 +418,14 @@ with gea24.J242 as c:
 # Page 28
 with gea24.J243 as c:
     (c.fuel_pressure_5v >> fuel_pressure.gpio).drain()
-    with Shield(drain=True, drain_remote=True):
+    with Shield(drain="block", drain_remote="block"):
         c.rpm_1.signal >> sds_ecu.tach
     (c.oil_pressure_5v >> oil_pressure.gpio).drain()
     (c.manifold_pressure_5v >> manifold_pressure.gpio).drain()
-    with Shield(drain=True, drain_remote=True):
+    with Shield(drain="block", drain_remote="block"):
         c.fuel_flow.signal >> sds_ecu.fuel_flow
 
-    with Shield(drain=True):
+    with Shield(drain="block"):
         c.oil_temp_high >> oil_temp.high
         c.oil_temp_low >> oil_temp.low
 
@@ -448,7 +450,7 @@ with gea24.J244 as c:
 
 # Page 30
 with gea24.J243 as c:
-    with Shield(drain=True):
+    with Shield(drain="block"):
         c.gp_5v_out >> co2_sensor.power
         c.gp6_high >> co2_sensor.signal
         c.gp_gnd_1 >> co2_sensor.ground
@@ -480,7 +482,7 @@ CanBusLine(
 # Page 32
 
 with elt.DIN as c:
-    with Shield(drain_remote=True):
+    with Shield(drain_remote="block"):
         c.remote_switch >> avionics_block_3.elt
         c.ground >> gnd
         c.elt_rx >> gtn650xi.P1001.rs232_1.tx

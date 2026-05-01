@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .model import GroundSymbol, OffPageReference, Pin, ShieldGroup, _resolve_drain
+from .model import DrainSpec, GroundSymbol, OffPageReference, Pin, ShieldGroup, _resolve_drain
 
 # Sentinel meaning "caller did not supply this argument" — distinct from None
 # (which means "explicitly set to floating / no drain").
@@ -54,11 +54,11 @@ class PortBuilder:
         self._kwargs["ground"] = value
         return self
 
-    def drain(self, value=True) -> "PortBuilder":
+    def drain(self, value: DrainSpec = "block") -> "PortBuilder":
         self._kwargs["drain"] = value
         return self
 
-    def drain_remote(self, value=True) -> "PortBuilder":
+    def drain_remote(self, value: DrainSpec = "block") -> "PortBuilder":
         self._kwargs["drain_remote"] = value
         return self
 
@@ -67,10 +67,10 @@ class PortBuilder:
         return self
 
 
-_CAN_DRAIN = GroundSymbol("_can_shield_drain_", "GND")
-_RS232_BACKSHELL = GroundSymbol("_rs232_backshell_", "GND")
-_ARINC_BACKSHELL = GroundSymbol("_arinc_backshell_", "GND")
-_ETHERNET_BACKSHELL = GroundSymbol("_ethernet_backshell_", "GND")
+_CAN_DRAIN = GroundSymbol("_can_shield_drain_", "GND", style="open")
+_RS232_BACKSHELL = GroundSymbol("_rs232_backshell_", "GND", style="open")
+_ARINC_BACKSHELL = GroundSymbol("_arinc_backshell_", "GND", style="open")
+_ETHERNET_BACKSHELL = GroundSymbol("_ethernet_backshell_", "GND", style="open")
 
 
 class Port:
@@ -219,7 +219,15 @@ class RS232(Port):
             p.shield_group = sg
             sg.pins.append(p)
 
-    def connect(self, other: RS232, *, ground: bool = True, notes: str = "", drain=_UNSET, drain_remote=_UNSET) -> None:
+    def connect(
+        self,
+        other: RS232,
+        *,
+        ground: bool = True,
+        notes: str = "",
+        drain: DrainSpec | object = _UNSET,
+        drain_remote: DrainSpec | object = _UNSET,
+    ) -> None:
         """Cross-connect: self.TX → other.RX and self.RX → other.TX."""
         seg_tx = self._tx.connect(other._rx)
         seg_tx.port_order = 0
@@ -306,7 +314,14 @@ class GPIO(Port):
     def __rshift__(self, other: GPIO) -> PortBuilder:
         return PortBuilder(self, other)
 
-    def connect(self, other: GPIO, notes: str = "", drain=_UNSET, drain_remote=_UNSET, **_) -> None:
+    def connect(
+        self,
+        other: GPIO,
+        notes: str = "",
+        drain: DrainSpec | object = _UNSET,
+        drain_remote: DrainSpec | object = _UNSET,
+        **_,
+    ) -> None:
         """Connect positive↔positive, signal↔signal, ground↔ground.
 
         Args:
@@ -381,7 +396,15 @@ class ARINC429(Port):
             p.shield_group = sg
             sg.pins.append(p)
 
-    def connect(self, other: "ARINC429", *, notes: str = "", drain=_UNSET, drain_remote=_UNSET, **_) -> None:
+    def connect(
+        self,
+        other: "ARINC429",
+        *,
+        notes: str = "",
+        drain: DrainSpec | object = _UNSET,
+        drain_remote: DrainSpec | object = _UNSET,
+        **_,
+    ) -> None:
         if self._direction == other._direction:
             raise ValueError(f"ARINC 429 requires one 'in' and one 'out' port, but both are {self._direction!r}")
         seg = self._a.connect(other._a)
@@ -435,7 +458,15 @@ class GarminEthernet(Port):
             p.shield_group = sg
             sg.pins.append(p)
 
-    def connect(self, other: "GarminEthernet", *, notes: str = "", drain=_UNSET, drain_remote=_UNSET, **_) -> None:
+    def connect(
+        self,
+        other: "GarminEthernet",
+        *,
+        notes: str = "",
+        drain: DrainSpec | object = _UNSET,
+        drain_remote: DrainSpec | object = _UNSET,
+        **_,
+    ) -> None:
         if self._direction == other._direction:
             raise ValueError(
                 f"Ethernet connection requires one 'in' and one 'out' port, but both are {self._direction!r}"

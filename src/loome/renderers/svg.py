@@ -62,14 +62,6 @@ def _compute_min_term_cx(layout: LayoutResult, harness: Harness) -> float:
     return min_cx if min_cx != float("inf") else 0
 
 
-def _drain_label(endpoint) -> str:
-    if isinstance(endpoint, Terminal):
-        return endpoint.display_name()
-    if isinstance(endpoint, Pin):
-        return endpoint.signal_name or str(endpoint.number)
-    return ""
-
-
 def _split_contiguous(rows: list[PinRowInfo]) -> list[list[PinRowInfo]]:
     """Partition rows into vertically-contiguous runs.
 
@@ -369,9 +361,6 @@ def render(
     for sg in harness.shield_groups:
         if sg.cable_only:
             continue
-        dl = _drain_label(sg.drain) if sg.drain is not None else ""
-        dl_remote = _drain_label(sg.drain_remote) if sg.drain_remote is not None else ""
-
         if sg.segments:
             # Connection-level shield: collect rows per segment so per-leg
             # shields don't accidentally pull in sibling legs of a multi-
@@ -429,8 +418,8 @@ def render(
                         dwg,
                         run,
                         sg.label,
-                        drain_label=dl if i == left_run else "",
-                        drain_remote_label=dl_remote if i == right_run else "",
+                        drain=sg.drain if i == left_run else None,
+                        drain_remote=sg.drain_remote if i == right_run else None,
                     )
             for inst_rows in rem_rows_by_inst.values():
                 runs = _split_contiguous(inst_rows)
@@ -444,8 +433,8 @@ def render(
                         dwg,
                         run,
                         sg.label,
-                        drain_label=dl_remote if i == left_run else "",
-                        drain_remote_label=dl if i == right_run else "",
+                        drain=sg.drain_remote if i == left_run else None,
+                        drain_remote=sg.drain if i == right_run else None,
                     )
         else:
             # Class-body shield: group rows from sg.pins by component instance.
@@ -491,8 +480,8 @@ def render(
                         dwg,
                         run,
                         sg.label,
-                        drain_label=dl if i == left_run else "",
-                        drain_remote_label=dl_remote if i == right_run else "",
+                        drain=sg.drain if i == left_run else None,
+                        drain_remote=sg.drain_remote if i == right_run else None,
                         single_oval=sg.single_oval,
                         x_offset=term_shift,
                     )
@@ -541,8 +530,8 @@ def render(
                         dwg,
                         run,
                         sg.label,
-                        drain_label=dl_remote if i == left_run else "",
-                        drain_remote_label=dl if i == right_run else "",
+                        drain=sg.drain_remote if i == left_run else None,
+                        drain_remote=sg.drain if i == right_run else None,
                         single_oval=sg.single_oval,
                     )
 
