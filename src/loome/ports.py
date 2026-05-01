@@ -20,50 +20,64 @@ the descriptor plumbing is inherited.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
-from .model import DrainSpec, GroundSymbol, OffPageReference, Pin, ShieldGroup, _resolve_drain
+from .model import DrainSpec, GroundSymbol, OffPageReference, Pin, ShieldGroup, WireSegment, _resolve_drain
 
 # Sentinel meaning "caller did not supply this argument" — distinct from None
 # (which means "explicitly set to floating / no drain").
 _UNSET: Any = object()
 
 
-class PortBuilder:
-    """Lazy fluent wrapper returned by ``port >> other``.
+@dataclass
+class PortConnection:
+    """Return value from port ``connect()`` methods, used by :class:`PortBuilder`."""
 
-    The underlying ``connect()`` is deferred until the builder is garbage
-    collected, so modifiers like ``.ground(False)`` can be applied first.
+    primary_segment: WireSegment | None = None
+    local_sg: ShieldGroup | None = None
+    remote_sg: ShieldGroup | None = None
+    gnd_segment: WireSegment | None = None
+
+
+class PortBuilder:
+    """Fluent modifier returned by ``port >> other``.
+
+    ``connect()`` is called immediately; modifiers mutate the already-created
+    segments and shield groups rather than deferring execution.
     """
 
-    def __init__(self, src, dst) -> None:
-        self._src = src
-        self._dst = dst
-        self._kwargs: dict = {}
-        self._done = False
-
-    def _finish(self) -> None:
-        if not self._done:
-            self._done = True
-            self._src.connect(self._dst, **self._kwargs)
-
-    def __del__(self) -> None:
-        self._finish()
+    def __init__(self, conn: PortConnection) -> None:
+        self._conn = conn
 
     def ground(self, value: bool) -> "PortBuilder":
-        self._kwargs["ground"] = value
+        if not value and self._conn.gnd_segment is not None:
+            seg = self._conn.gnd_segment
+            seg.end_a._connections.remove(seg)
+            if isinstance(seg.end_b, Pin):
+                seg.end_b._connections.remove(seg)
+            self._conn.gnd_segment = None
         return self
 
     def drain(self, value: DrainSpec = "block") -> "PortBuilder":
-        self._kwargs["drain"] = value
+        resolved = _resolve_drain(value)
+        if self._conn.local_sg is not None:
+            self._conn.local_sg.drain = resolved
+        if self._conn.remote_sg is not None:
+            self._conn.remote_sg.drain_remote = resolved
         return self
 
     def drain_remote(self, value: DrainSpec = "block") -> "PortBuilder":
-        self._kwargs["drain_remote"] = value
+        resolved = _resolve_drain(value)
+        if self._conn.local_sg is not None:
+            self._conn.local_sg.drain_remote = resolved
+        if self._conn.remote_sg is not None:
+            self._conn.remote_sg.drain = resolved
         return self
 
     def notes(self, value: str) -> "PortBuilder":
-        self._kwargs["notes"] = value
+        if self._conn.primary_segment is not None:
+            self._conn.primary_segment.notes = value
         return self
 
 
@@ -227,7 +241,7 @@ class RS232(Port):
         notes: str = "",
         drain: DrainSpec | object = _UNSET,
         drain_remote: DrainSpec | object = _UNSET,
-    ) -> None:
+    ) -> PortConnection:
         """Cross-connect: self.TX → other.RX and self.RX → other.TX."""
         seg_tx = self._tx.connect(other._rx)
         seg_tx.port_order = 0
@@ -239,16 +253,18 @@ class RS232(Port):
             self._sg.drain = _resolve_drain(drain)
         if drain_remote is not _UNSET:
             other._sg.drain = _resolve_drain(drain_remote)
+        gnd_seg = None
         if ground and self._gnd is not None and other._gnd is not None:
-            seg_gnd = self._gnd.connect(other._gnd)
-            seg_gnd.port_order = 2
+            gnd_seg = self._gnd.connect(other._gnd)
+            gnd_seg.port_order = 2
             if notes:
-                seg_gnd.notes = notes
+                gnd_seg.notes = notes
         elif notes:
             seg_rx.notes = notes
+        return PortConnection(primary_segment=seg_rx, local_sg=self._sg, remote_sg=other._sg, gnd_segment=gnd_seg)
 
     def __rshift__(self, other: RS232) -> PortBuilder:
-        return PortBuilder(self, other)
+        return PortBuilder(self.connect(other))
 
     @property
     def tx(self) -> Pin:
@@ -312,7 +328,7 @@ class GPIO(Port):
                 sg.pins.append(p)
 
     def __rshift__(self, other: GPIO) -> PortBuilder:
-        return PortBuilder(self, other)
+        return PortBuilder(self.connect(other))
 
     def connect(
         self,
@@ -321,7 +337,7 @@ class GPIO(Port):
         drain: DrainSpec | object = _UNSET,
         drain_remote: DrainSpec | object = _UNSET,
         **_,
-    ) -> None:
+    ) -> PortConnection:
         """Connect positive↔positive, signal↔signal, ground↔ground.
 
         Args:
@@ -344,6 +360,7 @@ class GPIO(Port):
                 self._sg.drain_remote = _resolve_drain(drain_remote)
             if other._sg is not None:
                 other._sg.drain = _resolve_drain(drain_remote)
+        return PortConnection(primary_segment=seg, local_sg=self._sg, remote_sg=other._sg)
 
     @property
     def positive(self) -> Pin:
@@ -404,7 +421,7 @@ class ARINC429(Port):
         drain: DrainSpec | object = _UNSET,
         drain_remote: DrainSpec | object = _UNSET,
         **_,
-    ) -> None:
+    ) -> PortConnection:
         if self._direction == other._direction:
             raise ValueError(f"ARINC 429 requires one 'in' and one 'out' port, but both are {self._direction!r}")
         seg = self._a.connect(other._a)
@@ -417,9 +434,10 @@ class ARINC429(Port):
             self._sg.drain = _resolve_drain(drain)
         if drain_remote is not _UNSET:
             other._sg.drain = _resolve_drain(drain_remote)
+        return PortConnection(primary_segment=seg, local_sg=self._sg, remote_sg=other._sg)
 
     def __rshift__(self, other: "ARINC429") -> PortBuilder:
-        return PortBuilder(self, other)
+        return PortBuilder(self.connect(other))
 
 
 class GarminEthernet(Port):
@@ -466,7 +484,7 @@ class GarminEthernet(Port):
         drain: DrainSpec | object = _UNSET,
         drain_remote: DrainSpec | object = _UNSET,
         **_,
-    ) -> None:
+    ) -> PortConnection:
         if self._direction == other._direction:
             raise ValueError(
                 f"Ethernet connection requires one 'in' and one 'out' port, but both are {self._direction!r}"
@@ -481,9 +499,10 @@ class GarminEthernet(Port):
             self._sg.drain = _resolve_drain(drain)
         if drain_remote is not _UNSET:
             other._sg.drain = _resolve_drain(drain_remote)
+        return PortConnection(primary_segment=seg, local_sg=self._sg, remote_sg=other._sg)
 
     def __rshift__(self, other: "GarminEthernet") -> PortBuilder:
-        return PortBuilder(self, other)
+        return PortBuilder(self.connect(other))
 
 
 class Thermocouple(Port):
@@ -521,11 +540,12 @@ class Thermocouple(Port):
             p.shield_group = sg
             sg.pins.append(p)
 
-    def connect(self, other: "Thermocouple", *, notes: str = "", **_) -> None:
+    def connect(self, other: "Thermocouple", *, notes: str = "", **_) -> PortConnection:
         seg = self._high.connect(other._high, gauge=self._gauge, color="Y")
         self._low.connect(other._low, gauge=self._gauge, color="R")
         if notes:
             seg.notes = notes
+        return PortConnection(primary_segment=seg)
 
     def __rshift__(self, other: "Thermocouple") -> PortBuilder:
-        return PortBuilder(self, other)
+        return PortBuilder(self.connect(other))

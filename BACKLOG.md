@@ -13,13 +13,6 @@ Items are roughly in priority order within each section.
   splice-fan rows. Layout would feel tighter if direct-to-X rows were drawn
   into the cluster of any splice-fan that targets X.
 
-- **`PortBuilder.__del__` deferred execution** — `port_a >> port_b` defers `connect()` until
-  garbage collection so fluent modifiers (`.ground(False)`, `.drain(local)`) can be chained
-  first. The downside is that Python silences exceptions raised inside `__del__`, so direction
-  mismatches on ARINC 429 / Ethernet ports fail silently when using `>>`. Better pattern:
-  call `connect()` immediately (like `Pin.__rshift__` does) and return a modifier object that
-  mutates the already-created segments.
-
 - **Switch schematic symbols** — `SPST`, `SPDT`, `DPST`, `DPDT` all default to
   `render=False` and have no SVG symbol. Adding simple line-art symbols (single-pole
   arc, double-pole arc) would let users put `render=True` and see switch positions in
@@ -42,14 +35,6 @@ Items are roughly in priority order within each section.
 
 ## Medium effort
 
-- **CAN bus rendering** — data-model support is in place: `CanBusLine` captures device
-  ordering, `Harness.resolved_length()` returns per-stub lengths for CAN pins, and
-  `CanBusLine.stub_lengths_for()` exposes the two-neighbor lengths on intermediate taps.
-  What's still missing is the renderer treatment: instead of every can pin stubbing to a
-  shared off-page reference, draw a horizontal bus track with each device tapping off it in
-  order, plus markers for the terminator devices at either end. layout is the bulk of the
-  remaining work; the renderer already has all the length data it needs.
-
 - **Shielded cable BoM entries** — shielded wire groups should appear as a single
   cable entry rather than N individual wire rows. Each `ShieldGroup` in
   `harness.shield_groups` corresponds to one physical cable; the conductors are the
@@ -66,6 +51,14 @@ Items are roughly in priority order within each section.
   - For class-body shields (RS232, GPIO etc.) group by component instance so each
     device-pair connection becomes its own cable row.
 
+- **CAN bus rendering** — data-model support is in place: `CanBusLine` captures device
+  ordering, `Harness.resolved_length()` returns per-stub lengths for CAN pins, and
+  `CanBusLine.stub_lengths_for()` exposes the two-neighbor lengths on intermediate taps.
+  What's still missing is the renderer treatment: instead of every can pin stubbing to a
+  shared off-page reference, draw a horizontal bus track with each device tapping off it in
+  order, plus markers for the terminator devices at either end. layout is the bulk of the
+  remaining work; the renderer already has all the length data it needs.
+
 - Support multi-pin on the right hand side (e.g. GTR20 -> GMA245))
 
 - **FuseBlock / CB-bank topology rendering** — the `FuseBlock` and `CircuitBreakerBank`
@@ -77,24 +70,19 @@ Items are roughly in priority order within each section.
 
 ## Test coverage
 
+- **CLI subcommand tests** — `bundle`, `bom`, and `fuses` subcommands have no CLI-level tests.
+  At minimum, confirm each exits 0 and produces non-empty output on the fixture spec.
+  `loome validate` (newly added) also needs both passing and failing cases.
+
 - **Port type tests** — no tests cover `RS232.connect`, `ARINC429.connect`, `GPIO.connect`,
   `Thermocouple.connect`, or `GarminEthernet.connect`. Should verify pin injection,
   cross-wiring, and direction validation.
-
-- **`PortBuilder.__del__` silent-failure test** — the known bug where direction mismatches on
-  `ARINC429`/`GarminEthernet` port connections swallow exceptions is untested. A test that
-  asserts the exception is eventually surfaced will also drive fixing the underlying `__del__`
-  pattern.
 
 - **Shield / `ShieldGroup` context manager** — no tests for `Shield` as a context manager,
   for `ShieldGroup.pins` population, or for `cable_only` / `single_oval` flags.
 
 - **`FuseBlock` declarative subclass** — no tests for the class-body fuse-declaration style
   or `CircuitBreakerBank`.
-
-- **CLI subcommand tests** — `bundle`, `bom`, and `fuses` subcommands have no CLI-level tests.
-  At minimum, confirm each exits 0 and produces non-empty output on the fixture spec.
-  `loome validate` (newly added) also needs both passing and failing cases.
 
 - **`WireBuilder` fluent API** — `.gauge()`, `.color()`, `.wire_id()`, `.notes()` are
   untested; verify they mutate the underlying `WireSegment` correctly.
