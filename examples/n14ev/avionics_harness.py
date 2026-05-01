@@ -1,11 +1,9 @@
 from examples.n14ev.lights import (
     cabin_lights,
     left_landing_lights,
-    left_taxi_lights,
     master_caution,
     master_warning,
     right_landing_lights,
-    right_taxi_lights,
 )
 from examples.n14ev.lrus import (
     co2_sensor,
@@ -260,7 +258,7 @@ with gad27.TB273 as c:
 
     # Page 14
     (c.light_1_power >> main_block.landing_lights).gauge(18)
-    (c.light_2_power >> main_block.taxi_lights).gauge(18)
+    (c.light_2_power >> main_block.landing_lights).gauge(18)
 
     (c.flap_power_in >> main_block.flaps).gauge(18)
     (c.flap_power_gnd >> gnd).gauge(18)
@@ -268,11 +266,7 @@ with gad27.TB273 as c:
     (c.flap_power_out_2 >> flap_motor.retract).gauge(18)
 
     (c.light_1_output >> left_landing_lights.power).gauge(18)
-    (c.light_1_output >> right_landing_lights.power).gauge(18)
-
-    (c.light_2_output >> left_taxi_lights.power).gauge(18)
-    (c.light_2_output >> right_taxi_lights.power).gauge(18)
-
+    (c.light_2_output >> right_landing_lights.power).gauge(18)
 
 # Page 15
 gad27.J271.dc_lighting_1 >> mfd.P4602.lighting_bus_high_14V

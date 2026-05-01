@@ -5,7 +5,7 @@ import svgwrite
 from ..harness import Harness
 from ..layout.engine import WIRE_AREA_W
 from ..model import Pin, ShieldGroup, SpliceNode, Terminal, WireSegment
-from .colors import _incoming_splice_attrs, _splice_color_code
+from .colors import _effective_color_code, _incoming_splice_attrs, _splice_color_code, _wire_attrs
 from .primitives import (
     _MONO_CHAR_W,
     _REMOTE_BOX_X,
@@ -146,6 +146,8 @@ def _draw_splice_connection(
 
     out_start = splice_cx + 6
     out_remote = out_seg.end_b if out_seg.end_a is splice else out_seg.end_a
+    out_attrs = _wire_attrs(out_seg, psp, colored)
+    out_cc = _effective_color_code(out_seg, psp, colored)
 
     right_edge = wire_end_x if wire_end_x is not None else (wx + WIRE_AREA_W)
     if isinstance(out_remote, Terminal):
@@ -156,7 +158,6 @@ def _draw_splice_connection(
     else:
         wire_end = wx + _REMOTE_BOX_X - 4
 
-    pin_label_offset = 4 if isinstance(out_remote, Pin) else 4
     _draw_splice_out_leg(
         dwg,
         out_seg,
@@ -166,11 +167,11 @@ def _draw_splice_connection(
         wire_end,
         class_pin,
         harness,
-        in_attrs,
-        cc,
+        out_attrs,
+        out_cc,
         psp,
         colored,
-        pin_label_offset=pin_label_offset,
+        pin_label_offset=4,
         wx=wx,
         shield=shield,
     )
@@ -223,13 +224,21 @@ def _draw_splice_fan(
     for i, (_seg, sp, out_seg) in enumerate(expanded):
         sub_y = rect.y + row_h * (i + 0.5)
 
-        dwg.add(dwg.line(start=(splice_cx + 5, center_y), end=(fan_x, sub_y), **splice_attrs))
+        if out_seg is not None:
+            out_remote = out_seg.end_b if out_seg.end_a is splice else out_seg.end_a
+            out_attrs = _wire_attrs(out_seg, psp, colored)
+            out_cc = _effective_color_code(out_seg, psp, colored)
+        else:
+            out_remote = None
+            out_attrs = splice_attrs
+            out_cc = cc
+
+        dwg.add(dwg.line(start=(splice_cx + 5, center_y), end=(fan_x, sub_y), **out_attrs))
 
         if out_seg is None:
             _draw_dead_end_splice(dwg, sp, fan_x + 4, sub_y)
             continue
 
-        out_remote = out_seg.end_b if out_seg.end_a is splice else out_seg.end_a
         _draw_splice_out_leg(
             dwg,
             out_seg,
@@ -239,8 +248,8 @@ def _draw_splice_fan(
             common_wire_end,
             class_pin,
             harness,
-            splice_attrs,
-            cc,
+            out_attrs,
+            out_cc,
             psp,
             colored,
             pin_label_offset=8,

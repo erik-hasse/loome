@@ -12,9 +12,9 @@ from .colors import _SHIELD_PALETTE, _wire_attrs
 from .primitives import (
     _CAN_TERM_BOX_CX,
     _CAN_TERM_SHIELD_SHIFT,
-    _JUMPER_STUB_X,
     _MONO_CHAR_W,
     _TERM_SYMBOL_W,
+    _draw_bullet,
     _draw_can_term_box,
     _draw_connector_header,
     _draw_section_bg,
@@ -313,7 +313,8 @@ def render(
 
     dwg.add(dwg.rect(insert=(0, 0), size=("100%", "100%"), fill="white"))
 
-    jumper_stubs: dict[int, list] = {}  # id(seg) -> [seg, wire_x, [cy, ...]]
+    jumper_stubs: dict[int, list] = {}  # id(seg) -> [seg, wire_x, bar_x, [cy, ...]]
+    deferred_bullets: list[tuple[float, float]] = []  # (cx, cy) drawn after jumper bars
 
     for comp in components_to_render:
         sect_rect = layout.section_rects[id(comp)]
@@ -328,8 +329,10 @@ def render(
             for cont in primary.continuation_rows:
                 csh = _resolve_shield(cont)
                 _draw_pin_row(dwg, cont, harness, csh, min_term_cx, colored, pin_shield_palette, jumper_stubs)
-            # Bullet + vertical drop on top of all row backgrounds and leg wires.
-            _draw_bullet_and_drop(dwg, primary, colored=colored, pin_shield_palette=pin_shield_palette)
+            # Drop lines drawn now; bullet glyph deferred until after jumper bars.
+            pos = _draw_bullet_and_drop(dwg, primary, colored=colored, pin_shield_palette=pin_shield_palette)
+            if pos is not None:
+                deferred_bullets.append(pos)
 
         for attr_name, inst_pin in comp._direct_pins.items():
             row_info = layout.pin_rows.get(id(inst_pin))
@@ -546,11 +549,14 @@ def render(
 
     # ── jumper vertical bars ─────────────────────────────────────────────────
     for entry in jumper_stubs.values():
-        seg, wx, cys = entry
+        seg, wx, bar_x, cys = entry
         if len(cys) == 2:
             attrs = _wire_attrs(seg, pin_shield_palette, colored)
-            bar_x = wx + _JUMPER_STUB_X
             dwg.add(dwg.line(start=(bar_x, min(cys)), end=(bar_x, max(cys)), **attrs))
+
+    # ── bullets (on top of jumper bars) ──────────────────────────────────────
+    for bullet_cx, bullet_cy in deferred_bullets:
+        _draw_bullet(dwg, bullet_cx, bullet_cy)
 
     # ── remote component boxes ───────────────────────────────────────────────
     rendered_pin_ids = set(inst_pin_to_row.keys())

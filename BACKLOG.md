@@ -5,20 +5,6 @@ Items are roughly in priority order within each section.
 
 ## Low effort
 
-- **Multi-direct primary-leg vertical alignment** — when a multi-direct pin's
-  primary leg is a Terminal (e.g. TO/GA pin 1 → GND with a continuation
-  jumper to COM 2), the bullet sits at ``_BULLET_CX`` but the continuation's
-  jumper bar drops at ``_JUMPER_STUB_X``, so the vertical drop and the bar
-  are at different x positions and look disjoint. Drop the bar at
-  ``_BULLET_CX`` (or shift the bullet to ``_JUMPER_STUB_X``) when any
-  continuation leg is a same-connector jumper.
-
-- **GMA245 J2402 splice fan-out crossover** — pin 6 (Lighting Bus 14v High)
-  and pin 7 (Lighting Bus High) both feed a shared splice; the two stubs
-  cross visibly between the pin column and the splice bullet. The fan
-  ordering inside ``renderers/splices.py`` doesn't sort outward legs to
-  minimise crossings.
-
 - **Ground Rendering** - The triangles for ground (both local and chassis) render strangely and
   should be cleaned up.
 
@@ -121,9 +107,30 @@ Items are roughly in priority order within each section.
 
 ## Larger features
 
-- **Interactive SVG** — embed hover/highlight via `<script>` tags so hovering a wire highlights
-  both endpoints. Click-to-follow for tracing signal paths. No external dependencies needed;
-  cleanest path is a `loome render --interactive` flag that injects a small JS block.
+- **Interactive SVG** — the sticky headers and remote-pin click-to-jump are already in place.
+  Remaining interactivity work, roughly in priority order:
+
+  1. **Cross-component navigation** — a `loome render-all` (or `--all`) command that renders
+     every component to its own SVG plus an `index.html` linking them. Each per-component SVG
+     gets a fixed top bar listing all components as links (back/forward navigation). This is a
+     prerequisite for builder mode to be useful across a real harness.
+
+  2. **Builder mode** — a toggleable overlay (e.g. `?builder=1` query param or a button) that
+     lets the user mark individual wires as "run". Since each wire appears at both ends of the
+     schematic, both occurrences need to dim together. Implementation sketch:
+     - Emit a `data-seg-id` attribute on both the source pin row and the corresponding remote
+       box entry so the JS can find both sides with one query.
+     - A click on either end toggles a `wire--done` CSS class on both, visually dimming them.
+     - State persists in `localStorage` keyed by a harness fingerprint (e.g. hash of component
+       labels) so it survives a page reload.
+     - A progress counter in the sticky component header ("14 / 47 wires run") gives per-connector
+       completion at a glance.
+     - For per-component SVGs, a shared `localStorage` key lets all open pages reflect the same
+       state without a sidecar file.
+
+  3. **Expand/collapse connectors** — click a connector header (`sh-conn-` ids are already
+     present) to collapse all its pin rows. Useful for large harnesses where you want to focus
+     on one connector at a time.
 
 - **Multi-page / off-page split** — for large harnesses, split into logical sections
   (e.g. per sub-system) with `OffPageReference` cross-links between sheets. The model already

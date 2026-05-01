@@ -21,7 +21,6 @@ from .primitives import (
     _SHIELD_RX,
     _TERM_SYMBOL_W,
     _WIRE_PAD,
-    _draw_bullet,
     _draw_terminal,
     _draw_unconnected,
     _draw_wire_label,
@@ -361,11 +360,12 @@ def _draw_pin_row(
             attrs = _wire_attrs(seg, psp, colored)
             dwg.add(dwg.line(start=(wire_x + _WIRE_PAD, cy), end=(bullet_cx, cy), **attrs))
             if isinstance(remote, Pin) and _is_jumper(pin, remote):
-                dwg.add(dwg.line(start=(bullet_cx, cy), end=(wire_x + _JUMPER_STUB_X, cy), **attrs))
-                _draw_wire_label(dwg, seg, bullet_cx, wire_x + _JUMPER_STUB_X, cy, psp, colored, harness=harness)
+                bar_x = wire_x + _JUMPER_STUB_X
+                dwg.add(dwg.line(start=(bullet_cx, cy), end=(bar_x, cy), **attrs))
+                _draw_wire_label(dwg, seg, bullet_cx, bar_x, cy, psp, colored, harness=harness)
                 if jumper_stubs is not None:
-                    entry = jumper_stubs.setdefault(id(seg), [seg, wire_x, []])
-                    entry[2].append(cy)
+                    entry = jumper_stubs.setdefault(id(seg), [seg, wire_x, bar_x, []])
+                    entry[3].append(cy)
             else:
                 _draw_connection(
                     dwg,
@@ -388,13 +388,15 @@ def _draw_pin_row(
             # Continuation: wire starts at bullet x; no pre-bullet stub, no
             # bullet glyph (already drawn by primary), no vertical drop.
             if isinstance(remote, Pin) and _is_jumper(pin, remote):
-                attrs = _wire_attrs(seg, psp, colored)
-                bullet_cx = wire_x + _BULLET_CX
-                dwg.add(dwg.line(start=(bullet_cx, cy), end=(wire_x + _JUMPER_STUB_X, cy), **attrs))
-                _draw_wire_label(dwg, seg, bullet_cx, wire_x + _JUMPER_STUB_X, cy, psp, colored, harness=harness)
+                # The bullet drop is the visual connector — no horizontal stub needed.
+                # Record the PRIMARY row's cy so the bar terminates at the bullet,
+                # not at the continuation placeholder below it.
                 if jumper_stubs is not None:
-                    entry = jumper_stubs.setdefault(id(seg), [seg, wire_x, []])
-                    entry[2].append(cy)
+                    bar_x = wire_x + _BULLET_CX
+                    primary = row_info.primary_row
+                    bar_cy = (primary.rect.y + primary.rect.h / 2) if primary is not None else cy
+                    entry = jumper_stubs.setdefault(id(seg), [seg, wire_x, bar_x, []])
+                    entry[3].append(bar_cy)
             else:
                 _draw_connection(
                     dwg,
@@ -416,11 +418,15 @@ def _draw_pin_row(
         # Primary, single direct connection — same visual as before.
         if isinstance(remote, Pin) and _is_jumper(pin, remote):
             attrs = _wire_attrs(seg, psp, colored)
-            dwg.add(dwg.line(start=(wire_x + _WIRE_PAD, cy), end=(wire_x + _JUMPER_STUB_X, cy), **attrs))
-            _draw_wire_label(dwg, seg, wire_x + _WIRE_PAD, wire_x + _JUMPER_STUB_X, cy, psp, colored, harness=harness)
+            # When the other end is multi-direct it renders a bullet drop at
+            # _BULLET_CX; meet that drop there instead of extending to _JUMPER_STUB_X.
+            remote_is_multi = len(remote._connections) > 1
+            bar_x = wire_x + (_BULLET_CX if remote_is_multi else _JUMPER_STUB_X)
+            dwg.add(dwg.line(start=(wire_x + _WIRE_PAD, cy), end=(bar_x, cy), **attrs))
+            _draw_wire_label(dwg, seg, wire_x + _WIRE_PAD, bar_x, cy, psp, colored, harness=harness)
             if jumper_stubs is not None:
-                entry = jumper_stubs.setdefault(id(seg), [seg, wire_x, []])
-                entry[2].append(cy)
+                entry = jumper_stubs.setdefault(id(seg), [seg, wire_x, bar_x, []])
+                entry[3].append(cy)
         else:
             terminated = pin._can_terminated
             _draw_connection(
@@ -489,15 +495,13 @@ def _draw_pin_row(
                 remote = seg.end_b if (seg.end_a is class_pin or seg.end_a is pin) else seg.end_a
                 if isinstance(remote, Pin) and _is_jumper(pin, remote):
                     attrs = _wire_attrs(seg, psp, colored)
-                    dwg.add(
-                        dwg.line(start=(wire_x + _WIRE_PAD, line_y), end=(wire_x + _JUMPER_STUB_X, line_y), **attrs)
-                    )
-                    _draw_wire_label(
-                        dwg, seg, wire_x + _WIRE_PAD, wire_x + _JUMPER_STUB_X, line_y, psp, colored, harness=harness
-                    )
+                    remote_is_multi = len(remote._connections) > 1
+                    bar_x = wire_x + (_BULLET_CX if remote_is_multi else _JUMPER_STUB_X)
+                    dwg.add(dwg.line(start=(wire_x + _WIRE_PAD, line_y), end=(bar_x, line_y), **attrs))
+                    _draw_wire_label(dwg, seg, wire_x + _WIRE_PAD, bar_x, line_y, psp, colored, harness=harness)
                     if jumper_stubs is not None:
-                        entry = jumper_stubs.setdefault(id(seg), [seg, wire_x, []])
-                        entry[2].append(line_y)
+                        entry = jumper_stubs.setdefault(id(seg), [seg, wire_x, bar_x, []])
+                        entry[3].append(line_y)
                 else:
                     _draw_connection(
                         dwg,
@@ -526,19 +530,36 @@ def _draw_bullet_and_drop(
     primary: PinRowInfo,
     colored: bool = True,
     pin_shield_palette: dict | None = None,
-) -> None:
-    """Draw the multi-direct-connection bullet + vertical drop on top of all sub-rows.
+) -> tuple[float, float] | None:
+    """Draw the drop lines for a multi-direct-connection bullet and return the bullet position.
 
-    Run after every sub-row is drawn so the bullet sits above the leg wire and
-    the drop line isn't covered by the continuation rows' backgrounds.
+    Returns ``(bullet_cx, cy)`` so the caller can draw the bullet glyph later,
+    on top of any jumper bars that are rendered after this call. Returns None if
+    there is nothing to draw.
     """
     if not primary.continuation_rows or primary.segment is None:
-        return
+        return None
     psp = pin_shield_palette or {}
     cy = primary.rect.y + primary.rect.h / 2
-    last = primary.continuation_rows[-1]
-    last_cy = last.rect.y + last.rect.h / 2
     bullet_cx = primary.wire_start_x + _BULLET_CX
-    attrs = _wire_attrs(primary.segment, psp, colored)
-    dwg.add(dwg.line(start=(bullet_cx, cy), end=(bullet_cx, last_cy), **attrs))
-    _draw_bullet(dwg, bullet_cx, cy)
+    # Draw the drop in segments, each colored by the continuation it feeds into.
+    # Jumper continuations are skipped — the jumper bar (drawn from jumper_stubs)
+    # already shows the connection going upward; no downward drop is needed.
+    prev_y = cy
+    for cont in primary.continuation_rows:
+        cont_cy = cont.rect.y + cont.rect.h / 2
+        if cont.segment is not None:
+            remote = (
+                cont.segment.end_b
+                if (cont.segment.end_a is cont.class_pin or cont.segment.end_a is cont.pin)
+                else cont.segment.end_a
+            )
+            if isinstance(remote, Pin) and _is_jumper(cont.pin, remote):
+                prev_y = cont_cy
+                continue
+        seg_for_color = cont.segment if cont.segment is not None else primary.segment
+        dwg.add(
+            dwg.line(start=(bullet_cx, prev_y), end=(bullet_cx, cont_cy), **_wire_attrs(seg_for_color, psp, colored))
+        )
+        prev_y = cont_cy
+    return bullet_cx, cy

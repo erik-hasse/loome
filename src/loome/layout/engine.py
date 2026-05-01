@@ -66,6 +66,8 @@ class PinRowInfo:
     # Set on the primary row only: the additional sub-rows that share this
     # pin. Renderer walks these to draw the bullet + drop-down branches.
     continuation_rows: list["PinRowInfo"] = field(default_factory=list)
+    # Back-reference set on continuation rows pointing to their primary.
+    primary_row: "PinRowInfo | None" = None
 
 
 @dataclass
@@ -379,6 +381,7 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
             else:
                 assert primary is not None
                 primary.continuation_rows.append(sub)
+                sub.primary_row = primary
             all_rows.append(sub)
             current_group.rows.append(sub)
             y += PIN_ROW_H
