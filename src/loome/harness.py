@@ -57,6 +57,10 @@ class Harness:
     fuse_blocks: list[FuseBlock] = field(default_factory=list)
     cb_banks: list[CircuitBreakerBank] = field(default_factory=list)
 
+    def __post_init__(self) -> None:
+        for component in self.components:
+            self._collect_shield_groups(component)
+
     # Convenience filtered views (kept as properties so tests and callers
     # can still query by concrete type without pattern-matching the list).
     @property

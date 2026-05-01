@@ -55,3 +55,34 @@ class Rheostat(Component):
     ground = Pin("BLK", "Ground")
     power = Pin("RED", "Power")
     out = Pin("BLU", "Out")
+
+
+class OnOffOnSwitch(Component):
+    render = False
+
+    com = Pin(1, "COM")
+    up = Pin(2, "UP")
+    down = Pin(3, "DOWN")
+
+    def __init__(
+        self,
+        label: str | None = None,
+        *,
+        momentary_up: bool = False,
+        momentary_down: bool = False,
+        render: bool = False,
+    ):
+        super().__init__(label, render=render)
+        self.momentary_up = momentary_up
+        self.momentary_down = momentary_down
+
+
+class DP3TProgressive(Component):
+    """The first position connects com1 to no1, the second position connects com2 to
+    no2 (keeping com1-no1 connected)."""
+
+    render = False
+    com1 = Pin(1, "COM1")
+    com2 = Pin(2, "COM2")
+    no1 = Pin(3, "NO 1")
+    no2 = Pin(4, "NO 2")

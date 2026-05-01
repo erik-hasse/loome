@@ -1,9 +1,11 @@
 from examples.n14ev.lights import (
     cabin_lights,
     left_landing_lights,
+    left_taxi_lights,
     master_caution,
     master_warning,
     right_landing_lights,
+    right_taxi_lights,
 )
 from examples.n14ev.lrus import (
     co2_sensor,
@@ -22,35 +24,33 @@ from examples.n14ev.lrus import (
     gma245,
     gmc507,
     gmu11,
+    gsa28_pitch,
+    gsa28_roll,
+    gsa28_yaw,
     gsu25,
     gtn650_config,
     gtn650_fan,
     gtn650xi,
+    gtp59,
     gtr20,
     gtx45r,
     gtx_usb_config,
     mfd,
     music_in,
-    oat_probe,
     pfd,
     pilot_lemo,
     pilot_stick,
-    pitch_servo,
     pitch_trim,
-    roll_servo,
     roll_trim,
     sds_ecu,
-    yaw_servo,
 )
 from examples.n14ev.power import avionics_block_1, avionics_block_2, avionics_block_3, gnd, main_block
 from examples.n14ev.sensors import fuel_pressure, left_fuel, manifold_pressure, oil_pressure, oil_temp, right_fuel
 from examples.n14ev.switches import (
     backlight_rheo,
     cabin_light_rheo,
-    flaps_down,
-    flaps_up,
+    flaps,
     landing_light_switch,
-    taxi_light_switch,
     toga,
     wig_wag,
 )
@@ -65,9 +65,9 @@ with gsu25.J251 as c:
 
 with gsu25.J252 as c:
     with Shield(drain=True, drain_remote=True):
-        c.oat_probe_power >> oat_probe.oat_probe_power
-        c.oat_probe_high >> oat_probe.oat_probe_sense
-        c.oat_probe_low >> oat_probe.oat_probe_low
+        c.oat_probe_power >> gtp59.oat_probe_power
+        c.oat_probe_high >> gtp59.oat_probe_sense
+        c.oat_probe_low >> gtp59.oat_probe_low
     c.rs232_3 >> gtx45r.P3251.rs232_1
 
 
@@ -77,7 +77,7 @@ with gmu11.J441 as c:
     c.ground >> gnd
 
 # Page 3
-with roll_servo.J281 as c:
+with gsa28_roll.J281 as c:
     c.ground >> gnd
     c.power >> avionics_block_3.GSA28_roll
     c.trim_in_1 >> gad27.J272.roll_trim_out_1
@@ -92,7 +92,7 @@ with gmc507.J7001 as c:
     c.remote_go_around >> toga.no2
 
 # Page 4
-with pitch_servo.J281 as c:
+with gsa28_pitch.J281 as c:
     c.ground >> gnd
     c.power >> avionics_block_3.GSA28_pitch
     c.trim_in_1 >> gad27.J272.pitch_trim_out_1
@@ -101,15 +101,15 @@ with pitch_servo.J281 as c:
     c.trim_out_2 >> pitch_trim.trim_2
 
 pilot_stick.ap_disconnect >> copilot_stick.ap_disconnect
-copilot_stick.ap_disconnect >> pitch_servo.J281.disconnect
-pitch_servo.J281.disconnect >> yaw_servo.J281.disconnect
-yaw_servo.J281.disconnect >> roll_servo.J281.disconnect
+copilot_stick.ap_disconnect >> gsa28_pitch.J281.disconnect
+gsa28_pitch.J281.disconnect >> gsa28_yaw.J281.disconnect
+gsa28_yaw.J281.disconnect >> gsa28_roll.J281.disconnect
 
 (toga.no1 >> gtn650xi.P1001[37]).notes("Reconfigure to Remote Go Around")
 
 # Page 5
 
-with yaw_servo.J281 as c:
+with gsa28_yaw.J281 as c:
     c.ground >> gnd
     c.power >> avionics_block_3.GSA28_yaw
 
@@ -120,8 +120,8 @@ with gdl51r as c:
     c.ground >> gnd
     with Shield(drain_remote=True):
         c.music_out_left >> gma245.J2402.music_2_in_left
-        c.music_out_common >> gma245.J2402.music_2_in_low
         c.music_out_right >> gma245.J2402.music_2_in_right
+        c.music_out_common >> gma245.J2402.music_2_in_low
 
     c.rs232_1 >> pfd.P4602.rs232_1
     c.rs232_2 >> mfd.P4602.rs232_4
@@ -207,15 +207,15 @@ with gma245.P2401 as c:
 # Page 10
 
 with gtr20.J2001 as c:
-    c.ground >> gnd
-    c.aircraft_power >> avionics_block_3.GTR20
+    (c.ground >> gnd).gauge(18)
+    (c.aircraft_power >> avionics_block_3.GTR20).gauge(18)
 
 # Page 11
 with gad27.J271 as c:
     c.aircraft_power >> avionics_block_1.GAD27
     c.ground >> gnd
-    c.flap_up_1 >> flaps_up.no
-    c.flap_down_1 >> flaps_down.no
+    c.flap_up_1 >> flaps.up
+    c.flap_down_1 >> flaps.down
     c.pilot_pitch_trim_up >> pilot_stick.trim_up
     c.pilot_pitch_trim_down >> pilot_stick.trim_down
     c.pilot_roll_trim_left >> pilot_stick.trim_left
@@ -232,8 +232,13 @@ with gad27.J271 as c:
     # c.discrete_in_2 >> monkworkz_active
 
     # Page 12
-    c.light_1_switch >> landing_light_switch.no
-    c.light_2_switch >> taxi_light_switch.no
+    landing_light_switch.com2 >> gnd
+    landing_light_switch.com1 >> main_block.taxi_lights
+    landing_light_switch.no1 >> left_taxi_lights.power
+    landing_light_switch.no1 >> right_taxi_lights.power
+
+    c.light_1_switch >> landing_light_switch.no2
+    c.light_2_switch >> landing_light_switch.no2
     c.alternating_flash_on >> wig_wag.no
 
     c.output_12v >> backlight_rheo.power
@@ -456,7 +461,7 @@ CanBusLine(
     name="CAN Bus",
     devices=[
         gmu11.J441,
-        roll_servo.J281,
+        gsa28_roll.J281,
         mfd.P4602,
         gad29.J291,
         gtr20.J2001,
@@ -467,8 +472,8 @@ CanBusLine(
         gea24.J241,
         gad27.J271,
         gsu25.J251,
-        pitch_servo.J281,
-        yaw_servo.J281,
+        gsa28_pitch.J281,
+        gsa28_yaw.J281,
     ],
 )
 
@@ -482,4 +487,36 @@ with elt.DIN as c:
 
     # TODO: c.rs232_test
 
-harness = Harness("Avionics Harness", length_unit="in")
+harness = Harness(
+    "Avionics Harness",
+    length_unit="in",
+    components=[
+        gsu25,
+        gtp59,
+        gmu11,
+        gsa28_roll,
+        gmc507,
+        gsa28_pitch,
+        toga,
+        gsa28_yaw,
+        gdl51r,
+        gma245,
+        pilot_lemo,
+        copilot_lemo,
+        gtr20,
+        gad27,
+        landing_light_switch,
+        flap_motor,
+        roll_trim,
+        pitch_trim,
+        gap26,
+        gtx45r,
+        gtn650xi,
+        gad29,
+        pfd,
+        mfd,
+        g5,
+        gea24,
+        elt,
+    ],
+)

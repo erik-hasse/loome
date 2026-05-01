@@ -229,8 +229,8 @@ class Shield:
     Usage::
 
         with Shield(drain=gnd) as oat_shield:
-            gsu25.J252.oat_probe_power.connect(oat_probe.oat_probe_power)
-            gsu25.J252.oat_probe_high.connect(oat_probe.oat_probe_high)
+            gsu25.J252.oat_probe_power.connect(gtp59.oat_probe_power)
+            gsu25.J252.oat_probe_high.connect(gtp59.oat_probe_high)
     """
 
     def __init__(
