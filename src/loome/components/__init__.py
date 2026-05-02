@@ -117,3 +117,21 @@ class AithreShield3(Component):
     power = Pin("RED", "Power")
     signal = Pin("WHT", "Signal")
     ground = Pin("BLK", "Ground")
+
+
+class FlyLedsEssentialsController(Component):
+    ground = Pin(1, "Ground")
+    left_shield = Pin(2, "Left Shield (Position -ve)")
+    left_strobe_neg = Pin(3, "Left Strobe -ve")
+    left_position_pos = Pin(4, "Left Position +ve")
+    position_12v_in = Pin(5, "Position 12V In")
+    right_strobe_neg = Pin(6, "Right Strobe -ve")
+    tail_shield = Pin(7, "Tail Shield")
+    tail_neg = Pin(8, "Tail -ve")
+    wig_wag_mode = Pin(9, "Wig Wag Mode")
+    strobe_12v_in = Pin(10, "Strobe 12V In")
+    left_strobe_pos = Pin(11, "Left Strobe +ve")
+    right_strobe_pos = Pin(12, "Right Strobe +ve")
+    right_position_pos = Pin(13, "Right Position +ve")
+    right_shield = Pin(14, "Right Shield (Position -ve)")
+    tail_pos = Pin(15, "Tail +ve")

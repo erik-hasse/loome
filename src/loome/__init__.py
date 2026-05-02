@@ -1,6 +1,7 @@
 from .bundles import Breakout, Bundle
 from .buses import CanBusLine
 from .components.switches import DPDT, DPST, SPDT, SPST
+from .disconnects import Disconnect, DisconnectPin
 from .harness import Harness
 from .model import (
     BusBar,
@@ -40,6 +41,8 @@ __all__ = [
     "CircuitBreakerBank",
     "Component",
     "Connector",
+    "Disconnect",
+    "DisconnectPin",
     "Fuse",
     "FuseBlock",
     "GPIO",

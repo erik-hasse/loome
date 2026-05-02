@@ -146,8 +146,20 @@ _STICKY_JS = """\
     if(ac&&ak&&ak.y<=ac.y)ak=null;
     if(ac!==pc){if(pc)unstick(pc);pc=ac;}
     if(ak!==pk){if(pk)unstick(pk);pk=ak;}
-    if(ac)stick(ac,vt);
-    if(ak)stick(ak,vt+CH);
+    if(ac){
+      var nc=cs[cs.indexOf(ac)+1];
+      var cy=nc?Math.min(vt,nc.y-CH):vt;
+      stick(ac,cy);
+    }
+    if(ak){
+      var ki=ks.indexOf(ak),nk=ks[ki+1];
+      var nc2=ac?cs[cs.indexOf(ac)+1]:null;
+      var ny=Infinity;
+      if(nk)ny=Math.min(ny,nk.y);
+      if(nc2)ny=Math.min(ny,nc2.y);
+      var ky=isFinite(ny)?Math.min(vt+CH,ny-CH):vt+CH;
+      stick(ak,ky);
+    }
   }
   window.addEventListener('scroll',update,{passive:true});
   window.addEventListener('resize',update,{passive:true});

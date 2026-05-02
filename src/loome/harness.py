@@ -5,6 +5,7 @@ from typing import Generator
 
 from .bundles import Bundle
 from .buses import CanBusLine
+from .disconnects import Disconnect
 from .model import (
     CircuitBreaker,
     CircuitBreakerBank,
@@ -56,6 +57,7 @@ class Harness:
     can_buses: list[CanBusLine] = field(default_factory=list)
     fuse_blocks: list[FuseBlock] = field(default_factory=list)
     cb_banks: list[CircuitBreakerBank] = field(default_factory=list)
+    disconnects: list[Disconnect] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         for component in self.components:
@@ -128,6 +130,8 @@ class Harness:
                 self.fuse_blocks.append(item)
             elif isinstance(item, CircuitBreakerBank):
                 self.cb_banks.append(item)
+            elif isinstance(item, Disconnect):
+                self.disconnects.append(item)
 
     def autodetect(self, namespace: dict) -> None:
         """Populate the harness from a spec-file namespace.
@@ -146,6 +150,10 @@ class Harness:
 
         # ── Step 1: namespace scan ──────────────────────────────────────────
         for val in namespace.values():
+            if isinstance(val, Disconnect):
+                if val not in self.disconnects:
+                    self.disconnects.append(val)
+                continue
             if isinstance(val, (Component, SpliceNode, Terminal, ShieldGroup)):
                 _register(val)
             elif isinstance(val, Shield):
@@ -226,7 +234,8 @@ class Harness:
 
         Returns an empty string for wires that don't belong in the bundle
         (unresolved ends, self-loops/straps). For a CAN-bus pin the wire has
-        one length per adjacent bus device; those are joined with ``/``.
+        one length per adjacent bus device; those are joined with ``/``. For a
+        wire passing through a Disconnect, each side is shown separately.
         """
         for bus in self.can_buses:
             for ep in (seg.end_a, seg.end_b):
@@ -239,6 +248,12 @@ class Harness:
                     return " / ".join(
                         f"{self.format_length(length)}→{_connector_short_label(n)}" for length, n in pairs
                     )
+
+        if seg.disconnect_pin is not None:
+            sides = self.resolved_sides(seg)
+            if sides is None:
+                return ""
+            return " | ".join(self.format_length(s) for s in sides)
 
         length = self.resolved_length(seg)
         if length is None:
@@ -253,13 +268,24 @@ class Harness:
         """Return the physical length of a wire from bundle state, or None.
 
         For a CAN pin in a known CanBusLine, returns the stub length to the
-        bus tap. Otherwise returns leg_a + trunk_distance + leg_b when both
-        endpoints resolve inside the same bundle; None otherwise.
+        bus tap. For a segment passing through a Disconnect, returns the sum
+        of both per-side lengths (use ``resolved_sides`` to get them
+        separately). Otherwise returns leg_a + trunk_distance + leg_b when
+        both endpoints resolve inside the same bundle; None otherwise.
         """
         for bus in self.can_buses:
             for ep in (seg.end_a, seg.end_b):
                 if isinstance(ep, Pin) and bus.covers_pin(ep):
                     return bus.segment_length_for(ep, self)
+
+        if seg.disconnect_pin is not None and seg.disconnect_pin._can_bus is None:
+            sides = self.resolved_sides(seg)
+            if sides is None:
+                return None
+            len_a, len_b = sides
+            if len_a is None or len_b is None:
+                return None
+            return len_a + len_b
 
         att_a = self._attachment_for(seg.end_a)
         att_b = self._attachment_for(seg.end_b)
@@ -270,15 +296,52 @@ class Harness:
         bundle = att_a.breakout.bundle
         return att_a.leg_length + bundle.distance(att_a.breakout, att_b.breakout) + att_b.leg_length
 
+    def resolved_sides(self, seg: WireSegment) -> tuple[float | None, float | None] | None:
+        """For a segment with a Disconnect, return (side_a, side_b) physical lengths.
+
+        Each side is computed within the bundle that owns its component
+        endpoint, using the disconnect's attachment in that bundle. Returns
+        ``None`` if the segment has no disconnect; either tuple element may be
+        ``None`` if that side cannot be resolved (e.g. the disconnect is not
+        attached to that side's bundle).
+        """
+        dpin = seg.disconnect_pin
+        if dpin is None or dpin._can_bus is not None:
+            return None
+        disc = dpin._disconnect
+
+        def _side(end) -> float | None:
+            bundle, ep_att = self._bundle_attachment_for(end)
+            if bundle is None or ep_att is None or disc is None:
+                return None
+            disc_att = bundle.attachment_for(disc)
+            if disc_att is None:
+                return None
+            return ep_att.leg_length + bundle.distance(ep_att.breakout, disc_att.breakout) + disc_att.leg_length
+
+        return (_side(seg.end_a), _side(seg.end_b))
+
     def validate_bundles(self) -> list[str]:
         """Return warnings about bundle coverage; empty list if everything resolves."""
         warnings: list[str] = []
         for seg in self.segments():
-            att_a = self._attachment_for(seg.end_a)
-            att_b = self._attachment_for(seg.end_b)
+            bundle_a, att_a = self._bundle_attachment_for(seg.end_a)
+            bundle_b, att_b = self._bundle_attachment_for(seg.end_b)
             can_a = any(isinstance(seg.end_a, Pin) and bus.covers_pin(seg.end_a) for bus in self.can_buses)
             can_b = any(isinstance(seg.end_b, Pin) and bus.covers_pin(seg.end_b) for bus in self.can_buses)
             if can_a or can_b:
+                continue
+            if seg.disconnect_pin is not None:
+                disc = seg.disconnect_pin._disconnect
+                desc = _describe_endpoint(seg.end_a) + " ↔ " + _describe_endpoint(seg.end_b)
+                for side, bundle in (("a", bundle_a), ("b", bundle_b)):
+                    if bundle is None:
+                        continue  # endpoint unattached — separately reported below
+                    if disc is not None and bundle.attachment_for(disc) is None:
+                        warnings.append(
+                            f"wire {desc}: disconnect {disc.id!r} not attached in "
+                            f"bundle {bundle.name!r} (side-{side} cannot resolve length)"
+                        )
                 continue
             if att_a is None and att_b is None:
                 continue  # both unattached — not a bundle concern
@@ -314,6 +377,14 @@ class Harness:
                 return att
         return None
 
+    def _bundle_attachment_for(self, endpoint):
+        """Like ``_attachment_for`` but also returns the owning bundle."""
+        for bundle in self.bundles:
+            att = bundle.attachment_for(endpoint)
+            if att is not None:
+                return bundle, att
+        return None, None
+
     def _collect_shield_groups(self, comp: Component) -> None:
         existing_ids = {id(sg) for sg in self.shield_groups}
 
@@ -337,6 +408,8 @@ class Harness:
         This allows multi-instance components to define per-instance wiring while
         single-instance components can rely on the class-level spec.
         """
+        for disc in self.disconnects:
+            disc.resolve(self)
         seen: set[int] = set()
         result = []
 

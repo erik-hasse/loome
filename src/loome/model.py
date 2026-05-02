@@ -3,7 +3,10 @@ from __future__ import annotations
 import copy
 import itertools
 from dataclasses import dataclass, field
-from typing import Literal, Self
+from typing import TYPE_CHECKING, Literal, Self
+
+if TYPE_CHECKING:
+    from .disconnects import DisconnectPin
 
 DrainSpec = Literal["block", "ground"] | None
 
@@ -270,6 +273,7 @@ class WireSegment:
     notes: str = ""
     shield_group: "ShieldGroup | None" = field(default=None, repr=False)
     port_order: int | None = field(default=None, repr=False)
+    disconnect_pin: "DisconnectPin | None" = field(default=None, repr=False)
 
     @property
     def label(self) -> str:
@@ -291,6 +295,7 @@ class Pin:
     _connections: list[WireSegment] = field(default_factory=list, repr=False)
     shield_group: "ShieldGroup | None" = field(default=None, repr=False)
     _can_terminated: bool = field(default=False, repr=False)
+    disconnect_pins: list["DisconnectPin"] = field(default_factory=list, repr=False)
 
     def local_ground(self, label: str = "") -> None:
         sym = GroundSymbol(id=f"lgnd_{id(self)}", label=label, style="open")
@@ -384,6 +389,7 @@ class Connector:
                 if isinstance(val, Pin):
                     pin = copy.copy(val)
                     pin._connections = []
+                    pin.disconnect_pins = []
                     pin._connector = self
                     pin._connector_class = type(self)
                     setattr(self, attr_name, pin)
@@ -449,6 +455,7 @@ class Component:
                 elif isinstance(val, Pin):
                     pin = copy.copy(val)
                     pin._connections = []
+                    pin.disconnect_pins = []
                     pin._component = self
                     setattr(self, attr_name, pin)
                     self._direct_pins[attr_name] = pin

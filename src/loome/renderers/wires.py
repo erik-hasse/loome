@@ -21,6 +21,7 @@ from .primitives import (
     _SHIELD_RX,
     _TERM_SYMBOL_W,
     _WIRE_PAD,
+    _can_neighbor_info,
     _draw_terminal,
     _draw_unconnected,
     _draw_wire_label,
@@ -32,6 +33,30 @@ from .splices import _draw_splice_connection, _draw_splice_fan
 
 class _AnchorLink(draw.DrawingParentElement):
     TAG_NAME = "a"
+
+
+def _can_neighbor_link_target(local_pin: Pin | None, harness: Harness) -> str | None:
+    """Return the SVG element id of the neighbor's CAN row to scroll to, or None.
+
+    For an L pin (next-direction row), the target is the neighbor's H row
+    (which points back at us via its prev direction); for an H pin, the
+    target is the neighbor's L row. This way clicking always lands on the
+    row that names the device you came from.
+    """
+    if local_pin is None or harness is None:
+        return None
+    info = _can_neighbor_info(local_pin, harness)
+    if info is None:
+        return None
+    _bus, neighbor = info
+    if neighbor is None:
+        return None
+    is_high = "high" in (local_pin.signal_name or "").lower()
+    target_attr = "can_low" if is_high else "can_high"
+    target_pin = getattr(neighbor, target_attr, None)
+    if not isinstance(target_pin, Pin) or target_pin._component is None:
+        return None
+    return _pin_row_id(target_pin)
 
 
 def _pin_row_id(pin: Pin) -> str:
@@ -102,6 +127,7 @@ def _draw_connection(
     start_x_offset: float = _WIRE_PAD,
     wire_end_x: float | None = None,
     shield_x_offset: float = 0,
+    local_pin: Pin | None = None,
 ) -> None:
     """Draw the leg of wire from ``wx + start_x_offset`` to the remote endpoint.
 
@@ -114,7 +140,7 @@ def _draw_connection(
     right_edge = wire_end_x if wire_end_x is not None else (wx + WIRE_AREA_W)
 
     if isinstance(remote, Terminal):
-        label_text = _remote_label(remote, class_pin, harness)
+        label_text = _remote_label(remote, class_pin, harness, local_pin=local_pin)
         if isinstance(remote, GroundSymbol) and remote.style == "open":
             # Local ground: place close to connector, similar to a jumper stub.
             term_cx = start_x + 30
@@ -128,34 +154,53 @@ def _draw_connection(
         wire_end = term_cx if isinstance(remote, GroundSymbol) else term_cx - 12
         dwg.append(draw.Line(start_x, cy, wire_end, cy, **attrs))
         label_x1 = wx + _SHIELD_LEFT_CX + _SHIELD_RX + shield_x_offset if shield is not None else start_x
-        _draw_wire_label(dwg, seg, label_x1, wire_end, cy, psp, colored, harness=harness)
+        _draw_wire_label(dwg, seg, label_x1, wire_end, cy, psp, colored, harness=harness, local_pin=local_pin)
         _draw_terminal(dwg, remote, term_cx, cy)
-        dwg.append(
-            draw.Text(
-                label_text,
-                9,
-                term_cx + 12,
-                cy + 4,
-                fill="#1e293b",
-                font_family="ui-monospace, monospace",
-            )
+        # Make CAN "To <neighbor>" labels clickable in the same way as remote
+        # box pins: wrap the label text in an anchor pointing to the neighbor's
+        # CAN H row. Falls back to a plain text node when there's no jump target.
+        link_target = _can_neighbor_link_target(local_pin or class_pin, harness)
+        label_node = draw.Text(
+            label_text,
+            9,
+            term_cx + 12,
+            cy + 4,
+            fill="#1e293b",
+            font_family="ui-monospace, monospace",
         )
+        if link_target is not None:
+            link = _AnchorLink(href=f"#{link_target}", target="_self", **{"class": "pin-link"})
+            link.append(label_node)
+            label_w = len(label_text) * _MONO_CHAR_W
+            link.append(
+                draw.Rectangle(
+                    term_cx + 10,
+                    cy - 7,
+                    label_w + 6,
+                    14,
+                    fill="none",
+                    **{"pointer-events": "all"},
+                )
+            )
+            dwg.append(link)
+        else:
+            dwg.append(label_node)
     elif isinstance(remote, Pin):
         wire_end = wx + _REMOTE_BOX_X - 4
         dwg.append(draw.Line(start_x, cy, wire_end, cy, **attrs))
         if shield is not None:
             lo_right = wx + _SHIELD_LEFT_CX + _SHIELD_RX
             if shield.single_oval:
-                _draw_wire_label(dwg, seg, lo_right, wire_end, cy, psp, colored, harness=harness)
+                _draw_wire_label(dwg, seg, lo_right, wire_end, cy, psp, colored, harness=harness, local_pin=local_pin)
             else:
                 ro_left = wx + _SHIELD_RIGHT_CX - _SHIELD_RX
-                _draw_wire_label(dwg, seg, lo_right, ro_left, cy, psp, colored, harness=harness)
+                _draw_wire_label(dwg, seg, lo_right, ro_left, cy, psp, colored, harness=harness, local_pin=local_pin)
         else:
-            _draw_wire_label(dwg, seg, start_x, wire_end, cy, psp, colored, harness=harness)
+            _draw_wire_label(dwg, seg, start_x, wire_end, cy, psp, colored, harness=harness, local_pin=local_pin)
     else:
         label_x = wx + _REMOTE_BOX_X
         dwg.append(draw.Line(start_x, cy, label_x - 4, cy, **attrs))
-        _draw_wire_label(dwg, seg, start_x, label_x - 4, cy, psp, colored, harness=harness)
+        _draw_wire_label(dwg, seg, start_x, label_x - 4, cy, psp, colored, harness=harness, local_pin=local_pin)
         dwg.append(
             draw.Text(
                 _remote_label(remote, class_pin, harness),
@@ -423,6 +468,7 @@ def _draw_pin_row(
                     psp,
                     start_x_offset=_BULLET_CX,
                     wire_end_x=row_info.wire_end_x,
+                    local_pin=pin,
                 )
             return
 
@@ -454,6 +500,7 @@ def _draw_pin_row(
                     psp,
                     start_x_offset=_BULLET_CX,
                     wire_end_x=row_info.wire_end_x,
+                    local_pin=pin,
                 )
             return
 
@@ -486,6 +533,7 @@ def _draw_pin_row(
                 start_x_offset=_CAN_TERM_WIRE_START if terminated else _WIRE_PAD,
                 wire_end_x=row_info.wire_end_x,
                 shield_x_offset=_CAN_TERM_SHIELD_SHIFT if terminated else 0,
+                local_pin=pin,
             )
         return
 
@@ -558,6 +606,7 @@ def _draw_pin_row(
                         colored,
                         psp,
                         wire_end_x=row_info.wire_end_x,
+                        local_pin=pin,
                     )
 
 

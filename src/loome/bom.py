@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Literal
 
 from natsort import natsort_keygen
 
+from .disconnects import DisconnectPin
 from .model import (
     BusBar,
     CircuitBreaker,
@@ -73,11 +74,31 @@ class GaugeTotals:
 
 
 @dataclass
+class DisconnectPinRow:
+    pin: str
+    signal_name: str
+    wire_id: str
+    gauge: int | str
+    color: str
+    from_label: str
+    to_label: str
+
+
+@dataclass
+class DisconnectEntry:
+    id: str
+    label: str
+    part_number: str
+    pins: list[DisconnectPinRow]
+
+
+@dataclass
 class Bom:
     wires: list[BomWireRow]
     gauge_totals: dict[str, GaugeTotals]
     connectors: list[tuple[str, str, int]]
     terminals_by_type: dict[str, list[str]]
+    disconnects: list[DisconnectEntry] = field(default_factory=list)
 
 
 # ── endpoint labels ────────────────────────────────────────────────────────
@@ -112,6 +133,12 @@ def _endpoint_label(ep) -> str:
     if isinstance(ep, Terminal):
         return ep.display_name()
     return repr(ep)
+
+
+def _disconnect_pin_label(dpin: DisconnectPin) -> str:
+    disc = dpin._disconnect
+    base = f"{disc.id}:{dpin.number}" if disc is not None else f"DC?:{dpin.number}"
+    return f"{base} ({dpin.signal_name})" if dpin.signal_name else base
 
 
 # ── class-pin expansion ────────────────────────────────────────────────────
@@ -243,6 +270,7 @@ def build_bom(harness: "Harness") -> Bom:
     bucket_counters: dict[tuple[str, str], int] = {}
     wires: list[BomWireRow] = []
     gauge_totals: dict[str, GaugeTotals] = {}
+    disconnect_segs: dict[int, list[tuple[WireSegment, str, float | None, float | None]]] = {}
 
     for seg in harness.segments():
         wid = seg.wire_id
@@ -251,6 +279,37 @@ def build_bom(harness: "Harness") -> Bom:
             n = bucket_counters.get(key, 0) + 1
             bucket_counters[key] = n
             wid = f"{seg.gauge}{seg.color or '-'}-{n}"
+
+        if seg.disconnect_pin is not None and seg.disconnect_pin._can_bus is None:
+            sides = harness.resolved_sides(seg) or (None, None)
+            len_a, len_b = sides
+            disc_label = _disconnect_pin_label(seg.disconnect_pin)
+            row_pairs = [
+                (len_a, _endpoint_label(seg.end_a), disc_label),
+                (len_b, disc_label, _endpoint_label(seg.end_b)),
+            ]
+            for length, from_label, to_label in row_pairs:
+                totals = gauge_totals.setdefault(str(seg.gauge), GaugeTotals(0, 0.0, 0))
+                totals.count += 1
+                if length is None:
+                    totals.unresolved += 1
+                else:
+                    totals.total_length += length
+                wires.append(
+                    BomWireRow(
+                        wire_id=wid,
+                        gauge=seg.gauge,
+                        color=seg.color,
+                        length=length,
+                        from_label=from_label,
+                        to_label=to_label,
+                    )
+                )
+            disc = seg.disconnect_pin._disconnect
+            if disc is not None:
+                disconnect_segs.setdefault(id(disc), []).append((seg, wid, len_a, len_b))
+            continue
+
         length = harness.resolved_length(seg)
         totals = gauge_totals.setdefault(str(seg.gauge), GaugeTotals(0, 0.0, 0))
         totals.count += 1
@@ -280,11 +339,59 @@ def build_bom(harness: "Harness") -> Bom:
     for t in harness.terminals:
         terminals_by_type.setdefault(type(t).__name__, []).append(t.id)
 
+    disconnects: list[DisconnectEntry] = []
+    for disc in harness.disconnects:
+        rows: list[DisconnectPinRow] = []
+        for pin_num, pin in disc._pins.items():
+            wid = ""
+            gauge: int | str = ""
+            color = ""
+            from_label = ""
+            to_label = ""
+            if pin._can_bus is not None:
+                from_label = f"CAN bus {pin._can_bus.name!r}"
+                to_label = f"{len(pin._segments)} stub(s)"
+                if pin._segments:
+                    gauge = pin._segments[0].gauge
+                    color = pin._segments[0].color
+            else:
+                seg = pin._segment
+                if seg is not None:
+                    for matched_seg, matched_wid, _la, _lb in disconnect_segs.get(id(disc), []):
+                        if matched_seg is seg:
+                            wid = matched_wid
+                            break
+                    gauge = seg.gauge
+                    color = seg.color
+                    from_label = _endpoint_label(seg.end_a)
+                    to_label = _endpoint_label(seg.end_b)
+            rows.append(
+                DisconnectPinRow(
+                    pin=str(pin_num),
+                    signal_name=pin.signal_name,
+                    wire_id=wid,
+                    gauge=gauge,
+                    color=color,
+                    from_label=from_label,
+                    to_label=to_label,
+                )
+            )
+        rows.sort(key=lambda r: _natsort_key(r.pin))
+        disconnects.append(
+            DisconnectEntry(
+                id=disc.id,
+                label=disc.label,
+                part_number=disc.part_number,
+                pins=rows,
+            )
+        )
+
     return Bom(
         wires=wires,
         gauge_totals=gauge_totals,
         connectors=connectors,
         terminals_by_type=terminals_by_type,
+        disconnects=disconnects,
     )
 
 
@@ -352,6 +459,10 @@ def _bom_terminal_rows(bom: Bom) -> list[list[str]]:
     return [[t, str(len(ids)), ", ".join(ids)] for t, ids in sorted(bom.terminals_by_type.items())]
 
 
+def _bom_disconnect_pin_rows(entry: DisconnectEntry) -> list[list[str]]:
+    return [[r.pin, r.signal_name, r.wire_id, str(r.gauge), r.color, r.from_label, r.to_label] for r in entry.pins]
+
+
 def render_bom_md(bom: Bom, harness: "Harness") -> str:
     parts: list[str] = [f"# Bill of Materials — {harness.name}", ""]
 
@@ -366,6 +477,23 @@ def render_bom_md(bom: Bom, harness: "Harness") -> str:
 
     parts += ["", "## Terminals", ""]
     parts.append(_md_table(["Type", "Count", "IDs"], _bom_terminal_rows(bom)))
+
+    if bom.disconnects:
+        parts += ["", "## Disconnects", ""]
+        for entry in bom.disconnects:
+            header = f"### {entry.id}"
+            if entry.label:
+                header += f" — {entry.label}"
+            if entry.part_number:
+                header += f"  ({entry.part_number})"
+            parts += [header, ""]
+            parts.append(
+                _md_table(
+                    ["Pin", "Signal", "Wire ID", "Gauge", "Color", "From", "To"],
+                    _bom_disconnect_pin_rows(entry),
+                )
+            )
+            parts.append("")
 
     return "\n".join(parts) + "\n"
 
@@ -413,4 +541,17 @@ def render_bom_csv(bom: Bom, harness: "Harness") -> str:
     _csv_section(buf, "Connectors", ["Component", "Connector", "Pins"], _bom_connector_rows(bom))
     buf.write("\n")
     _csv_section(buf, "Terminals", ["Type", "Count", "IDs"], _bom_terminal_rows(bom))
+    for entry in bom.disconnects:
+        buf.write("\n")
+        title = f"Disconnect {entry.id}"
+        if entry.label:
+            title += f" — {entry.label}"
+        if entry.part_number:
+            title += f" ({entry.part_number})"
+        _csv_section(
+            buf,
+            title,
+            ["Pin", "Signal", "Wire ID", "Gauge", "Color", "From", "To"],
+            _bom_disconnect_pin_rows(entry),
+        )
     return buf.getvalue()

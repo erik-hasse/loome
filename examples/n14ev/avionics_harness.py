@@ -1,3 +1,4 @@
+from examples.n14ev.disconnects import left_wing_root
 from examples.n14ev.lights import (
     cabin_lights,
     left_landing_lights,
@@ -14,6 +15,7 @@ from examples.n14ev.lrus import (
     elt,
     engine,
     flap_motor,
+    flyleds_controller,
     g5,
     gad27,
     gad29,
@@ -459,7 +461,7 @@ with gea24.J243 as c:
 
 # Page 31
 
-CanBusLine(
+can_bus = CanBusLine(
     name="CAN Bus",
     devices=[
         gmu11.J441,
@@ -488,6 +490,10 @@ with elt.DIN as c:
         c.elt_rx >> gtn650xi.P1001.rs232_1.tx
 
     # TODO: c.rs232_test
+
+# Other stuff
+
+flyleds_controller.ground >> gnd
 
 harness = Harness(
     "Avionics Harness",
@@ -520,5 +526,8 @@ harness = Harness(
         g5,
         gea24,
         elt,
+        flyleds_controller,
     ],
+    disconnects=[left_wing_root],
+    can_buses=[can_bus],
 )

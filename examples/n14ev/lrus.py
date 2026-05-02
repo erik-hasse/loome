@@ -6,6 +6,7 @@ from loome.components import (
     AithreShield3,
     Engine4Cyl,
     Fan,
+    FlyLedsEssentialsController,
     PHAviationFlapMotor,
     RayAllanTrim,
     Stick,
@@ -76,3 +77,5 @@ co2_sensor = AithreShield3("Aithre Shield CO2 Sensor")
 
 engine = Engine4Cyl("IO390-EXP119")
 sds_ecu = SDSECU
+
+flyleds_controller = FlyLedsEssentialsController("FlyLeds Essentials Controller")

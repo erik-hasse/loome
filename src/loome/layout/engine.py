@@ -235,6 +235,21 @@ def _components_differ(k1: tuple | None, k2: tuple | None) -> bool:
     return k1[0] == "component" and k2[0] == "component" and k1[1] != k2[1]
 
 
+def _is_orphan_can_pin(class_pin: Pin, inst_pin: Pin | None, harness: Harness) -> bool:
+    """True for a CAN bus pin (single_oval shield) on a connector that isn't
+    listed in any of the harness's CanBusLines. Such pins auto-connect to a
+    shared OPR at port init time, so they look "connected" — but without a
+    CanBusLine they have no meaningful place in the schematic and should hide.
+    """
+    sg = (inst_pin or class_pin).shield_group if (inst_pin or class_pin) is not None else None
+    if sg is None or not sg.single_oval:
+        return False
+    for bus in harness.can_buses:
+        if (inst_pin is not None and bus.covers_pin(inst_pin)) or bus.covers_pin(class_pin):
+            return False
+    return True
+
+
 def _collect_displayed_signal_names(harness: Harness, show_unconnected: bool) -> tuple[list[str], list[str]]:
     """Return (local_names, remote_names) — signal names of pins that will render.
 
@@ -251,6 +266,8 @@ def _collect_displayed_signal_names(harness: Harness, show_unconnected: bool) ->
             ip = comp._direct_pins.get(attr_name)
             if not show_unconnected and not _pin_is_connected(cp, ip):
                 continue
+            if _is_orphan_can_pin(cp, ip, harness):
+                continue
             local.append((ip or cp).signal_name)
             for seg in _pin_outgoing_segments(cp, ip):
                 rp = seg.end_b if seg.end_a is (ip or cp) else seg.end_a
@@ -262,6 +279,8 @@ def _collect_displayed_signal_names(harness: Harness, show_unconnected: bool) ->
                 if not isinstance(ip, Pin):
                     ip = None
                 if not show_unconnected and not _pin_is_connected(cp, ip):
+                    continue
+                if _is_orphan_can_pin(cp, ip, harness):
                     continue
                 local.append((ip or cp).signal_name)
                 for seg in _pin_outgoing_segments(cp, ip):
@@ -276,6 +295,8 @@ def _collect_displayed_signal_names(harness: Harness, show_unconnected: bool) ->
 
 
 def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
+    for disc in harness.disconnects:
+        disc.resolve(harness)
     section_rects: dict[int, Rect] = {}
     connector_rects: dict[int, Rect] = {}
     pin_rows: dict[int, PinRowInfo] = {}
@@ -431,6 +452,8 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
             class_pin = direct_class_pins.get(attr_name, inst_pin)
             if not show_unconnected and not _pin_is_connected(class_pin, inst_pin):
                 continue
+            if _is_orphan_can_pin(class_pin, inst_pin, harness):
+                continue
             prev_ctx, current_group = _emit_pin(class_pin, inst_pin, prev_ctx, current_group)
 
         # ── connectors ─────────────────────────────────────────────────────
@@ -455,6 +478,8 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
                     continue
                 class_pin = conn_class_pins.get(attr_name, inst_pin)
                 if not show_unconnected and not _pin_is_connected(class_pin, inst_pin):
+                    continue
+                if _is_orphan_can_pin(class_pin, inst_pin, harness):
                     continue
                 prev_ctx, current_group = _emit_pin(class_pin, inst_pin, prev_ctx, current_group)
 

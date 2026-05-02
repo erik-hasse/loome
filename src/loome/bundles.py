@@ -13,9 +13,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from .disconnects import Disconnect
 from .model import Component, Connector, Pin, SpliceNode, Terminal
 
-AttachmentTarget = Connector | Component | Terminal | SpliceNode
+AttachmentTarget = Connector | Component | Terminal | SpliceNode | Disconnect
 
 
 @dataclass
@@ -187,4 +188,6 @@ def _describe_target(target: AttachmentTarget) -> str:
         return type(target).__name__
     if isinstance(target, (Terminal, SpliceNode)):
         return target.id
+    if isinstance(target, Disconnect):
+        return target.display_name()
     return repr(target)

@@ -67,7 +67,7 @@ def _pin_comp_label(pin: Pin, harness: Harness) -> str:
     return _comp_label(pin._component_class, harness)
 
 
-def _remote_label(remote, class_pin: Pin, harness: Harness) -> str:
+def _remote_label(remote, class_pin: Pin, harness: Harness, local_pin: Pin | None = None) -> str:
     if isinstance(remote, Pin):
         comp_label = _pin_comp_label(remote, harness)
         if remote._connector_class is not None:
@@ -80,9 +80,56 @@ def _remote_label(remote, class_pin: Pin, harness: Harness) -> str:
         block = harness.block_label_for(remote)
         base = remote.display_name()
         return f"{block} · {base}" if block else base
+    if isinstance(remote, OffPageReference):
+        # CAN bus pins all auto-connect to a shared OPR; rewrite the remote
+        # label per-row to show the actual daisy-chain neighbor. Prefer the
+        # instance pin so siblings sharing a base-class CanBus port (e.g. all
+        # GSA28 servos sharing _BaseJ281) each resolve to their own neighbor.
+        can_label = _can_neighbor_label(local_pin or class_pin, harness)
+        if can_label is not None:
+            return can_label
+        return remote.display_name()
     if isinstance(remote, Terminal):
         return remote.display_name()
     return "[–]"
+
+
+def _can_neighbor_label(pin: Pin, harness: Harness) -> str | None:
+    """Return 'To <device>' for a CAN bus pin, or None if not on a bus / dead end.
+
+    Convention: H pin → previous device in the bus daisy chain; L pin → next.
+    Terminators have no neighbor in one direction; we return None there so the
+    caller falls back to the OPR's own label (and the TERM box keeps showing).
+    """
+    info = _can_neighbor_info(pin, harness)
+    if info is None:
+        return None
+    _bus, neighbor = info
+    if neighbor is None:
+        return None
+    comp = getattr(neighbor, "_component", None)
+    label = comp.label if comp is not None else type(neighbor).__name__
+    return f"To {label}"
+
+
+def _can_neighbor_info(pin: Pin, harness: Harness):
+    """Return (bus, neighbor_connector | None) for a CAN pin, or None if not CAN."""
+    if pin is None or pin.shield_group is None or not pin.shield_group.single_oval:
+        return None
+    for bus in harness.can_buses:
+        if not bus.covers_pin(pin):
+            continue
+        dev = bus.connector_for_pin(pin)
+        if dev is None:
+            return (bus, None)
+        idx = bus.devices.index(dev)
+        is_high = "high" in (pin.signal_name or "").lower()
+        if is_high:
+            neighbor = bus.devices[idx - 1] if idx > 0 else None
+        else:
+            neighbor = bus.devices[idx + 1] if idx + 1 < len(bus.devices) else None
+        return (bus, neighbor)
+    return None
 
 
 # ── atomic drawing primitives ──────────────────────────────────────────────
@@ -98,6 +145,7 @@ def _draw_wire_label(
     colored: bool = True,
     color_code_override: str | None = None,
     harness: Harness | None = None,
+    local_pin: "Pin | None" = None,
 ) -> None:
     color_code = (
         color_code_override if color_code_override is not None else _effective_color_code(seg, psp or {}, colored)
@@ -118,6 +166,42 @@ def _draw_wire_label(
                 label_x,
                 cy - 3,
                 fill="#94a3b8",
+                font_family="ui-monospace, monospace",
+            )
+        )
+    # Disconnect annotations — collect from the instance pin (per-instance,
+    # accurate for shared-class CanBus ports) and the segment (instance-level
+    # Pin↔Pin disconnects). A single row may carry multiple pin annotations:
+    # CAN disconnects list both H and L pins together since both physical
+    # rails pass through the same crimp.
+    disc_pins: list = []
+    if local_pin is not None and local_pin.disconnect_pins:
+        disc_pins.extend(local_pin.disconnect_pins)
+    if seg.disconnect_pin is not None and seg.disconnect_pin not in disc_pins:
+        disc_pins.append(seg.disconnect_pin)
+    if disc_pins:
+        # Group by disconnect id so two pins from the same connector render as
+        # "DC1:1+2" instead of "DC1:1, DC1:2".
+        by_disc: dict[str, list[str]] = {}
+        order: list[str] = []
+        for dp in disc_pins:
+            disc = dp._disconnect
+            key = disc.id if disc is not None else "?"
+            if key not in by_disc:
+                by_disc[key] = []
+                order.append(key)
+            by_disc[key].append(str(dp.number))
+        disc_text = ", ".join(f"{k}:{'+'.join(by_disc[k])}" for k in order)
+        text_w = len(disc_text) * _MONO_CHAR_W
+        disc_x = max(label_x, x2 - 6 - text_w)
+        dwg.append(
+            draw.Text(
+                disc_text,
+                8,
+                disc_x,
+                cy - 3,
+                fill="#7c3aed",
+                font_weight="bold",
                 font_family="ui-monospace, monospace",
             )
         )
