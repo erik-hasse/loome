@@ -4,6 +4,7 @@ import pytest
 
 from loome import (
     GPIO,
+    RS232,
     Bundle,
     CanBus,
     CanBusLine,
@@ -15,6 +16,7 @@ from loome import (
     GroundSymbol,
     Harness,
     Pin,
+    Shield,
 )
 from loome.bom import build_bom
 from loome.layout.engine import layout
@@ -259,8 +261,13 @@ def test_can_disconnect_marks_only_adjacent_devices():
     # disconnect since both rails pass through the same physical cable.
     assert len(h_pin._segments) == 1
     assert len(l_pin._segments) == 1
-    assert {id(p) for p in a.J1.can._low.disconnect_pins} == {id(h_pin), id(l_pin)}
-    assert {id(p) for p in b.J1.can._high.disconnect_pins} == {id(h_pin), id(l_pin)}
+    # The CAN shield foil also passes through the disconnect, so a third
+    # (shield-drain) DisconnectPin is attached alongside H and L.
+    shield_pins = [p for p in mate._pins.values() if p._shield_group is not None]
+    assert len(shield_pins) == 1
+    expected = {id(h_pin), id(l_pin), id(shield_pins[0])}
+    assert {id(p) for p in a.J1.can._low.disconnect_pins} == expected
+    assert {id(p) for p in b.J1.can._high.disconnect_pins} == expected
     # The opposite rails on each side carry nothing.
     assert a.J1.can._high.disconnect_pins == []
     assert b.J1.can._low.disconnect_pins == []
@@ -307,8 +314,11 @@ def test_two_can_disconnects_on_same_bus():
     h.segments()
 
     # b is interior: H (prev=a) crossed by LEFT, L (next=c) crossed by RIGHT.
-    left_ids = {id(left._pins[1]), id(left._pins[2])}
-    right_ids = {id(right._pins[1]), id(right._pins[2])}
+    # Each disconnect carries an extra shield-drain pin alongside H and L.
+    left_shield = next(p for p in left._pins.values() if p._shield_group is not None)
+    right_shield = next(p for p in right._pins.values() if p._shield_group is not None)
+    left_ids = {id(left._pins[1]), id(left._pins[2]), id(left_shield)}
+    right_ids = {id(right._pins[1]), id(right._pins[2]), id(right_shield)}
     assert {id(p) for p in b.J1.can._high.disconnect_pins} == left_ids
     assert {id(p) for p in b.J1.can._low.disconnect_pins} == right_ids
 
@@ -395,3 +405,195 @@ def test_disconnect_autodetect_from_namespace():
     h = Harness("auto")
     h.autodetect(locals())
     assert mate in h.disconnects
+
+
+def test_shielded_port_disconnect_allocates_shield_drain_pin():
+    class Reader(Component):
+        class J1(Connector):
+            gp1 = GPIO(18, 19, 20, name="GP1")  # shielded by default
+
+    class Sensor(Component):
+        output = GPIO("Or", "Gr", "Bl", name="Pos")
+
+    r = Reader("R")
+    s = Sensor("S")
+    r.J1.gp1.connect(s.output)
+    mate = Disconnect("DC1")
+    signal_pins = mate.between(r.J1.gp1, s.output)
+    h = Harness("t")
+    h.add(r, s, mate)
+    h.segments()
+
+    shield_pins = [p for p in mate._pins.values() if p._shield_group is not None]
+    assert len(shield_pins) == 1
+    assert shield_pins[0].number == max(p.number for p in signal_pins) + 1
+    # The shield drain pin should be annotated on the row of one of the
+    # bound signal pins so the renderer picks it up.
+    sg = r.J1.gp1._sg
+    assert shield_pins[0]._shield_group is sg
+
+
+def test_rs232_port_disconnect_allocates_shield_drain_pin():
+    class A(Component):
+        class J1(Connector):
+            rs = RS232(1, 2, 3)
+
+    class B(Component):
+        class J1(Connector):
+            rs = RS232(4, 5, 6)
+
+    a = A("A")
+    b = B("B")
+    a.J1.rs.connect(b.J1.rs)
+    mate = Disconnect("DC1")
+    mate.between(a.J1.rs, b.J1.rs)
+    h = Harness("t")
+    h.add(a, b, mate)
+    h.segments()
+
+    shield_pins = [p for p in mate._pins.values() if p._shield_group is not None]
+    assert len(shield_pins) == 1
+
+
+def test_standalone_shield_full_coverage_allocates_drain():
+    class A(Component):
+        class J1(Connector):
+            sig1 = Pin(1, "Signal 1")
+            sig2 = Pin(2, "Signal 2")
+
+    class B(Component):
+        class J1(Connector):
+            sig1 = Pin(1, "Signal 1")
+            sig2 = Pin(2, "Signal 2")
+
+    a = A("A")
+    b = B("B")
+    with Shield():
+        a.J1.sig1.connect(b.J1.sig1)
+        a.J1.sig2.connect(b.J1.sig2)
+    mate = Disconnect("DC1")
+    mate.between(a.J1.sig1, b.J1.sig1)
+    mate.between(a.J1.sig2, b.J1.sig2)
+    h = Harness("t")
+    h.add(a, b, mate)
+    h.segments()
+
+    shield_pins = [p for p in mate._pins.values() if p._shield_group is not None]
+    assert len(shield_pins) == 1
+
+
+def test_standalone_shield_partial_coverage_errors():
+    class A(Component):
+        class J1(Connector):
+            sig1 = Pin(1, "Signal 1")
+            sig2 = Pin(2, "Signal 2")
+
+    class B(Component):
+        class J1(Connector):
+            sig1 = Pin(1, "Signal 1")
+            sig2 = Pin(2, "Signal 2")
+
+    a = A("A")
+    b = B("B")
+    with Shield():
+        a.J1.sig1.connect(b.J1.sig1)
+        a.J1.sig2.connect(b.J1.sig2)
+    mate = Disconnect("DC1")
+    mate.between(a.J1.sig1, b.J1.sig1)  # only one of the two shielded wires
+    h = Harness("t")
+    h.add(a, b, mate)
+    with pytest.raises(ValueError, match="partial"):
+        h.segments()
+
+
+def test_can_bus_disconnect_splits_cable_and_disconnect_rows_reference_ids():
+    class _Node(Component):
+        def can_terminate(self):
+            pass
+
+        class J1(Connector):
+            can = CanBus(1, 2)
+
+    a = _Node("A")
+    b = _Node("B")
+    c = _Node("C")
+    bus = CanBusLine("CAN", devices=[a.J1, b.J1, c.J1])
+    mate = Disconnect("DC1")
+    mate.between(a.J1.can, b.J1.can)
+    h = Harness("t")
+    h.add(a, b, c, bus, mate)
+
+    bom = build_bom(h)
+    can_cables = [r for r in bom.shielded_cables if r.cable_id.startswith("CAN-")]
+    # The a-b cable splits into A and B; the b-c cable stays whole. Plus
+    # CAN-2 (b → c). Total = 3 rows.
+    assert [r.cable_id for r in can_cables] == ["CAN-1A", "CAN-1B", "CAN-2"]
+    assert can_cables[0].from_label == "A.J1"
+    assert can_cables[0].to_label == "DC1"
+    assert can_cables[1].from_label == "DC1"
+    assert can_cables[1].to_label == "B.J1"
+
+    # Disconnect rows for CAN H, CAN L and the CAN shield reference both halves.
+    rows = [r for entry in bom.disconnects if entry.id == "DC1" for r in entry.pins]
+    assert any("CAN-1A" in r.wire_id and "CAN-1B" in r.wire_id for r in rows)
+
+
+def test_bom_disconnect_drain_row_references_cable_id():
+    class A(Component):
+        class J1(Connector):
+            sig1 = Pin(1, "Signal 1")
+            sig2 = Pin(2, "Signal 2")
+
+    class B(Component):
+        class J1(Connector):
+            sig1 = Pin(1, "Signal 1")
+            sig2 = Pin(2, "Signal 2")
+
+    a = A("A")
+    b = B("B")
+    with Shield(label="DAT"):
+        a.J1.sig1.connect(b.J1.sig1)
+        a.J1.sig2.connect(b.J1.sig2)
+    mate = Disconnect("DC1")
+    mate.between(a.J1.sig1, b.J1.sig1)
+    mate.between(a.J1.sig2, b.J1.sig2)
+    h = Harness("t")
+    h.add(a, b, mate)
+    bom = build_bom(h)
+
+    drain_rows = [r for entry in bom.disconnects for r in entry.pins if r.gauge == "drain"]
+    assert len(drain_rows) == 1
+    row = drain_rows[0]
+    assert row.wire_id == "DAT"
+    assert "(shield foil)" not in row.from_label
+    assert "(shield foil)" not in row.to_label
+    assert "A" in row.from_label
+    assert "B" in row.to_label
+
+
+def test_between_shield_explicit_override():
+    class A(Component):
+        class J1(Connector):
+            sig1 = Pin(1, "Signal 1")
+            sig2 = Pin(2, "Signal 2")
+
+    class B(Component):
+        class J1(Connector):
+            sig1 = Pin(1, "Signal 1")
+            sig2 = Pin(2, "Signal 2")
+
+    a = A("A")
+    b = B("B")
+    with Shield() as sh:
+        a.J1.sig1.connect(b.J1.sig1)
+        a.J1.sig2.connect(b.J1.sig2)
+    mate = Disconnect("DC1")
+    mate.between(a.J1.sig1, b.J1.sig1)
+    # Explicit drain pin avoids the partial-coverage error.
+    drain = mate.between_shield(sh.group)
+    h = Harness("t")
+    h.add(a, b, mate)
+    h.segments()
+    assert drain._shield_group is sh.group
+    # Idempotent.
+    assert mate.between_shield(sh.group) is drain

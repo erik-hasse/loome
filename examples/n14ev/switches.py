@@ -16,3 +16,5 @@ wig_wag.com >> gnd
 
 backlight_rheo = Rheostat("Backlight")
 cabin_light_rheo = Rheostat("Cabin Light")
+
+pitot_heat_switch = SPST("Pitot Heat")

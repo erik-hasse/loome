@@ -311,6 +311,23 @@ class WireSegment:
     def label(self) -> str:
         return "".join(str(p) for p in [self.wire_id, self.gauge, self.color] if p).strip()
 
+    @property
+    def effective_color(self) -> str:
+        """The wire's color code, defaulting to R for power feeds and B for grounds.
+
+        Falls back to the explicit ``color`` attribute when set; otherwise looks
+        at endpoints — Fuse / CircuitBreaker → ``"R"``, GroundSymbol → ``"B"`` —
+        and returns ``"W"`` when neither applies. Shared by the BoM and the
+        renderer so a wire's color is decided in one place.
+        """
+        if self.color:
+            return self.color
+        if isinstance(self.end_a, (Fuse, CircuitBreaker)) or isinstance(self.end_b, (Fuse, CircuitBreaker)):
+            return "R"
+        if isinstance(self.end_a, GroundSymbol) or isinstance(self.end_b, GroundSymbol):
+            return "B"
+        return "W"
+
 
 # ── pins ───────────────────────────────────────────────────────────────────
 

@@ -5,13 +5,7 @@ Items are roughly in priority order within each section.
 
 ## Low effort
 
-- **Splice-fan grouping with their direct siblings** — when several pins on a
-  connector fan through a shared splice to multiple remotes (e.g. GAD27 J271
-  pin 37/38 → splice → Cabin Light + Backlight) and adjacent pins go directly
-  to one of those same remotes (pin 39 → Backlight, pin 40 → Cabin Light), the
-  direct pins land in their own remote-only clusters and don't sit next to the
-  splice-fan rows. Layout would feel tighter if direct-to-X rows were drawn
-  into the cluster of any splice-fan that targets X.
+- Add optional `max_pins` to a disconnect's init
 
 - **Switch schematic symbols** — `SPST`, `SPDT`, `DPST`, `DPDT` all default to
   `render=False` and have no SVG symbol. Adding simple line-art symbols (single-pole
@@ -35,22 +29,6 @@ Items are roughly in priority order within each section.
 
 ## Medium effort
 
-- **Shielded cable BoM entries** — shielded wire groups should appear as a single
-  cable entry rather than N individual wire rows. Each `ShieldGroup` in
-  `harness.shield_groups` corresponds to one physical cable; the conductors are the
-  segments in `sg.segments` (connection-level) or via `p._connections` for each `p`
-  in `sg.pins` (class-body). Implementation sketch:
-  - Add `BomShieldedRow(shield_id, conductors, gauge, length, from_label, to_label)`
-    where `conductors` = number of segments, `gauge` is the dominant gauge (or
-    "mixed"), and from/to come from the first segment's endpoints.
-  - Collect all segment ids covered by any shield group; exclude those from the
-    individual wire list in `build_bom()`.
-  - Add a "Shielded cables" section to both MD and CSV renderers.
-  - Skip shield groups with `single_oval=True` (CAN bus topology markers, not
-    discrete cables) and groups with zero connected segments.
-  - For class-body shields (RS232, GPIO etc.) group by component instance so each
-    device-pair connection becomes its own cable row.
-
 - **CAN bus rendering** — data-model support is in place: `CanBusLine` captures device
   ordering, `Harness.resolved_length()` returns per-stub lengths for CAN pins, and
   `CanBusLine.stub_lengths_for()` exposes the two-neighbor lengths on intermediate taps.
@@ -59,7 +37,7 @@ Items are roughly in priority order within each section.
   order, plus markers for the terminator devices at either end. layout is the bulk of the
   remaining work; the renderer already has all the length data it needs.
 
-- Support multi-pin on the right hand side (e.g. GTR20 -> GMA245))
+- Support multi-pin on the right hand side (e.g. GTR20 -> GMA245)
 
 - **FuseBlock / CB-bank topology rendering** — the `FuseBlock` and `CircuitBreakerBank`
   data types exist and are consumed by the fuse schedule, but the bundle-layout view

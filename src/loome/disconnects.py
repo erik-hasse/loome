@@ -9,7 +9,7 @@ from __future__ import annotations
 import copy
 from dataclasses import dataclass, field
 
-from .model import Pin, SpliceNode, Terminal, WireSegment, _default_signal_name
+from .model import Pin, ShieldGroup, SpliceNode, Terminal, WireSegment, _default_signal_name
 from .ports import RS232, CanBus, Port
 
 # ── disconnect pins ────────────────────────────────────────────────────────
@@ -31,6 +31,7 @@ class DisconnectPin:
     _segments: list[WireSegment] = field(default_factory=list, repr=False)
     _can_bus: object | None = field(default=None, repr=False)
     _can_rail: str = field(default="", repr=False)  # "high" or "low" when set
+    _shield_group: ShieldGroup | None = field(default=None, repr=False)
 
     @property
     def _segment(self) -> WireSegment | None:
@@ -124,6 +125,8 @@ class Disconnect:
             for h_pin, l_pin, port_a, port_b in pending_can:
                 _resolve_can_disconnect(harness, h_pin, l_pin, port_a, port_b)
 
+        _resolve_shield_drains(self)
+
     def __getitem__(self, number: int | str) -> DisconnectPin:
         return self._pins[number]
 
@@ -209,7 +212,53 @@ class Disconnect:
                 pin = self._allocate_pin(number=slot, signal_name=name_hint)
             pin.between(pa, pb)
             result.append(pin)
+
+        # Auto-allocate a single shield-drain pin for the port pair. Each port
+        # carries its own ShieldGroup object, but they represent one physical
+        # foil between the two connectors, so emit one drain pin total.
+        for port in (a, b):
+            sg = _port_shield_group(port)
+            if sg is None or sg.cable_only:
+                continue
+            if any(p._shield_group is not None for p in self._pins.values()):
+                break
+            self._allocate_shield_drain_pin(sg, _first_shielded_attach_pin(port, result))
+            break
+
         return result
+
+    def between_shield(self, shield_group: ShieldGroup, *, number: int | str | None = None) -> DisconnectPin:
+        """Explicitly allocate a shield-drain pin for ``shield_group``.
+
+        Use this when auto-detection won't fire — e.g. a shield foil that only
+        partially passes through this disconnect (a pigtail break-out), or to
+        choose a specific pin number. Idempotent: returns the existing pin if
+        one is already allocated for this shield group.
+        """
+        for p in self._pins.values():
+            if p._shield_group is shield_group:
+                return p
+        attach_pin = _first_shielded_attach_pin_from_group(shield_group)
+        return self._allocate_shield_drain_pin(shield_group, attach_pin, number=number)
+
+    def _allocate_shield_drain_pin(
+        self,
+        sg: ShieldGroup,
+        attach_pins: Pin | list[Pin] | None,
+        *,
+        number: int | str | None = None,
+    ) -> DisconnectPin:
+        signal_name = sg.label or "Shield"
+        pin = self._allocate_pin(number=number, signal_name=signal_name)
+        pin._shield_group = sg
+        if attach_pins is None:
+            return pin
+        if isinstance(attach_pins, Pin):
+            attach_pins = [attach_pins]
+        for ap in attach_pins:
+            if pin not in ap.disconnect_pins:
+                ap.disconnect_pins.append(pin)
+        return pin
 
 
 # ── private helpers ────────────────────────────────────────────────────────
@@ -351,6 +400,18 @@ def _resolve_can_disconnect(harness, h_pin: DisconnectPin, l_pin: DisconnectPin,
     l_pin._segments.append(_stub_segment_for(low_side._low))
     h_pin._segments.append(_stub_segment_for(high_side._high))
 
+    # CAN bus shields are single_oval and shared across the whole bus, so
+    # coverage detection doesn't apply. Always allocate a shield drain pin
+    # when the disconnect splits the bus.
+    sg = port_a._high.shield_group
+    disc = h_pin._disconnect
+    if sg is not None and disc is not None and not any(p._shield_group is sg for p in disc._pins.values()):
+        s_pin = disc._allocate_shield_drain_pin(sg, None)
+        # CAN annotates both sides of the split (low_side._low and high_side._high)
+        # with H+L pins; the shield drain rides along on the same rows.
+        low_side._low.disconnect_pins.append(s_pin)
+        high_side._high.disconnect_pins.append(s_pin)
+
 
 def _stub_segment_for(pin: Pin) -> WireSegment:
     """Return the CanBus stub segment from a port pin to the shared OPR.
@@ -379,6 +440,97 @@ def _find_can_bus_for_ports(harness, port_a, port_b):
         if bus.covers_pin(port_a._high) and bus.covers_pin(port_b._high):
             return bus
     return None
+
+
+def _port_shield_group(port: object) -> ShieldGroup | None:
+    """Return the ShieldGroup carried by a port, or None.
+
+    Different port classes store the group differently: most use ``self._sg``,
+    but ``CanBus`` doesn't — its inner pins each carry ``shield_group``. Use
+    the inner pins as the universal fallback.
+    """
+    sg = getattr(port, "_sg", None)
+    if isinstance(sg, ShieldGroup):
+        return sg
+    pins_fn = getattr(port, "_inner_pins", None)
+    if callable(pins_fn):
+        for p in pins_fn():
+            if p.shield_group is not None:
+                return p.shield_group
+    return None
+
+
+def _first_shielded_attach_pin(port: object, allocated: list[DisconnectPin]) -> list[Pin]:
+    """Pick the Pin(s) to render the shield-drain annotation against.
+
+    Returns both endpoints of the first segment bound to one of the just-
+    allocated signal pins so each connector renders the annotation on its own
+    side of the disconnect; falls back to the first inner pin of the port.
+    """
+    for dp in allocated:
+        for seg in dp._segments:
+            ends = [ep for ep in (seg.end_a, seg.end_b) if isinstance(ep, Pin)]
+            if ends:
+                return ends
+    pins_fn = getattr(port, "_inner_pins", None)
+    if callable(pins_fn):
+        pins = pins_fn()
+        if pins:
+            return [pins[0]]
+    return []
+
+
+def _first_shielded_attach_pin_from_group(sg: ShieldGroup) -> list[Pin]:
+    for seg in sg.segments:
+        ends = [ep for ep in (seg.end_a, seg.end_b) if isinstance(ep, Pin)]
+        if ends:
+            return ends
+    return [sg.pins[0]] if sg.pins else []
+
+
+def _resolve_shield_drains(disc: "Disconnect") -> None:
+    """Detect standalone Shield(...) groups that pass through the disconnect.
+
+    Walks the segments bound to each signal pin, groups by shield_group, and
+    allocates a single shield-drain ``DisconnectPin`` per fully-covered group.
+    Partial coverage raises — physically impossible for a single foil to skip
+    the connector for some wires but not others. Use ``between_shield()`` to
+    override.
+    """
+    bound_by_sg: dict[int, tuple[ShieldGroup, set[int]]] = {}
+    for pin in list(disc._pins.values()):
+        if pin._shield_group is not None:
+            continue
+        for seg in pin._segments:
+            sg = seg.shield_group
+            if sg is None or sg.cable_only or sg.single_oval:
+                continue
+            entry = bound_by_sg.setdefault(id(sg), (sg, set()))
+            entry[1].add(id(seg))
+
+    for sg, bound_ids in bound_by_sg.values():
+        if any(p._shield_group is sg for p in disc._pins.values()):
+            continue
+        total = len({id(s) for s in sg.segments})
+        bound = len(bound_ids)
+        if bound == 0 or total == 0:
+            continue
+        if bound < total:
+            raise ValueError(
+                f"Disconnect {disc.id!r}: shield group {sg.label or '<unnamed>'!r} has "
+                f"{bound}/{total} segment(s) passing through this disconnect — partial "
+                f"coverage is physically impossible for a continuous foil. Either route "
+                f"the remaining segments through the disconnect, or call "
+                f"between_shield() to allocate a drain pin explicitly."
+            )
+        attach_pins: list[Pin] = []
+        for seg in sg.segments:
+            if id(seg) in bound_ids:
+                ends = [ep for ep in (seg.end_a, seg.end_b) if isinstance(ep, Pin)]
+                if ends:
+                    attach_pins = ends
+                    break
+        disc._allocate_shield_drain_pin(sg, attach_pins)
 
 
 def _describe_disconnect_pin(pin: DisconnectPin) -> str:

@@ -78,12 +78,9 @@ def _wire_attrs(
                     attrs["stroke_dasharray"] = dash
                 return attrs
 
-    if isinstance(seg.end_a, (Fuse, CircuitBreaker)) or isinstance(seg.end_b, (Fuse, CircuitBreaker)):
-        return {"stroke": _POWER_STROKE, "stroke_width": 1.5}
-
-    if isinstance(seg.end_a, GroundSymbol) or isinstance(seg.end_b, GroundSymbol):
-        return {"stroke": _GROUND_STROKE, "stroke_width": 1.5}
-
+    code = seg.effective_color
+    if code in _EXPLICIT_COLORS:
+        return {"stroke": _EXPLICIT_COLORS[code], "stroke_width": 1.5}
     return {"stroke": _WHITE_STROKE, "stroke_width": 1.5}
 
 
@@ -112,11 +109,7 @@ def _effective_color_code(seg: WireSegment, psp: dict, colored: bool) -> str:
                     return _SHIELD_PALETTE_CODES[_SHIELD_PALETTE.index(palette_entry)]
                 except ValueError:
                     pass
-    if isinstance(seg.end_a, (Fuse, CircuitBreaker)) or isinstance(seg.end_b, (Fuse, CircuitBreaker)):
-        return "R"
-    if isinstance(seg.end_a, GroundSymbol) or isinstance(seg.end_b, GroundSymbol):
-        return "B"
-    return ""
+    return seg.effective_color
 
 
 def _splice_color_code(

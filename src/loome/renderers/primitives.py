@@ -181,17 +181,26 @@ def _draw_wire_label(
         disc_pins.append(seg.disconnect_pin)
     if disc_pins:
         # Group by disconnect id so two pins from the same connector render as
-        # "DC1:1+2" instead of "DC1:1, DC1:2".
-        by_disc: dict[str, list[str]] = {}
+        # "DC1:1+2" instead of "DC1:1, DC1:2". Shield-drain pins are split out
+        # into a "(Shield N)" suffix so it's clear which pin carries the foil.
+        by_disc: dict[str, tuple[list[str], list[str]]] = {}
         order: list[str] = []
         for dp in disc_pins:
             disc = dp._disconnect
             key = disc.id if disc is not None else "?"
             if key not in by_disc:
-                by_disc[key] = []
+                by_disc[key] = ([], [])
                 order.append(key)
-            by_disc[key].append(str(dp.number))
-        disc_text = ", ".join(f"{k}:{'+'.join(by_disc[k])}" for k in order)
+            sig_nums, shield_nums = by_disc[key]
+            (shield_nums if dp._shield_group is not None else sig_nums).append(str(dp.number))
+        parts: list[str] = []
+        for k in order:
+            sig_nums, shield_nums = by_disc[k]
+            head = f"{k}:{'+'.join(sig_nums)}" if sig_nums else k
+            if shield_nums:
+                head += f" (Shield {','.join(shield_nums)})"
+            parts.append(head)
+        disc_text = ", ".join(parts)
         text_w = len(disc_text) * _MONO_CHAR_W
         disc_x = max(label_x, x2 - 6 - text_w)
         dwg.append(

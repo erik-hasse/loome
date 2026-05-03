@@ -1,4 +1,10 @@
-from examples.n14ev.disconnects import left_wing_root
+from examples.n14ev.disconnects import (
+    left_wing_handshake,
+    left_wing_root,
+    right_wing_handshake,
+    right_wing_root_8_pin,
+    right_wing_root_12_pin,
+)
 from examples.n14ev.lights import (
     cabin_lights,
     left_7_stars,
@@ -55,6 +61,7 @@ from examples.n14ev.switches import (
     flaps,
     landing_light_switch,
     nav_strobe_switch,
+    pitot_heat_switch,
     toga,
     wig_wag,
 )
@@ -240,8 +247,8 @@ with gad27.J271 as c:
     # Page 12
     landing_light_switch.com2 >> gnd
     landing_light_switch.com1 >> main_block.taxi_lights
-    landing_light_switch.no1 >> left_7_stars.taxi
-    landing_light_switch.no1 >> right_7_stars.taxi
+    (landing_light_switch.no1 >> left_7_stars.taxi).gauge(20)
+    (landing_light_switch.no1 >> right_7_stars.taxi).gauge(20)
 
     c.light_1_switch >> landing_light_switch.no2
     c.light_2_switch >> landing_light_switch.no2
@@ -276,8 +283,8 @@ with gad27.TB273 as c:
     (c.flap_power_out_1 >> flap_motor.extend).gauge(18)
     (c.flap_power_out_2 >> flap_motor.retract).gauge(18)
 
-    (c.light_1_output >> left_7_stars.landing).gauge(18)
-    (c.light_2_output >> right_7_stars.landing).gauge(18)
+    (c.light_1_output >> left_7_stars.landing).gauge(14)
+    (c.light_2_output >> right_7_stars.landing).gauge(14)
 
 # Page 15
 gad27.J271.dc_lighting_1 >> mfd.P4602.lighting_bus_high_14V
@@ -286,9 +293,9 @@ pfd.P4602.lighting_bus_high_14V >> gtn650xi.P1001.lighting_bus_1_hi
 gtn650xi.P1001.lighting_bus_1_hi >> gmc507.J7001.lighting_bus_high
 gmc507.J7001.lighting_bus_high >> gma245.J2402.lighting_bus_high
 
-# TODO Add a switch
-gap26.power >> main_block.pitot_heat
-gap26.ground >> gnd
+(pitot_heat_switch.com >> main_block.pitot_heat).gauge(14)
+(pitot_heat_switch.no >> gap26.power).gauge(14)
+(gap26.ground >> gnd).gauge(14)
 
 # Page 16
 with gtx45r.P3251 as c:
@@ -551,6 +558,12 @@ harness = Harness(
         elt,
         flyleds_controller,
     ],
-    disconnects=[left_wing_root],
+    disconnects=[
+        left_wing_root,
+        left_wing_handshake,
+        right_wing_handshake,
+        right_wing_root_12_pin,
+        right_wing_root_8_pin,
+    ],
     can_buses=[can_bus],
 )

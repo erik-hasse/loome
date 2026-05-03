@@ -24,6 +24,7 @@ from .model import (
     GroundSymbol,
     OffPageReference,
     Pin,
+    ShieldGroup,
     SpliceNode,
     Terminal,
     WireSegment,
@@ -74,6 +75,18 @@ class GaugeTotals:
 
 
 @dataclass
+class BomShieldedRow:
+    cable_id: str
+    conductors: int
+    gauge: int | str
+    color: str
+    length: float | None
+    from_label: str
+    to_label: str
+    has_drain: bool
+
+
+@dataclass
 class DisconnectPinRow:
     pin: str
     signal_name: str
@@ -99,6 +112,7 @@ class Bom:
     connectors: list[tuple[str, str, int]]
     terminals_by_type: dict[str, list[str]]
     disconnects: list[DisconnectEntry] = field(default_factory=list)
+    shielded_cables: list[BomShieldedRow] = field(default_factory=list)
 
 
 # ── endpoint labels ────────────────────────────────────────────────────────
@@ -266,19 +280,231 @@ def _gauge_sort_key(g) -> int:
         return 0
 
 
+def _segments_for_shield(sg: ShieldGroup, all_segments: list[WireSegment]) -> list[WireSegment]:
+    """Resolve the conductor segments belonging to one ShieldGroup.
+
+    Connection-level shields (`Shield` context manager) populate `sg.segments`
+    directly. Port shields (RS232, GPIO, …) attach `pin.shield_group = sg` to
+    each port pin instead, where each port instance has its own ShieldGroup —
+    the two endpoints of a port-to-port segment thus carry different SGs. Use
+    `end_a.shield_group is sg` only so each cable is reported exactly once
+    (the remote SG sees the segment as end_b and contributes nothing).
+    """
+    if sg.segments:
+        return list(sg.segments)
+    found: list[WireSegment] = []
+    for seg in all_segments:
+        a = seg.end_a
+        if isinstance(a, Pin) and getattr(a, "shield_group", None) is sg:
+            found.append(seg)
+    return found
+
+
+def _bucket_by_instance_pair(segments: list[WireSegment]) -> list[list[WireSegment]]:
+    """Group segments by (component_a, component_b) so each device-pair is one cable."""
+    buckets: dict[tuple[int, int], list[WireSegment]] = {}
+    order: list[tuple[int, int]] = []
+    for seg in segments:
+        a_comp = seg.end_a._component if isinstance(seg.end_a, Pin) else None
+        b_comp = seg.end_b._component if isinstance(seg.end_b, Pin) else None
+        key = (id(a_comp), id(b_comp))
+        if key not in buckets:
+            buckets[key] = []
+            order.append(key)
+        buckets[key].append(seg)
+    return [buckets[k] for k in order]
+
+
+def _dominant(values: list, mixed: str = "mixed"):
+    nonempty = [v for v in values if v != "" and v is not None]
+    if not nonempty:
+        return ""
+    first = nonempty[0]
+    if all(v == first for v in nonempty):
+        return first
+    return mixed
+
+
+def _component_label(seg: WireSegment) -> str:
+    for ep in (seg.end_b, seg.end_a):
+        if isinstance(ep, Pin) and ep._component is not None:
+            return ep._component.label
+    return ""
+
+
+def _connector_label(conn) -> str:
+    comp = getattr(conn, "_component", None)
+    name = getattr(conn, "_connector_name", "")
+    if comp is not None:
+        return f"{comp.label}.{name}" if name else comp.label
+    return name or repr(conn)
+
+
+def _can_pin_gauge(devices, all_segments: list[WireSegment]) -> int | str:
+    """Pick a gauge for a CAN cable from any segment that touches any CAN pin
+    on any of the given devices."""
+    pin_ids: set[int] = set()
+    for dev in devices:
+        for pv in vars(dev).values():
+            if isinstance(pv, Pin) and pv.shield_group is not None and pv.shield_group.single_oval:
+                pin_ids.add(id(pv))
+        for c in type(dev).__mro__:
+            if isinstance(c, type) and hasattr(c, "__mro__"):
+                for pv in vars(c).values():
+                    if isinstance(pv, Pin) and pv.shield_group is not None and pv.shield_group.single_oval:
+                        pin_ids.add(id(pv))
+    for seg in all_segments:
+        if (isinstance(seg.end_a, Pin) and id(seg.end_a) in pin_ids) or (
+            isinstance(seg.end_b, Pin) and id(seg.end_b) in pin_ids
+        ):
+            return seg.gauge
+    return ""
+
+
 def build_bom(harness: "Harness") -> Bom:
     bucket_counters: dict[tuple[str, str], int] = {}
     wires: list[BomWireRow] = []
     gauge_totals: dict[str, GaugeTotals] = {}
     disconnect_segs: dict[int, list[tuple[WireSegment, str, float | None, float | None]]] = {}
 
-    for seg in harness.segments():
+    all_segments = harness.segments()
+
+    shielded_cables: list[BomShieldedRow] = []
+    shielded_seg_ids: set[int] = set()
+    sg_to_rows: dict[int, list[BomShieldedRow]] = {}
+    sc_counter = 0
+
+    # CAN bus cables: each adjacent device pair on a CanBusLine is one shielded
+    # cable carrying CAN H + CAN L. Mark every segment touching a CAN pin as
+    # shielded so it disappears from the per-conductor Wires section.
+    can_pin_ids: set[int] = set()
+    for cbl in harness.can_buses:
+        can_pin_ids.update(cbl._pin_ids)
+    if can_pin_ids:
+        for seg in all_segments:
+            a, b = seg.end_a, seg.end_b
+            if (isinstance(a, Pin) and id(a) in can_pin_ids) or (isinstance(b, Pin) and id(b) in can_pin_ids):
+                shielded_seg_ids.add(id(seg))
+    can_disc_cables: dict[tuple[int, int], list[BomShieldedRow]] = {}
+    for cbl in harness.can_buses:
+        gauge = _can_pin_gauge(cbl.devices, all_segments)
+        resolved = {(id(a), id(b)): dist for a, b, dist in cbl.segments(harness)}
+        # Map adjacent (low_dev, high_dev) pair → CAN disconnect on this bus.
+        # `_resolve_can_disconnect` records the disconnect's pins on the
+        # low-side device's CAN Low pin and the high-side device's CAN High
+        # pin; walk those to identify which adjacent pair the disconnect splits.
+        pair_disc: dict[tuple[int, int], object] = {}
+        for disc in harness.disconnects:
+            if not any(p._can_bus is cbl for p in disc._pins.values()):
+                continue
+            low_dev = high_dev = None
+            for dev in cbl.devices:
+                for pv in vars(dev).values():
+                    if not isinstance(pv, Pin) or pv.shield_group is None or not pv.shield_group.single_oval:
+                        continue
+                    if not any(dp._disconnect is disc for dp in pv.disconnect_pins):
+                        continue
+                    if pv.signal_name == "CAN Low":
+                        low_dev = dev
+                    elif pv.signal_name == "CAN High":
+                        high_dev = dev
+            if low_dev is not None and high_dev is not None:
+                pair_disc[(id(low_dev), id(high_dev))] = disc
+
+        for i, (dev_a, dev_b) in enumerate(zip(cbl.devices, cbl.devices[1:]), start=1):
+            length = resolved.get((id(dev_a), id(dev_b)))
+            base_id = f"{cbl.name}-{i}"
+            disc = pair_disc.get((id(dev_a), id(dev_b)))
+            from_lbl = _connector_label(dev_a)
+            to_lbl = _connector_label(dev_b)
+            if disc is None:
+                shielded_cables.append(
+                    BomShieldedRow(
+                        cable_id=base_id,
+                        conductors=2,
+                        gauge=gauge,
+                        color="W",
+                        length=length,
+                        from_label=from_lbl,
+                        to_label=to_lbl,
+                        has_drain=True,
+                    )
+                )
+            else:
+                disc_label = disc.label or disc.id
+                row_a = BomShieldedRow(
+                    cable_id=f"{base_id}A",
+                    conductors=2,
+                    gauge=gauge,
+                    color="W",
+                    length=None,
+                    from_label=from_lbl,
+                    to_label=disc_label,
+                    has_drain=True,
+                )
+                row_b = BomShieldedRow(
+                    cable_id=f"{base_id}B",
+                    conductors=2,
+                    gauge=gauge,
+                    color="W",
+                    length=None,
+                    from_label=disc_label,
+                    to_label=to_lbl,
+                    has_drain=True,
+                )
+                shielded_cables.extend([row_a, row_b])
+                can_disc_cables.setdefault((id(disc), id(cbl)), []).extend([row_a, row_b])
+
+    seen_sgs: set[int] = set()
+    for sg in harness.shield_groups:
+        if id(sg) in seen_sgs:
+            continue
+        seen_sgs.add(id(sg))
+        if sg.single_oval:
+            continue
+        segs = _segments_for_shield(sg, all_segments)
+        if not segs:
+            continue
+        buckets = _bucket_by_instance_pair(segs)
+        # Pick label / id strategy.
+        base_label = sg.label.strip() if sg.label else ""
+        rows_for_sg: list[BomShieldedRow] = []
+        for bucket in buckets:
+            for seg in bucket:
+                shielded_seg_ids.add(id(seg))
+            if base_label:
+                cable_id = base_label
+                if len(buckets) > 1:
+                    cable_id = f"{base_label}@{_component_label(bucket[0])}"
+            else:
+                sc_counter += 1
+                cable_id = f"SC-{sc_counter}"
+            gauges = [s.gauge for s in bucket]
+            colors = [s.color for s in bucket]
+            row = BomShieldedRow(
+                cable_id=cable_id,
+                conductors=len(bucket),
+                gauge=_dominant(gauges),
+                color=_dominant(colors) or "W",
+                length=harness.resolved_length(bucket[0]),
+                from_label=_endpoint_label(bucket[0].end_a),
+                to_label=_endpoint_label(bucket[0].end_b),
+                has_drain=sg.drain is not None or sg.drain_remote is not None,
+            )
+            shielded_cables.append(row)
+            rows_for_sg.append(row)
+        sg_to_rows[id(sg)] = rows_for_sg
+
+    for seg in all_segments:
+        if id(seg) in shielded_seg_ids:
+            continue
         wid = seg.wire_id
+        color = seg.effective_color
         if not wid:
-            key = (str(seg.gauge), seg.color)
+            key = (str(seg.gauge), color)
             n = bucket_counters.get(key, 0) + 1
             bucket_counters[key] = n
-            wid = f"{seg.gauge}{seg.color or '-'}-{n}"
+            wid = f"{seg.gauge}{color or '-'}-{n}"
 
         if seg.disconnect_pin is not None and seg.disconnect_pin._can_bus is None:
             sides = harness.resolved_sides(seg) or (None, None)
@@ -299,7 +525,7 @@ def build_bom(harness: "Harness") -> Bom:
                     BomWireRow(
                         wire_id=wid,
                         gauge=seg.gauge,
-                        color=seg.color,
+                        color=color,
                         length=length,
                         from_label=from_label,
                         to_label=to_label,
@@ -321,7 +547,7 @@ def build_bom(harness: "Harness") -> Bom:
             BomWireRow(
                 wire_id=wid,
                 gauge=seg.gauge,
-                color=seg.color,
+                color=color,
                 length=length,
                 from_label=_endpoint_label(seg.end_a),
                 to_label=_endpoint_label(seg.end_b),
@@ -349,11 +575,49 @@ def build_bom(harness: "Harness") -> Bom:
             from_label = ""
             to_label = ""
             if pin._can_bus is not None:
-                from_label = f"CAN bus {pin._can_bus.name!r}"
-                to_label = f"{len(pin._segments)} stub(s)"
+                cables = can_disc_cables.get((id(disc), id(pin._can_bus)), [])
+                if cables:
+                    wid = ", ".join(r.cable_id for r in cables)
+                    from_label = cables[0].from_label
+                    to_label = cables[-1].to_label
+                else:
+                    from_label = f"CAN bus {pin._can_bus.name!r}"
+                    to_label = f"{len(pin._segments)} stub(s)"
                 if pin._segments:
                     gauge = pin._segments[0].gauge
                     color = pin._segments[0].color
+            elif pin._shield_group is not None and pin._shield_group.single_oval:
+                # CAN-bus shield: look up the cables on this disconnect's bus.
+                bus = next(
+                    (p._can_bus for p in disc._pins.values() if p._can_bus is not None and p._shield_group is None),
+                    None,
+                )
+                cables = can_disc_cables.get((id(disc), id(bus)), []) if bus is not None else []
+                if cables:
+                    wid = ", ".join(r.cable_id for r in cables)
+                    from_label = cables[0].from_label
+                    to_label = cables[-1].to_label
+                    gauge = "drain"
+                else:
+                    from_label = "(shield foil)"
+                    to_label = "(shield foil)"
+            elif pin._shield_group is not None:
+                sc_rows = sg_to_rows.get(id(pin._shield_group), [])
+                if sc_rows:
+                    wid = ", ".join(r.cable_id for r in sc_rows)
+                    seen_from: list[str] = []
+                    seen_to: list[str] = []
+                    for r in sc_rows:
+                        if r.from_label not in seen_from:
+                            seen_from.append(r.from_label)
+                        if r.to_label not in seen_to:
+                            seen_to.append(r.to_label)
+                    from_label = ", ".join(seen_from)
+                    to_label = ", ".join(seen_to)
+                    gauge = "drain"
+                else:
+                    from_label = "(shield foil)"
+                    to_label = "(shield foil)"
             else:
                 seg = pin._segment
                 if seg is not None:
@@ -392,6 +656,7 @@ def build_bom(harness: "Harness") -> Bom:
         connectors=connectors,
         terminals_by_type=terminals_by_type,
         disconnects=disconnects,
+        shielded_cables=shielded_cables,
     )
 
 
@@ -463,11 +728,35 @@ def _bom_disconnect_pin_rows(entry: DisconnectEntry) -> list[list[str]]:
     return [[r.pin, r.signal_name, r.wire_id, str(r.gauge), r.color, r.from_label, r.to_label] for r in entry.pins]
 
 
+def _bom_shielded_rows(bom: Bom, harness: "Harness") -> list[list[str]]:
+    return [
+        [
+            r.cable_id,
+            str(r.conductors),
+            str(r.gauge),
+            r.color or "",
+            harness.format_length(r.length),
+            r.from_label,
+            r.to_label,
+        ]
+        for r in bom.shielded_cables
+    ]
+
+
 def render_bom_md(bom: Bom, harness: "Harness") -> str:
     parts: list[str] = [f"# Bill of Materials — {harness.name}", ""]
 
     parts += ["## Wires", ""]
     parts.append(_md_table(["Wire ID", "Gauge", "Color", "Length", "From", "To"], _bom_wire_rows(bom, harness)))
+
+    if bom.shielded_cables:
+        parts += ["", "## Shielded cables", ""]
+        parts.append(
+            _md_table(
+                ["Cable ID", "Conductors", "Gauge", "Color", "Length", "From", "To"],
+                _bom_shielded_rows(bom, harness),
+            )
+        )
 
     parts += ["", "## Totals by gauge", ""]
     parts.append(_md_table(["Gauge", "Count", "Total Length", "Unresolved"], _bom_gauge_rows(bom, harness)))
@@ -533,6 +822,14 @@ def render_fuse_schedule_csv(entries: list[FuseScheduleEntry], harness: "Harness
 def render_bom_csv(bom: Bom, harness: "Harness") -> str:
     buf = io.StringIO()
     _csv_section(buf, "Wires", ["Wire ID", "Gauge", "Color", "Length", "From", "To"], _bom_wire_rows(bom, harness))
+    if bom.shielded_cables:
+        buf.write("\n")
+        _csv_section(
+            buf,
+            "Shielded cables",
+            ["Cable ID", "Conductors", "Gauge", "Color", "Length", "From", "To"],
+            _bom_shielded_rows(bom, harness),
+        )
     buf.write("\n")
     _csv_section(
         buf, "Totals by gauge", ["Gauge", "Count", "Total Length", "Unresolved"], _bom_gauge_rows(bom, harness)
