@@ -311,6 +311,7 @@ def render(
             "a.pin-link { cursor: pointer; }"
             " a.pin-link:hover rect { fill: #bfdbfe; fill-opacity: 0.45; }"
             " [id^='pr-'] { scroll-margin-top: 56px; }"
+            " path { stroke-linecap: square; }"
             "</style>"
         )
     )

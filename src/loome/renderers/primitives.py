@@ -300,7 +300,7 @@ def _draw_earth_ground(dwg: draw.Drawing, x: float, top: float) -> None:
     Total height 12px — fits within the 17px below cy in a GROUND_ROW_H=34 row.
     """
     stem_end = top + 4
-    dwg.append(draw.Line(x, top, x, stem_end, stroke=_GROUND_STROKE, stroke_width=1))
+    dwg.append(draw.Line(x, top, x, stem_end, stroke=_GROUND_STROKE, stroke_width=1.5))
     for i, hw in enumerate((6, 4, 2)):
         bar_y = stem_end + i * 4
         dwg.append(draw.Line(x - hw, bar_y, x + hw, bar_y, stroke=_GROUND_STROKE, stroke_width=1.5))
@@ -315,7 +315,7 @@ def _draw_terminal(dwg: draw.Drawing, remote: Terminal, x: float, y: float) -> N
     if isinstance(remote, GroundSymbol):
         if remote.style == "open":
             stem_end = y + 5
-            dwg.append(draw.Line(x, y, x, stem_end, stroke=_GROUND_STROKE, stroke_width=1))
+            dwg.append(draw.Line(x, y, x, stem_end, stroke=_GROUND_STROKE, stroke_width=1.5))
             dwg.append(
                 draw.Lines(
                     x - 6,

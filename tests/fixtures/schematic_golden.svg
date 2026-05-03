@@ -3,7 +3,7 @@
      width="736" height="352" viewBox="0 0 736 352">
 <defs>
 </defs>
-<style>a.pin-link { cursor: pointer; } a.pin-link:hover rect { fill: #bfdbfe; fill-opacity: 0.45; } [id^='pr-'] { scroll-margin-top: 56px; }</style>
+<style>a.pin-link { cursor: pointer; } a.pin-link:hover rect { fill: #bfdbfe; fill-opacity: 0.45; } [id^='pr-'] { scroll-margin-top: 56px; } path { stroke-linecap: square; }</style>
 <rect x="0" y="0" width="736" height="352" fill="white" />
 <rect x="20" y="20" width="696" height="142" rx="6" fill="#f8fafc" stroke="none" />
 <g id="sh-comp-20">
@@ -43,7 +43,7 @@
 <text x="62" y="143.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Ground</text>
 <path d="M222,139.0 L652.2,139.0" stroke="#111111" stroke-width="1.5" />
 <text x="226" y="136.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22B</text>
-<path d="M652.2,139.0 L652.2,143.0" stroke="#111111" stroke-width="1" />
+<path d="M652.2,139.0 L652.2,143.0" stroke="#111111" stroke-width="1.5" />
 <path d="M646.2,143.0 L658.2,143.0" stroke="#111111" stroke-width="1.5" />
 <path d="M648.2,147.0 L656.2,147.0" stroke="#111111" stroke-width="1.5" />
 <path d="M650.2,151.0 L654.2,151.0" stroke="#111111" stroke-width="1.5" />
@@ -87,7 +87,7 @@
 <text x="62" y="299.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Ground In</text>
 <path d="M222,295.0 L652.2,295.0" stroke="#111111" stroke-width="1.5" />
 <text x="226" y="292.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22B</text>
-<path d="M652.2,295.0 L652.2,299.0" stroke="#111111" stroke-width="1" />
+<path d="M652.2,295.0 L652.2,299.0" stroke="#111111" stroke-width="1.5" />
 <path d="M646.2,299.0 L658.2,299.0" stroke="#111111" stroke-width="1.5" />
 <path d="M648.2,303.0 L656.2,303.0" stroke="#111111" stroke-width="1.5" />
 <path d="M650.2,307.0 L654.2,307.0" stroke="#111111" stroke-width="1.5" />
