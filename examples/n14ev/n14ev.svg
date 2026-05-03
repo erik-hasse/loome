@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="851" height="17552" viewBox="0 0 851 17552">
+     width="851" height="17890" viewBox="0 0 851 17890">
 <defs>
 </defs>
 <style>a.pin-link { cursor: pointer; } a.pin-link:hover rect { fill: #bfdbfe; fill-opacity: 0.45; } [id^='pr-'] { scroll-margin-top: 56px; }</style>
-<rect x="0" y="0" width="851" height="17552" fill="white" />
+<rect x="0" y="0" width="851" height="17890" fill="white" />
 <rect x="20" y="20" width="811" height="516" rx="6" fill="#f8fafc" stroke="none" />
 <g id="sh-comp-20">
 <rect x="20" y="20" width="811" height="28" rx="6" fill="#334155" />
@@ -1773,13 +1773,13 @@
 <text x="62" y="7633.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">NO1</text>
 <path d="M268,7629.0 L284,7629.0" stroke="#9ca3af" stroke-width="1.5" />
 <path d="M284,7629.0 L598,7629.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="288" y="7626.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22 / — | —</text>
-<text x="527.2" y="7626.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Wing Root:14</text>
+<text x="288" y="7626.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
 <rect x="20" y="7652" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" />
 <path d="M56,7652 L56,7674" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M262,7652 L262,7674" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M284,7663.0 L598,7663.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="288" y="7660.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<text x="288" y="7660.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22 / — | —</text>
+<text x="527.2" y="7660.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Wing Root:14</text>
 <path d="M284,7629.0 L284,7663.0" stroke="#9ca3af" stroke-width="1.5" />
 <rect x="20" y="7448" width="811" height="232" rx="6" fill="none" stroke="#334155" stroke-width="2" />
 <rect x="20" y="7694" width="811" height="198" rx="6" fill="#f8fafc" stroke="none" />
@@ -3748,7 +3748,7 @@
 <path d="M268,16087.0 L598,16087.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
 <text x="313" y="16084.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22WO</text>
 <rect x="20" y="15950" width="811" height="170" rx="6" fill="none" stroke="#334155" stroke-width="2" />
-<rect x="20" y="16134" width="811" height="380" rx="6" fill="#f8fafc" stroke="none" />
+<rect x="20" y="16134" width="811" height="422" rx="6" fill="#f8fafc" stroke="none" />
 <g id="sh-comp-16134">
 <rect x="20" y="16134" width="811" height="28" rx="6" fill="#334155" />
 <rect x="20" y="16156" width="811" height="6" fill="#334155" />
@@ -3766,6 +3766,12 @@
 <path d="M612.0,16187.0 L620.0,16187.0" stroke="#111111" stroke-width="1.5" />
 <path d="M614.0,16191.0 L618.0,16191.0" stroke="#111111" stroke-width="1.5" />
 <text x="628.0" y="16183.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">GND</text>
+<rect x="20" y="16276" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-2" />
+<path d="M56,16276 L56,16298" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16276 L262,16298" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16291.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
+<text x="62" y="16291.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Left Shield (Position -ve)</text>
+<path d="M268,16287.0 L302,16287.0" stroke="#475569" stroke-width="1.5" />
 <rect x="20" y="16210" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-3" />
 <path d="M56,16210 L56,16232" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M262,16210 L262,16232" stroke="#cbd5e1" stroke-width="0.5" />
@@ -3782,34 +3788,40 @@
 <path d="M268,16243.0 L598,16243.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
 <text x="313" y="16240.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22WB / — | —</text>
 <text x="506.2" y="16240.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Wing Root:11</text>
-<rect x="20" y="16302" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-5" />
-<path d="M56,16302 L56,16324" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,16302 L262,16324" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16317.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">5</text>
-<text x="62" y="16317.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Position 12V In</text>
-<path d="M268,16313.0 L598,16313.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="16310.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="16372" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-6" />
-<path d="M56,16372 L56,16394" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,16372 L262,16394" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16387.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
-<text x="62" y="16387.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Right Strobe -ve</text>
-<path d="M268,16383.0 L598,16383.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="313" y="16380.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22W</text>
-<rect x="20" y="16486" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-8" />
-<path d="M56,16486 L56,16508" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,16486 L262,16508" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16501.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">8</text>
-<text x="62" y="16501.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Tail -ve</text>
-<path d="M268,16497.0 L598,16497.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="313" y="16494.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22WB</text>
-<rect x="20" y="16324" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-10" />
-<path d="M56,16324 L56,16346" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,16324 L262,16346" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16339.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">10</text>
-<text x="62" y="16339.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Strobe 12V In</text>
-<path d="M268,16335.0 L598,16335.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="16332.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="16312" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-5" />
+<path d="M56,16312 L56,16334" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16312 L262,16334" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16327.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">5</text>
+<text x="62" y="16327.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Position 12V In</text>
+<path d="M268,16323.0 L598,16323.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="16320.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="16382" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-6" />
+<path d="M56,16382 L56,16404" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16382 L262,16404" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16397.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
+<text x="62" y="16397.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Right Strobe -ve</text>
+<path d="M268,16393.0 L598,16393.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="313" y="16390.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22W</text>
+<rect x="20" y="16528" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-7" />
+<path d="M56,16528 L56,16550" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16528 L262,16550" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16543.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">7</text>
+<text x="62" y="16543.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Tail Shield</text>
+<path d="M268,16539.0 L302,16539.0" stroke="#475569" stroke-width="1.5" />
+<rect x="20" y="16506" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-8" />
+<path d="M56,16506 L56,16528" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16506 L262,16528" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16521.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">8</text>
+<text x="62" y="16521.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Tail -ve</text>
+<path d="M268,16517.0 L598,16517.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
+<text x="313" y="16514.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22WB</text>
+<rect x="20" y="16334" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-10" />
+<path d="M56,16334 L56,16356" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16334 L262,16356" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16349.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">10</text>
+<text x="62" y="16349.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Strobe 12V In</text>
+<path d="M268,16345.0 L598,16345.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="16342.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
 <rect x="20" y="16254" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-11" />
 <path d="M56,16254 L56,16276" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M262,16254 L262,16276" stroke="#cbd5e1" stroke-width="0.5" />
@@ -3818,244 +3830,321 @@
 <path d="M268,16265.0 L598,16265.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
 <text x="313" y="16262.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22WO / — | —</text>
 <text x="506.2" y="16262.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Wing Root:13</text>
-<rect x="20" y="16416" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-12" />
-<path d="M56,16416 L56,16438" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,16416 L262,16438" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16431.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">12</text>
-<text x="62" y="16431.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Right Strobe +ve</text>
-<path d="M268,16427.0 L598,16427.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="313" y="16424.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22WO</text>
-<rect x="20" y="16394" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-13" />
-<path d="M56,16394 L56,16416" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,16394 L262,16416" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16409.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">13</text>
-<text x="62" y="16409.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Right Position +ve</text>
-<path d="M268,16405.0 L598,16405.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="313" y="16402.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22WB</text>
-<rect x="20" y="16464" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-15" />
-<path d="M56,16464 L56,16486" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,16464 L262,16486" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16479.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">15</text>
-<text x="62" y="16479.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Tail +ve</text>
-<path d="M268,16475.0 L598,16475.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="313" y="16472.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22W</text>
-<rect x="20" y="16134" width="811" height="380" rx="6" fill="none" stroke="#334155" stroke-width="2" />
-<rect x="20" y="16528" width="811" height="128" rx="6" fill="#f8fafc" stroke="none" />
-<g id="sh-comp-16528">
-<rect x="20" y="16528" width="811" height="28" rx="6" fill="#334155" />
-<rect x="20" y="16550" width="811" height="6" fill="#334155" />
-<text x="32" y="16548" font-size="13" fill="white" font-weight="bold" font-family="ui-monospace, monospace">Aithre Shield CO2 Sensor</text>
+<rect x="20" y="16426" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-12" />
+<path d="M56,16426 L56,16448" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16426 L262,16448" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16441.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">12</text>
+<text x="62" y="16441.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Right Strobe +ve</text>
+<path d="M268,16437.0 L598,16437.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
+<text x="313" y="16434.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22WO</text>
+<rect x="20" y="16404" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-13" />
+<path d="M56,16404 L56,16426" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16404 L262,16426" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16419.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">13</text>
+<text x="62" y="16419.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Right Position +ve</text>
+<path d="M268,16415.0 L598,16415.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
+<text x="313" y="16412.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22WB</text>
+<rect x="20" y="16448" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-14" />
+<path d="M56,16448 L56,16470" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16448 L262,16470" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16463.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">14</text>
+<text x="62" y="16463.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Right Shield (Position -ve)</text>
+<path d="M268,16459.0 L302,16459.0" stroke="#475569" stroke-width="1.5" />
+<rect x="20" y="16484" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-15" />
+<path d="M56,16484 L56,16506" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16484 L262,16506" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16499.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">15</text>
+<text x="62" y="16499.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Tail +ve</text>
+<path d="M268,16495.0 L598,16495.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="313" y="16492.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22W</text>
+<rect x="20" y="16134" width="811" height="422" rx="6" fill="none" stroke="#334155" stroke-width="2" />
+<rect x="20" y="16570" width="811" height="134" rx="6" fill="#f8fafc" stroke="none" />
+<g id="sh-comp-16570">
+<rect x="20" y="16570" width="811" height="28" rx="6" fill="#334155" />
+<rect x="20" y="16592" width="811" height="6" fill="#334155" />
+<text x="32" y="16590" font-size="13" fill="white" font-weight="bold" font-family="ui-monospace, monospace">Left Position &amp; Strobe</text>
 </g>
-<rect x="20" y="16568" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Aithre_Shield_CO2_Sensor-RED" />
-<path d="M56,16568 L56,16590" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,16568 L262,16590" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16583.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">RED</text>
-<text x="62" y="16583.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Power</text>
-<path d="M268,16579.0 L598,16579.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="313" y="16576.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22W</text>
-<rect x="20" y="16590" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Aithre_Shield_CO2_Sensor-WHT" />
-<path d="M56,16590 L56,16612" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,16590 L262,16612" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16605.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">WHT</text>
-<text x="62" y="16605.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Signal</text>
-<path d="M268,16601.0 L598,16601.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="313" y="16598.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22WB</text>
-<rect x="20" y="16612" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Aithre_Shield_CO2_Sensor-BLK" />
-<path d="M56,16612 L56,16634" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,16612 L262,16634" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16627.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">BLK</text>
-<text x="62" y="16627.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Ground</text>
-<path d="M268,16623.0 L598,16623.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="313" y="16620.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22WO</text>
-<rect x="20" y="16528" width="811" height="128" rx="6" fill="none" stroke="#334155" stroke-width="2" />
-<rect x="20" y="16670" width="811" height="352" rx="6" fill="#f8fafc" stroke="none" />
-<g id="sh-comp-16670">
-<rect x="20" y="16670" width="811" height="28" rx="6" fill="#334155" />
-<rect x="20" y="16692" width="811" height="6" fill="#334155" />
-<text x="32" y="16690" font-size="13" fill="white" font-weight="bold" font-family="ui-monospace, monospace">Copilot Stick</text>
+<rect x="20" y="16676" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Left_Position___Strobe-P-" />
+<path d="M56,16676 L56,16698" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16676 L262,16698" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16691.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">P-</text>
+<text x="62" y="16691.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Position Neg</text>
+<path d="M268,16687.0 L302,16687.0" stroke="#475569" stroke-width="1.5" />
+<rect x="20" y="16632" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Left_Position___Strobe-P_" />
+<path d="M56,16632 L56,16654" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16632 L262,16654" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16647.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">P+</text>
+<text x="62" y="16647.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Position Pos</text>
+<path d="M268,16643.0 L598,16643.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
+<text x="313" y="16640.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22WB / — | —</text>
+<text x="506.2" y="16640.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Wing Root:11</text>
+<rect x="20" y="16610" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Left_Position___Strobe-S-" />
+<path d="M56,16610 L56,16632" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16610 L262,16632" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16625.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S-</text>
+<text x="62" y="16625.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Neg</text>
+<path d="M268,16621.0 L598,16621.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="313" y="16618.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22W / — | —</text>
+<text x="506.2" y="16618.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Wing Root:12</text>
+<rect x="20" y="16654" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Left_Position___Strobe-S_" />
+<path d="M56,16654 L56,16676" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16654 L262,16676" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16669.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S+</text>
+<text x="62" y="16669.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Pos</text>
+<path d="M268,16665.0 L598,16665.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
+<text x="313" y="16662.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22WO / — | —</text>
+<text x="506.2" y="16662.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Wing Root:13</text>
+<rect x="20" y="16570" width="811" height="134" rx="6" fill="none" stroke="#334155" stroke-width="2" />
+<rect x="20" y="16718" width="811" height="134" rx="6" fill="#f8fafc" stroke="none" />
+<g id="sh-comp-16718">
+<rect x="20" y="16718" width="811" height="28" rx="6" fill="#334155" />
+<rect x="20" y="16740" width="811" height="6" fill="#334155" />
+<text x="32" y="16738" font-size="13" fill="white" font-weight="bold" font-family="ui-monospace, monospace">Right Position &amp; Strobe</text>
 </g>
-<rect x="20" y="16710" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-1" />
-<path d="M56,16710 L56,16732" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,16710 L262,16732" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16725.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">1</text>
-<text x="62" y="16725.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">AP Disconnect</text>
-<path d="M268,16721.0 L284,16721.0" stroke="#9ca3af" stroke-width="1.5" />
-<path d="M284,16721.0 L598,16721.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="288" y="16718.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="16744" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" />
-<path d="M56,16744 L56,16766" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,16744 L262,16766" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M284,16755.0 L598,16755.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="288" y="16752.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<path d="M284,16721.0 L284,16755.0" stroke="#9ca3af" stroke-width="1.5" />
-<rect x="20" y="16792" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-2" />
-<path d="M56,16792 L56,16814" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,16792 L262,16814" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16807.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
-<text x="62" y="16807.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Push to Talk</text>
-<path d="M268,16803.0 L598,16803.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="313" y="16800.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22W</text>
-<rect x="20" y="16836" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-3" />
-<path d="M56,16836 L56,16858" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,16836 L262,16858" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16851.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">3</text>
-<text x="62" y="16851.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">COM Swap</text>
-<path d="M268,16847.0 L598,16847.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="16844.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="16858" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-4" />
-<path d="M56,16858 L56,16880" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,16858 L262,16880" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16873.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">4</text>
-<text x="62" y="16873.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Replay</text>
-<path d="M268,16869.0 L598,16869.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="16866.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="16906" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-5" />
+<rect x="20" y="16824" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Right_Position___Strobe-P-" />
+<path d="M56,16824 L56,16846" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16824 L262,16846" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16839.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">P-</text>
+<text x="62" y="16839.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Position Neg</text>
+<path d="M268,16835.0 L302,16835.0" stroke="#475569" stroke-width="1.5" />
+<rect x="20" y="16780" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Right_Position___Strobe-P_" />
+<path d="M56,16780 L56,16802" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16780 L262,16802" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16795.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">P+</text>
+<text x="62" y="16795.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Position Pos</text>
+<path d="M268,16791.0 L598,16791.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
+<text x="313" y="16788.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22WB</text>
+<rect x="20" y="16758" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Right_Position___Strobe-S-" />
+<path d="M56,16758 L56,16780" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16758 L262,16780" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16773.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S-</text>
+<text x="62" y="16773.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Neg</text>
+<path d="M268,16769.0 L598,16769.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="313" y="16766.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22W</text>
+<rect x="20" y="16802" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Right_Position___Strobe-S_" />
+<path d="M56,16802 L56,16824" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,16802 L262,16824" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="16817.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S+</text>
+<text x="62" y="16817.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Pos</text>
+<path d="M268,16813.0 L598,16813.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
+<text x="313" y="16810.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22WO</text>
+<rect x="20" y="16718" width="811" height="134" rx="6" fill="none" stroke="#334155" stroke-width="2" />
+<rect x="20" y="16866" width="811" height="128" rx="6" fill="#f8fafc" stroke="none" />
+<g id="sh-comp-16866">
+<rect x="20" y="16866" width="811" height="28" rx="6" fill="#334155" />
+<rect x="20" y="16888" width="811" height="6" fill="#334155" />
+<text x="32" y="16886" font-size="13" fill="white" font-weight="bold" font-family="ui-monospace, monospace">Aithre Shield CO2 Sensor</text>
+</g>
+<rect x="20" y="16906" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Aithre_Shield_CO2_Sensor-RED" />
 <path d="M56,16906 L56,16928" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M262,16906 L262,16928" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16921.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">5</text>
-<text x="62" y="16921.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Trim Up</text>
+<text x="38.0" y="16921.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">RED</text>
+<text x="62" y="16921.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Power</text>
 <path d="M268,16917.0 L598,16917.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="16914.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="16928" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-6" />
+<text x="313" y="16914.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22W</text>
+<rect x="20" y="16928" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Aithre_Shield_CO2_Sensor-WHT" />
 <path d="M56,16928 L56,16950" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M262,16928 L262,16950" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16943.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
-<text x="62" y="16943.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Trim Down</text>
-<path d="M268,16939.0 L598,16939.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="16936.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="16950" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-7" />
+<text x="38.0" y="16943.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">WHT</text>
+<text x="62" y="16943.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Signal</text>
+<path d="M268,16939.0 L598,16939.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
+<text x="313" y="16936.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22WB</text>
+<rect x="20" y="16950" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Aithre_Shield_CO2_Sensor-BLK" />
 <path d="M56,16950 L56,16972" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M262,16950 L262,16972" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16965.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">7</text>
-<text x="62" y="16965.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Trim Left</text>
-<path d="M268,16961.0 L598,16961.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="16958.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="16972" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-8" />
-<path d="M56,16972 L56,16994" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,16972 L262,16994" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="16987.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">8</text>
-<text x="62" y="16987.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Trim Right</text>
-<path d="M268,16983.0 L598,16983.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="16980.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="16994" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-9" />
-<path d="M56,16994 L56,17016" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,16994 L262,17016" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="17009.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">9</text>
-<text x="62" y="17009.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Frequency Swap</text>
-<path d="M268,17005.0 L598,17005.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="17002.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="16670" width="811" height="352" rx="6" fill="none" stroke="#334155" stroke-width="2" />
-<rect x="20" y="17036" width="811" height="318" rx="6" fill="#f8fafc" stroke="none" />
-<g id="sh-comp-17036">
-<rect x="20" y="17036" width="811" height="28" rx="6" fill="#334155" />
-<rect x="20" y="17058" width="811" height="6" fill="#334155" />
-<text x="32" y="17056" font-size="13" fill="white" font-weight="bold" font-family="ui-monospace, monospace">Pilot Stick</text>
+<text x="38.0" y="16965.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">BLK</text>
+<text x="62" y="16965.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Ground</text>
+<path d="M268,16961.0 L598,16961.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
+<text x="313" y="16958.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22WO</text>
+<rect x="20" y="16866" width="811" height="128" rx="6" fill="none" stroke="#334155" stroke-width="2" />
+<rect x="20" y="17008" width="811" height="352" rx="6" fill="#f8fafc" stroke="none" />
+<g id="sh-comp-17008">
+<rect x="20" y="17008" width="811" height="28" rx="6" fill="#334155" />
+<rect x="20" y="17030" width="811" height="6" fill="#334155" />
+<text x="32" y="17028" font-size="13" fill="white" font-weight="bold" font-family="ui-monospace, monospace">Copilot Stick</text>
 </g>
-<rect x="20" y="17076" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-1" />
-<path d="M56,17076 L56,17098" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,17076 L262,17098" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="17091.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">1</text>
-<text x="62" y="17091.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">AP Disconnect</text>
-<path d="M268,17087.0 L598,17087.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="17084.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="17124" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-2" />
-<path d="M56,17124 L56,17146" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,17124 L262,17146" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="17139.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
-<text x="62" y="17139.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Push to Talk</text>
-<path d="M268,17135.0 L598,17135.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="313" y="17132.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22W</text>
-<rect x="20" y="17168" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-3" />
-<path d="M56,17168 L56,17190" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,17168 L262,17190" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="17183.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">3</text>
-<text x="62" y="17183.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">COM Swap</text>
-<path d="M268,17179.0 L598,17179.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="17176.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="17190" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-4" />
-<path d="M56,17190 L56,17212" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,17190 L262,17212" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="17205.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">4</text>
-<text x="62" y="17205.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Replay</text>
-<path d="M268,17201.0 L598,17201.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="17198.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="17238" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-5" />
-<path d="M56,17238 L56,17260" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,17238 L262,17260" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="17253.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">5</text>
-<text x="62" y="17253.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Trim Up</text>
-<path d="M268,17249.0 L598,17249.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="17246.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="17260" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-6" />
-<path d="M56,17260 L56,17282" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,17260 L262,17282" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="17275.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
-<text x="62" y="17275.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Trim Down</text>
-<path d="M268,17271.0 L598,17271.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="17268.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="17282" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-7" />
-<path d="M56,17282 L56,17304" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,17282 L262,17304" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="17297.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">7</text>
-<text x="62" y="17297.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Trim Left</text>
-<path d="M268,17293.0 L598,17293.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="17290.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="17304" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-8" />
-<path d="M56,17304 L56,17326" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,17304 L262,17326" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="17319.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">8</text>
-<text x="62" y="17319.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Trim Right</text>
-<path d="M268,17315.0 L598,17315.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="17312.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="17326" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-9" />
-<path d="M56,17326 L56,17348" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,17326 L262,17348" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="17341.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">9</text>
-<text x="62" y="17341.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Frequency Swap</text>
-<path d="M268,17337.0 L598,17337.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="17334.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="17036" width="811" height="318" rx="6" fill="none" stroke="#334155" stroke-width="2" />
-<rect x="20" y="17368" width="811" height="150" rx="6" fill="#f8fafc" stroke="none" />
-<g id="sh-comp-17368">
-<rect x="20" y="17368" width="811" height="28" rx="6" fill="#334155" />
-<rect x="20" y="17390" width="811" height="6" fill="#334155" />
-<text x="32" y="17388" font-size="13" fill="white" font-weight="bold" font-family="ui-monospace, monospace">Nav &amp; Strobe Lights</text>
+<rect x="20" y="17048" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-1" />
+<path d="M56,17048 L56,17070" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17048 L262,17070" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17063.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">1</text>
+<text x="62" y="17063.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">AP Disconnect</text>
+<path d="M268,17059.0 L284,17059.0" stroke="#9ca3af" stroke-width="1.5" />
+<path d="M284,17059.0 L598,17059.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="288" y="17056.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17082" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" />
+<path d="M56,17082 L56,17104" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17082 L262,17104" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M284,17093.0 L598,17093.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="288" y="17090.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<path d="M284,17059.0 L284,17093.0" stroke="#9ca3af" stroke-width="1.5" />
+<rect x="20" y="17130" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-2" />
+<path d="M56,17130 L56,17152" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17130 L262,17152" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17145.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
+<text x="62" y="17145.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Push to Talk</text>
+<path d="M268,17141.0 L598,17141.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="313" y="17138.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22W</text>
+<rect x="20" y="17174" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-3" />
+<path d="M56,17174 L56,17196" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17174 L262,17196" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17189.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">3</text>
+<text x="62" y="17189.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">COM Swap</text>
+<path d="M268,17185.0 L598,17185.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="17182.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17196" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-4" />
+<path d="M56,17196 L56,17218" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17196 L262,17218" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17211.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">4</text>
+<text x="62" y="17211.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Replay</text>
+<path d="M268,17207.0 L598,17207.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="17204.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17244" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-5" />
+<path d="M56,17244 L56,17266" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17244 L262,17266" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17259.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">5</text>
+<text x="62" y="17259.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Trim Up</text>
+<path d="M268,17255.0 L598,17255.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="17252.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17266" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-6" />
+<path d="M56,17266 L56,17288" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17266 L262,17288" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17281.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
+<text x="62" y="17281.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Trim Down</text>
+<path d="M268,17277.0 L598,17277.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="17274.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17288" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-7" />
+<path d="M56,17288 L56,17310" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17288 L262,17310" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17303.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">7</text>
+<text x="62" y="17303.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Trim Left</text>
+<path d="M268,17299.0 L598,17299.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="17296.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17310" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-8" />
+<path d="M56,17310 L56,17332" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17310 L262,17332" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17325.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">8</text>
+<text x="62" y="17325.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Trim Right</text>
+<path d="M268,17321.0 L598,17321.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="17318.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17332" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-9" />
+<path d="M56,17332 L56,17354" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17332 L262,17354" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17347.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">9</text>
+<text x="62" y="17347.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Frequency Swap</text>
+<path d="M268,17343.0 L598,17343.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="17340.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17008" width="811" height="352" rx="6" fill="none" stroke="#334155" stroke-width="2" />
+<rect x="20" y="17374" width="811" height="318" rx="6" fill="#f8fafc" stroke="none" />
+<g id="sh-comp-17374">
+<rect x="20" y="17374" width="811" height="28" rx="6" fill="#334155" />
+<rect x="20" y="17396" width="811" height="6" fill="#334155" />
+<text x="32" y="17394" font-size="13" fill="white" font-weight="bold" font-family="ui-monospace, monospace">Pilot Stick</text>
 </g>
-<rect x="20" y="17432" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Nav___Strobe_Lights-3" />
-<path d="M56,17432 L56,17454" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,17432 L262,17454" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="17447.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">3</text>
-<text x="62" y="17447.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">NO2</text>
-<path d="M268,17443.0 L598,17443.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="17440.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="17396" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Nav___Strobe_Lights-2" />
-<path d="M56,17396 L56,17418" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,17396 L262,17418" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="17411.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
-<text x="62" y="17411.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">COM2</text>
-<path d="M268,17407.0 L604.0,17407.0" stroke="#dc2626" stroke-width="1.5" />
-<text x="272" y="17404.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22R</text>
-<rect x="607.0" y="17402.0" width="18" height="10" rx="2" fill="#fef9c3" stroke="#a16207" stroke-width="1.5" />
-<path d="M611.0,17407.0 L621.0,17407.0" stroke="#a16207" stroke-width="1.5" />
-<text x="628.0" y="17411.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">MainBus · strobe_lights 10A</text>
-<rect x="20" y="17490" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Nav___Strobe_Lights-5" />
-<path d="M56,17490 L56,17512" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,17490 L262,17512" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="17505.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">5</text>
-<text x="62" y="17505.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">COM1</text>
-<path d="M268,17501.0 L604.0,17501.0" stroke="#dc2626" stroke-width="1.5" />
-<text x="272" y="17498.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22R</text>
-<rect x="607.0" y="17496.0" width="18" height="10" rx="2" fill="#fef9c3" stroke="#a16207" stroke-width="1.5" />
-<path d="M611.0,17501.0 L621.0,17501.0" stroke="#a16207" stroke-width="1.5" />
-<text x="628.0" y="17505.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">MainBus · nav_lights 5A</text>
-<rect x="20" y="17454" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Nav___Strobe_Lights-6" />
-<path d="M56,17454 L56,17476" stroke="#cbd5e1" stroke-width="0.5" />
-<path d="M262,17454 L262,17476" stroke="#cbd5e1" stroke-width="0.5" />
-<text x="38.0" y="17469.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
-<text x="62" y="17469.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">NO1</text>
-<path d="M268,17465.0 L598,17465.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="272" y="17462.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
-<rect x="20" y="17368" width="811" height="150" rx="6" fill="none" stroke="#334155" stroke-width="2" />
+<rect x="20" y="17414" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-1" />
+<path d="M56,17414 L56,17436" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17414 L262,17436" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17429.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">1</text>
+<text x="62" y="17429.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">AP Disconnect</text>
+<path d="M268,17425.0 L598,17425.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="17422.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17462" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-2" />
+<path d="M56,17462 L56,17484" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17462 L262,17484" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17477.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
+<text x="62" y="17477.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Push to Talk</text>
+<path d="M268,17473.0 L598,17473.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="313" y="17470.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22W</text>
+<rect x="20" y="17506" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-3" />
+<path d="M56,17506 L56,17528" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17506 L262,17528" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17521.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">3</text>
+<text x="62" y="17521.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">COM Swap</text>
+<path d="M268,17517.0 L598,17517.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="17514.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17528" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-4" />
+<path d="M56,17528 L56,17550" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17528 L262,17550" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17543.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">4</text>
+<text x="62" y="17543.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Replay</text>
+<path d="M268,17539.0 L598,17539.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="17536.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17576" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-5" />
+<path d="M56,17576 L56,17598" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17576 L262,17598" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17591.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">5</text>
+<text x="62" y="17591.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Trim Up</text>
+<path d="M268,17587.0 L598,17587.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="17584.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17598" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-6" />
+<path d="M56,17598 L56,17620" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17598 L262,17620" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17613.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
+<text x="62" y="17613.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Trim Down</text>
+<path d="M268,17609.0 L598,17609.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="17606.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17620" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-7" />
+<path d="M56,17620 L56,17642" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17620 L262,17642" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17635.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">7</text>
+<text x="62" y="17635.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Trim Left</text>
+<path d="M268,17631.0 L598,17631.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="17628.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17642" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-8" />
+<path d="M56,17642 L56,17664" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17642 L262,17664" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17657.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">8</text>
+<text x="62" y="17657.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Trim Right</text>
+<path d="M268,17653.0 L598,17653.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="17650.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17664" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-9" />
+<path d="M56,17664 L56,17686" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17664 L262,17686" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17679.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">9</text>
+<text x="62" y="17679.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Frequency Swap</text>
+<path d="M268,17675.0 L598,17675.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="17672.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17374" width="811" height="318" rx="6" fill="none" stroke="#334155" stroke-width="2" />
+<rect x="20" y="17706" width="811" height="150" rx="6" fill="#f8fafc" stroke="none" />
+<g id="sh-comp-17706">
+<rect x="20" y="17706" width="811" height="28" rx="6" fill="#334155" />
+<rect x="20" y="17728" width="811" height="6" fill="#334155" />
+<text x="32" y="17726" font-size="13" fill="white" font-weight="bold" font-family="ui-monospace, monospace">Nav &amp; Strobe Lights</text>
+</g>
+<rect x="20" y="17770" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Nav___Strobe_Lights-3" />
+<path d="M56,17770 L56,17792" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17770 L262,17792" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17785.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">3</text>
+<text x="62" y="17785.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">NO2</text>
+<path d="M268,17781.0 L598,17781.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="17778.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17734" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Nav___Strobe_Lights-2" />
+<path d="M56,17734 L56,17756" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17734 L262,17756" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17749.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
+<text x="62" y="17749.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">COM2</text>
+<path d="M268,17745.0 L604.0,17745.0" stroke="#dc2626" stroke-width="1.5" />
+<text x="272" y="17742.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22R</text>
+<rect x="607.0" y="17740.0" width="18" height="10" rx="2" fill="#fef9c3" stroke="#a16207" stroke-width="1.5" />
+<path d="M611.0,17745.0 L621.0,17745.0" stroke="#a16207" stroke-width="1.5" />
+<text x="628.0" y="17749.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">MainBus · strobe_lights 10A</text>
+<rect x="20" y="17828" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Nav___Strobe_Lights-5" />
+<path d="M56,17828 L56,17850" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17828 L262,17850" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17843.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">5</text>
+<text x="62" y="17843.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">COM1</text>
+<path d="M268,17839.0 L604.0,17839.0" stroke="#dc2626" stroke-width="1.5" />
+<text x="272" y="17836.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22R</text>
+<rect x="607.0" y="17834.0" width="18" height="10" rx="2" fill="#fef9c3" stroke="#a16207" stroke-width="1.5" />
+<path d="M611.0,17839.0 L621.0,17839.0" stroke="#a16207" stroke-width="1.5" />
+<text x="628.0" y="17843.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">MainBus · nav_lights 5A</text>
+<rect x="20" y="17792" width="811" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Nav___Strobe_Lights-6" />
+<path d="M56,17792 L56,17814" stroke="#cbd5e1" stroke-width="0.5" />
+<path d="M262,17792 L262,17814" stroke="#cbd5e1" stroke-width="0.5" />
+<text x="38.0" y="17807.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
+<text x="62" y="17807.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">NO1</text>
+<path d="M268,17803.0 L598,17803.0" stroke="#9ca3af" stroke-width="1.5" />
+<text x="272" y="17800.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace">22</text>
+<rect x="20" y="17706" width="811" height="150" rx="6" fill="none" stroke="#334155" stroke-width="2" />
 <ellipse cx="302" cy="92.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,116.0 L302,120.0" stroke="#475569" stroke-width="1" />
 <path d="M297,120.0 L307,120.0 L302,128.0 Z" fill="white" stroke="#475569" stroke-width="1" />
@@ -4065,6 +4154,18 @@
 <path d="M297,186.0 L307,186.0 L302,194.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <path d="M584,182.0 L584,186.0" stroke="#475569" stroke-width="1" />
 <path d="M579,186.0 L589,186.0 L584,194.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="381.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="381.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,416.0 L302,420.0" stroke="#475569" stroke-width="1" />
+<path d="M297,420.0 L307,420.0 L302,428.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<path d="M584,416.0 L584,420.0" stroke="#475569" stroke-width="1" />
+<path d="M579,420.0 L589,420.0 L584,428.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="623.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="623.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,658.0 L302,662.0" stroke="#475569" stroke-width="1" />
+<path d="M297,662.0 L307,662.0 L302,670.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<path d="M584,658.0 L584,662.0" stroke="#475569" stroke-width="1" />
+<path d="M579,662.0 L589,662.0 L584,670.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="481.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="481.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,516.0 L302,520.0" stroke="#475569" stroke-width="1" />
@@ -4074,6 +4175,22 @@
 <ellipse cx="324" cy="764.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M324,788.0 L324,792.0" stroke="#475569" stroke-width="1" />
 <path d="M319,792.0 L329,792.0 L324,800.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="1232.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="1232.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,1256.0 L302,1260.0" stroke="#475569" stroke-width="1" />
+<path d="M297,1260.0 L307,1260.0 L302,1268.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<path d="M584,1256.0 L584,1260.0" stroke="#111111" stroke-width="1" />
+<path d="M578,1260.0 L590,1260.0" stroke="#111111" stroke-width="1.5" />
+<path d="M580,1264.0 L588,1264.0" stroke="#111111" stroke-width="1.5" />
+<path d="M582,1268.0 L586,1268.0" stroke="#111111" stroke-width="1.5" />
+<ellipse cx="302" cy="8068.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="8068.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,8092.0 L302,8096.0" stroke="#111111" stroke-width="1" />
+<path d="M296,8096.0 L308,8096.0" stroke="#111111" stroke-width="1.5" />
+<path d="M298,8100.0 L306,8100.0" stroke="#111111" stroke-width="1.5" />
+<path d="M300,8104.0 L304,8104.0" stroke="#111111" stroke-width="1.5" />
+<path d="M584,8092.0 L584,8096.0" stroke="#475569" stroke-width="1" />
+<path d="M579,8096.0 L589,8096.0 L584,8104.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="1012.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,1036.0 L302,1040.0" stroke="#475569" stroke-width="1" />
 <path d="M297,1040.0 L307,1040.0 L302,1048.0 Z" fill="white" stroke="#475569" stroke-width="1" />
@@ -4086,6 +4203,30 @@
 <ellipse cx="302" cy="1408.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,1432.0 L302,1436.0" stroke="#475569" stroke-width="1" />
 <path d="M297,1436.0 L307,1436.0 L302,1444.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="2052.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="2052.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,2076.0 L302,2080.0" stroke="#475569" stroke-width="1" />
+<path d="M297,2080.0 L307,2080.0 L302,2088.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<path d="M584,2076.0 L584,2080.0" stroke="#111111" stroke-width="1" />
+<path d="M578,2080.0 L590,2080.0" stroke="#111111" stroke-width="1.5" />
+<path d="M580,2084.0 L588,2084.0" stroke="#111111" stroke-width="1.5" />
+<path d="M582,2088.0 L586,2088.0" stroke="#111111" stroke-width="1.5" />
+<ellipse cx="302" cy="8288.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="8288.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,8312.0 L302,8316.0" stroke="#111111" stroke-width="1" />
+<path d="M296,8316.0 L308,8316.0" stroke="#111111" stroke-width="1.5" />
+<path d="M298,8320.0 L306,8320.0" stroke="#111111" stroke-width="1.5" />
+<path d="M300,8324.0 L304,8324.0" stroke="#111111" stroke-width="1.5" />
+<path d="M584,8312.0 L584,8316.0" stroke="#475569" stroke-width="1" />
+<path d="M579,8316.0 L589,8316.0 L584,8324.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="3107.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="3107.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M584,3142.0 L584,3146.0" stroke="#475569" stroke-width="1" />
+<path d="M579,3146.0 L589,3146.0 L584,3154.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="4755.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="4755.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,4790.0 L302,4794.0" stroke="#475569" stroke-width="1" />
+<path d="M297,4794.0 L307,4794.0 L302,4802.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="2835.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="2835.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,2870.0 L302,2874.0" stroke="#475569" stroke-width="1" />
@@ -4098,9 +4239,109 @@
 <path d="M297,2974.0 L307,2974.0 L302,2982.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <path d="M584,2970.0 L584,2974.0" stroke="#475569" stroke-width="1" />
 <path d="M579,2974.0 L589,2974.0 L584,2982.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="3260.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="3260.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,3284.0 L302,3288.0" stroke="#475569" stroke-width="1" />
+<path d="M297,3288.0 L307,3288.0 L302,3296.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="10960.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="10960.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M584,10984.0 L584,10988.0" stroke="#475569" stroke-width="1" />
+<path d="M579,10988.0 L589,10988.0 L584,10996.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="3337.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="3337.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,3372.0 L302,3376.0" stroke="#475569" stroke-width="1" />
+<path d="M297,3376.0 L307,3376.0 L302,3384.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="10883.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="10883.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M584,10918.0 L584,10922.0" stroke="#475569" stroke-width="1" />
+<path d="M579,10922.0 L589,10922.0 L584,10930.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="3436.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="3436.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,3460.0 L302,3464.0" stroke="#475569" stroke-width="1" />
+<path d="M297,3464.0 L307,3464.0 L302,3472.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="5490.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="5490.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M584,5514.0 L584,5518.0" stroke="#475569" stroke-width="1" />
+<path d="M579,5518.0 L589,5518.0 L584,5526.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="3513.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="3513.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,3548.0 L302,3552.0" stroke="#475569" stroke-width="1" />
+<path d="M297,3552.0 L307,3552.0 L302,3560.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="5567.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="5567.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M584,5602.0 L584,5606.0" stroke="#475569" stroke-width="1" />
+<path d="M579,5606.0 L589,5606.0 L584,5614.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="3602.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="3602.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,3626.0 L302,3630.0" stroke="#475569" stroke-width="1" />
+<path d="M297,3630.0 L307,3630.0 L302,3638.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="11248.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="11248.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M584,11272.0 L584,11276.0" stroke="#475569" stroke-width="1" />
+<path d="M579,11276.0 L589,11276.0 L584,11284.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="3680.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="3680.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,3704.0 L302,3708.0" stroke="#475569" stroke-width="1" />
+<path d="M297,3708.0 L307,3708.0 L302,3716.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="12214.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="12214.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M584,12238.0 L584,12242.0" stroke="#475569" stroke-width="1" />
+<path d="M579,12242.0 L589,12242.0 L584,12250.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="3779.0" rx="7" ry="45.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="3779.0" rx="7" ry="45.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,3824.0 L302,3828.0" stroke="#475569" stroke-width="1" />
+<path d="M297,3828.0 L307,3828.0 L302,3836.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="17473.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="17473.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M584,17486.0 L584,17490.0" stroke="#475569" stroke-width="1" />
+<path d="M579,17490.0 L589,17490.0 L584,17498.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="5094.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="5094.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M584,5118.0 L584,5122.0" stroke="#475569" stroke-width="1" />
+<path d="M579,5122.0 L589,5122.0 L584,5130.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="3932.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="3932.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,3956.0 L302,3960.0" stroke="#475569" stroke-width="1" />
+<path d="M297,3960.0 L307,3960.0 L302,3968.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="9614.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="9614.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M584,9638.0 L584,9642.0" stroke="#475569" stroke-width="1" />
+<path d="M579,9642.0 L589,9642.0 L584,9650.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="3866.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,3890.0 L302,3894.0" stroke="#475569" stroke-width="1" />
 <path d="M297,3894.0 L307,3894.0 L302,3902.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="4043.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="4043.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,4078.0 L302,4082.0" stroke="#475569" stroke-width="1" />
+<path d="M297,4082.0 L307,4082.0 L302,4090.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="5017.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="5017.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M584,5052.0 L584,5056.0" stroke="#475569" stroke-width="1" />
+<path d="M579,5056.0 L589,5056.0 L584,5064.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="4143.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="4143.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,4178.0 L302,4182.0" stroke="#475569" stroke-width="1" />
+<path d="M297,4182.0 L307,4182.0 L302,4190.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="5225.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="5225.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M584,5260.0 L584,5264.0" stroke="#475569" stroke-width="1" />
+<path d="M579,5264.0 L589,5264.0 L584,5272.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="4655.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="4655.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,4690.0 L302,4694.0" stroke="#475569" stroke-width="1" />
+<path d="M297,4694.0 L307,4694.0 L302,4702.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="4865.0" rx="7" ry="45.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="4865.0" rx="7" ry="45.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,4910.0 L302,4914.0" stroke="#475569" stroke-width="1" />
+<path d="M297,4914.0 L307,4914.0 L302,4922.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="17141.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="17141.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M584,17154.0 L584,17158.0" stroke="#475569" stroke-width="1" />
+<path d="M579,17158.0 L589,17158.0 L584,17166.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="5302.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="5302.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M584,5326.0 L584,5330.0" stroke="#475569" stroke-width="1" />
+<path d="M579,5330.0 L589,5330.0 L584,5338.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="5644.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,5668.0 L302,5672.0" stroke="#475569" stroke-width="1" />
 <path d="M297,5672.0 L307,5672.0 L302,5680.0 Z" fill="white" stroke="#475569" stroke-width="1" />
@@ -4173,6 +4414,14 @@
 <path d="M297,9930.0 L307,9930.0 L302,9938.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <path d="M584,9926.0 L584,9930.0" stroke="#475569" stroke-width="1" />
 <path d="M579,9930.0 L589,9930.0 L584,9938.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="16049.0" rx="7" ry="51.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="16049.0" rx="7" ry="51.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M584,16100.0 L584,16104.0" stroke="#475569" stroke-width="1" />
+<path d="M579,16104.0 L589,16104.0 L584,16112.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="10051.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="10051.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,10064.0 L302,10068.0" stroke="#475569" stroke-width="1" />
+<path d="M297,10068.0 L307,10068.0 L302,10076.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="10118.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="10118.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,10142.0 L302,10146.0" stroke="#475569" stroke-width="1" />
@@ -4292,10 +4541,28 @@
 <path d="M297,14054.0 L307,14054.0 L302,14062.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <path d="M584,14050.0 L584,14054.0" stroke="#475569" stroke-width="1" />
 <path d="M579,14054.0 L589,14054.0 L584,14062.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="15083.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="15083.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,15118.0 L302,15122.0" stroke="#475569" stroke-width="1" />
+<path d="M297,15122.0 L307,15122.0 L302,15130.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="16939.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="16939.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M584,16974.0 L584,16978.0" stroke="#475569" stroke-width="1" />
+<path d="M579,16978.0 L589,16978.0 L584,16986.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="15208.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="15208.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,15232.0 L302,15236.0" stroke="#475569" stroke-width="1" />
+<path d="M297,15236.0 L307,15236.0 L302,15244.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="14683.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="14683.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,14718.0 L302,14722.0" stroke="#475569" stroke-width="1" />
 <path d="M297,14722.0 L307,14722.0 L302,14730.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="14761.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="14761.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,14774.0 L302,14778.0" stroke="#475569" stroke-width="1" />
+<path d="M297,14778.0 L307,14778.0 L302,14786.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<path d="M584,14774.0 L584,14778.0" stroke="#475569" stroke-width="1" />
+<path d="M579,14778.0 L589,14778.0 L584,14786.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="14883.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="14883.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,14918.0 L302,14922.0" stroke="#475569" stroke-width="1" />
@@ -4304,6 +4571,12 @@
 <ellipse cx="584" cy="14983.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,15018.0 L302,15022.0" stroke="#475569" stroke-width="1" />
 <path d="M297,15022.0 L307,15022.0 L302,15030.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="14805.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="14805.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M302,14818.0 L302,14822.0" stroke="#475569" stroke-width="1" />
+<path d="M297,14822.0 L307,14822.0 L302,14830.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<path d="M584,14818.0 L584,14822.0" stroke="#475569" stroke-width="1" />
+<path d="M579,14822.0 L589,14822.0 L584,14830.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="15579.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="15579.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,15614.0 L302,15618.0" stroke="#475569" stroke-width="1" />
@@ -4316,196 +4589,16 @@
 <ellipse cx="584" cy="15479.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,15514.0 L302,15518.0" stroke="#475569" stroke-width="1" />
 <path d="M297,15518.0 L307,15518.0 L302,15526.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="14805.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="14805.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,14818.0 L302,14822.0" stroke="#475569" stroke-width="1" />
-<path d="M297,14822.0 L307,14822.0 L302,14830.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,14818.0 L584,14822.0" stroke="#475569" stroke-width="1" />
-<path d="M579,14822.0 L589,14822.0 L584,14830.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="14761.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="14761.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,14774.0 L302,14778.0" stroke="#475569" stroke-width="1" />
-<path d="M297,14778.0 L307,14778.0 L302,14786.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,14774.0 L584,14778.0" stroke="#475569" stroke-width="1" />
-<path d="M579,14778.0 L589,14778.0 L584,14786.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="15208.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="15208.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,15232.0 L302,15236.0" stroke="#475569" stroke-width="1" />
-<path d="M297,15236.0 L307,15236.0 L302,15244.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="3779.0" rx="7" ry="45.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="3779.0" rx="7" ry="45.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,3824.0 L302,3828.0" stroke="#475569" stroke-width="1" />
-<path d="M297,3828.0 L307,3828.0 L302,3836.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="17135.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="17135.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,17148.0 L584,17152.0" stroke="#475569" stroke-width="1" />
-<path d="M579,17152.0 L589,17152.0 L584,17160.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="5094.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="5094.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,5118.0 L584,5122.0" stroke="#475569" stroke-width="1" />
-<path d="M579,5122.0 L589,5122.0 L584,5130.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="4655.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="4655.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,4690.0 L302,4694.0" stroke="#475569" stroke-width="1" />
-<path d="M297,4694.0 L307,4694.0 L302,4702.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="4865.0" rx="7" ry="45.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="4865.0" rx="7" ry="45.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,4910.0 L302,4914.0" stroke="#475569" stroke-width="1" />
-<path d="M297,4914.0 L307,4914.0 L302,4922.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="16803.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="16803.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,16816.0 L584,16820.0" stroke="#475569" stroke-width="1" />
-<path d="M579,16820.0 L589,16820.0 L584,16828.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="5302.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="5302.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,5326.0 L584,5330.0" stroke="#475569" stroke-width="1" />
-<path d="M579,5330.0 L589,5330.0 L584,5338.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="15083.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="15083.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,15118.0 L302,15122.0" stroke="#475569" stroke-width="1" />
-<path d="M297,15122.0 L307,15122.0 L302,15130.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="16601.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="16601.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,16636.0 L584,16640.0" stroke="#475569" stroke-width="1" />
-<path d="M579,16640.0 L589,16640.0 L584,16648.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="16405.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="16405.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="16486.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="16486.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="16243.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="16243.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="16049.0" rx="7" ry="51.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="16049.0" rx="7" ry="51.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,16100.0 L584,16104.0" stroke="#475569" stroke-width="1" />
-<path d="M579,16104.0 L589,16104.0 L584,16112.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="10051.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="10051.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,10064.0 L302,10068.0" stroke="#475569" stroke-width="1" />
-<path d="M297,10068.0 L307,10068.0 L302,10076.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="3680.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="3680.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,3704.0 L302,3708.0" stroke="#475569" stroke-width="1" />
-<path d="M297,3708.0 L307,3708.0 L302,3716.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="12214.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="12214.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,12238.0 L584,12242.0" stroke="#475569" stroke-width="1" />
-<path d="M579,12242.0 L589,12242.0 L584,12250.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="3602.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="3602.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,3626.0 L302,3630.0" stroke="#475569" stroke-width="1" />
-<path d="M297,3630.0 L307,3630.0 L302,3638.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="11248.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="11248.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,11272.0 L584,11276.0" stroke="#475569" stroke-width="1" />
-<path d="M579,11276.0 L589,11276.0 L584,11284.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="3337.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="3337.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,3372.0 L302,3376.0" stroke="#475569" stroke-width="1" />
-<path d="M297,3376.0 L307,3376.0 L302,3384.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="10883.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="10883.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,10918.0 L584,10922.0" stroke="#475569" stroke-width="1" />
-<path d="M579,10922.0 L589,10922.0 L584,10930.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="3260.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="3260.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,3284.0 L302,3288.0" stroke="#475569" stroke-width="1" />
-<path d="M297,3288.0 L307,3288.0 L302,3296.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="10960.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="10960.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,10984.0 L584,10988.0" stroke="#475569" stroke-width="1" />
-<path d="M579,10988.0 L589,10988.0 L584,10996.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="3932.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="3932.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,3956.0 L302,3960.0" stroke="#475569" stroke-width="1" />
-<path d="M297,3960.0 L307,3960.0 L302,3968.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="9614.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="9614.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,9638.0 L584,9642.0" stroke="#475569" stroke-width="1" />
-<path d="M579,9642.0 L589,9642.0 L584,9650.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="2052.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="2052.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,2076.0 L302,2080.0" stroke="#475569" stroke-width="1" />
-<path d="M297,2080.0 L307,2080.0 L302,2088.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,2076.0 L584,2080.0" stroke="#111111" stroke-width="1" />
-<path d="M578,2080.0 L590,2080.0" stroke="#111111" stroke-width="1.5" />
-<path d="M580,2084.0 L588,2084.0" stroke="#111111" stroke-width="1.5" />
-<path d="M582,2088.0 L586,2088.0" stroke="#111111" stroke-width="1.5" />
-<ellipse cx="302" cy="8288.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="8288.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,8312.0 L302,8316.0" stroke="#111111" stroke-width="1" />
-<path d="M296,8316.0 L308,8316.0" stroke="#111111" stroke-width="1.5" />
-<path d="M298,8320.0 L306,8320.0" stroke="#111111" stroke-width="1.5" />
-<path d="M300,8324.0 L304,8324.0" stroke="#111111" stroke-width="1.5" />
-<path d="M584,8312.0 L584,8316.0" stroke="#475569" stroke-width="1" />
-<path d="M579,8316.0 L589,8316.0 L584,8324.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="1232.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="1232.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,1256.0 L302,1260.0" stroke="#475569" stroke-width="1" />
-<path d="M297,1260.0 L307,1260.0 L302,1268.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,1256.0 L584,1260.0" stroke="#111111" stroke-width="1" />
-<path d="M578,1260.0 L590,1260.0" stroke="#111111" stroke-width="1.5" />
-<path d="M580,1264.0 L588,1264.0" stroke="#111111" stroke-width="1.5" />
-<path d="M582,1268.0 L586,1268.0" stroke="#111111" stroke-width="1.5" />
-<ellipse cx="302" cy="8068.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="8068.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,8092.0 L302,8096.0" stroke="#111111" stroke-width="1" />
-<path d="M296,8096.0 L308,8096.0" stroke="#111111" stroke-width="1.5" />
-<path d="M298,8100.0 L306,8100.0" stroke="#111111" stroke-width="1.5" />
-<path d="M300,8104.0 L304,8104.0" stroke="#111111" stroke-width="1.5" />
-<path d="M584,8092.0 L584,8096.0" stroke="#475569" stroke-width="1" />
-<path d="M579,8096.0 L589,8096.0 L584,8104.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="3513.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="3513.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,3548.0 L302,3552.0" stroke="#475569" stroke-width="1" />
-<path d="M297,3552.0 L307,3552.0 L302,3560.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="5567.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="5567.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,5602.0 L584,5606.0" stroke="#475569" stroke-width="1" />
-<path d="M579,5606.0 L589,5606.0 L584,5614.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="3436.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="3436.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,3460.0 L302,3464.0" stroke="#475569" stroke-width="1" />
-<path d="M297,3464.0 L307,3464.0 L302,3472.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="5490.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="5490.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,5514.0 L584,5518.0" stroke="#475569" stroke-width="1" />
-<path d="M579,5518.0 L589,5518.0 L584,5526.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="4143.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="4143.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,4178.0 L302,4182.0" stroke="#475569" stroke-width="1" />
-<path d="M297,4182.0 L307,4182.0 L302,4190.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="5225.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="5225.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,5260.0 L584,5264.0" stroke="#475569" stroke-width="1" />
-<path d="M579,5264.0 L589,5264.0 L584,5272.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="4043.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="4043.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,4078.0 L302,4082.0" stroke="#475569" stroke-width="1" />
-<path d="M297,4082.0 L307,4082.0 L302,4090.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="5017.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="5017.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,5052.0 L584,5056.0" stroke="#475569" stroke-width="1" />
-<path d="M579,5056.0 L589,5056.0 L584,5064.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="3107.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="3107.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,3142.0 L584,3146.0" stroke="#475569" stroke-width="1" />
-<path d="M579,3146.0 L589,3146.0 L584,3154.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="4755.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="4755.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,4790.0 L302,4794.0" stroke="#475569" stroke-width="1" />
-<path d="M297,4794.0 L307,4794.0 L302,4802.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="381.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="381.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,416.0 L302,420.0" stroke="#475569" stroke-width="1" />
-<path d="M297,420.0 L307,420.0 L302,428.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,416.0 L584,420.0" stroke="#475569" stroke-width="1" />
-<path d="M579,420.0 L589,420.0 L584,428.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<ellipse cx="302" cy="623.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<ellipse cx="584" cy="623.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,658.0 L302,662.0" stroke="#475569" stroke-width="1" />
-<path d="M297,662.0 L307,662.0 L302,670.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,658.0 L584,662.0" stroke="#475569" stroke-width="1" />
-<path d="M579,662.0 L589,662.0 L584,670.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="16643.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="16643.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="16415.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="16415.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="16791.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="16791.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="16506.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="16506.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,1829.0 L302,1851.0" stroke="#9ca3af" stroke-width="1.5" />
 <path d="M284,2235.0 L284,2263.0" stroke="#9ca3af" stroke-width="1.5" />
 <path d="M302,2505.0 L302,2527.0" stroke="#9ca3af" stroke-width="1.5" />
@@ -4530,7 +4623,7 @@
 <circle cx="284" cy="9969.0" r="3.5" fill="#334155" stroke="#334155" />
 <circle cx="284" cy="12915.0" r="3.5" fill="#334155" stroke="#334155" />
 <circle cx="284" cy="13501.0" r="3.5" fill="#334155" stroke="#334155" />
-<circle cx="284" cy="16721.0" r="3.5" fill="#334155" stroke="#334155" />
+<circle cx="284" cy="17059.0" r="3.5" fill="#334155" stroke="#334155" />
 <text x="606" y="133" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GDU 460 PFD · P4601</text>
 <rect x="602" y="136" width="209" height="44" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
 <path d="M628,136 L628,180" stroke="#93c5fd" stroke-width="0.5" />
@@ -5400,12 +5493,12 @@
 <a href="#pr-GAD_27_-_Flap___Light_Controller-J271-35" target="_self" class="pin-link">
 <rect x="602" y="7546" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<text x="606" y="7615" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Left 7 Stars</text>
+<text x="606" y="7615" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Right 7 Stars</text>
 <rect x="602" y="7618" width="209" height="22" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
 <path d="M628,7618 L628,7640" stroke="#93c5fd" stroke-width="0.5" />
 <text x="615.0" y="7633.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">TXI</text>
 <text x="633" y="7633.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Taxi</text>
-<text x="606" y="7649" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Right 7 Stars</text>
+<text x="606" y="7649" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Left 7 Stars</text>
 <rect x="602" y="7652" width="209" height="22" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
 <path d="M628,7652 L628,7674" stroke="#93c5fd" stroke-width="0.5" />
 <text x="615.0" y="7667.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">TXI</text>
@@ -6363,213 +6456,308 @@
 <rect x="602" y="16076" width="209" height="22" fill="none" pointer-events="all" />
 </a>
 <text x="606" y="16207" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Left Position &amp; Strobe</text>
-<rect x="602" y="16210" width="209" height="66" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
-<path d="M628,16210 L628,16276" stroke="#93c5fd" stroke-width="0.5" />
+<rect x="602" y="16210" width="209" height="88" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+<path d="M628,16210 L628,16298" stroke="#93c5fd" stroke-width="0.5" />
 <text x="615.0" y="16225.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S-</text>
 <text x="633" y="16225.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Neg</text>
+<a href="#pr-Left_Position___Strobe-S-" target="_self" class="pin-link">
+<rect x="602" y="16210" width="209" height="22" fill="none" pointer-events="all" />
+</a>
 <path d="M602,16232 L811,16232" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="615.0" y="16247.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">P+</text>
 <text x="633" y="16247.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Position Pos</text>
+<a href="#pr-Left_Position___Strobe-P_" target="_self" class="pin-link">
+<rect x="602" y="16232" width="209" height="22" fill="none" pointer-events="all" />
+</a>
 <path d="M602,16254 L811,16254" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="615.0" y="16269.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S+</text>
 <text x="633" y="16269.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Pos</text>
-<text x="606" y="16299" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Nav &amp; Strobe Lights</text>
-<rect x="602" y="16302" width="209" height="44" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
-<path d="M628,16302 L628,16346" stroke="#93c5fd" stroke-width="0.5" />
-<text x="615.0" y="16317.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">3</text>
-<text x="633" y="16317.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">NO2</text>
+<a href="#pr-Left_Position___Strobe-S_" target="_self" class="pin-link">
+<rect x="602" y="16254" width="209" height="22" fill="none" pointer-events="all" />
+</a>
+<path d="M602,16276 L811,16276" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="16291.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">P-</text>
+<text x="633" y="16291.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Position Neg</text>
+<a href="#pr-Left_Position___Strobe-P-" target="_self" class="pin-link">
+<rect x="602" y="16276" width="209" height="22" fill="none" pointer-events="all" />
+</a>
+<path d="M584,16278 L584,16287.0" stroke="#475569" stroke-width="1.5" />
+<path d="M584,16287.0 L602,16287.0" stroke="#475569" stroke-width="1.5" />
+<text x="606" y="16309" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Nav &amp; Strobe Lights</text>
+<rect x="602" y="16312" width="209" height="44" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+<path d="M628,16312 L628,16356" stroke="#93c5fd" stroke-width="0.5" />
+<text x="615.0" y="16327.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">3</text>
+<text x="633" y="16327.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">NO2</text>
 <a href="#pr-Nav___Strobe_Lights-3" target="_self" class="pin-link">
-<rect x="602" y="16302" width="209" height="22" fill="none" pointer-events="all" />
+<rect x="602" y="16312" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<path d="M602,16324 L811,16324" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="16339.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
-<text x="633" y="16339.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">NO1</text>
+<path d="M602,16334 L811,16334" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="16349.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
+<text x="633" y="16349.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">NO1</text>
 <a href="#pr-Nav___Strobe_Lights-6" target="_self" class="pin-link">
-<rect x="602" y="16324" width="209" height="22" fill="none" pointer-events="all" />
+<rect x="602" y="16334" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<text x="606" y="16369" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Right Position &amp; Strobe</text>
-<rect x="602" y="16372" width="209" height="66" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
-<path d="M628,16372 L628,16438" stroke="#93c5fd" stroke-width="0.5" />
-<text x="615.0" y="16387.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S-</text>
-<text x="633" y="16387.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Neg</text>
-<path d="M602,16394 L811,16394" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="16409.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">P+</text>
-<text x="633" y="16409.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Position Pos</text>
-<path d="M602,16416 L811,16416" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="16431.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S+</text>
-<text x="633" y="16431.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Pos</text>
-<text x="606" y="16461" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Tail Light</text>
-<rect x="602" y="16464" width="209" height="44" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
-<path d="M628,16464 L628,16508" stroke="#93c5fd" stroke-width="0.5" />
-<text x="615.0" y="16479.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">1</text>
-<text x="633" y="16479.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Power</text>
-<path d="M602,16486 L811,16486" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="16501.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
-<text x="633" y="16501.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Ground</text>
-<text x="606" y="16565" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GEA24 - Engine Indication · J243</text>
-<rect x="602" y="16568" width="209" height="66" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
-<path d="M628,16568 L628,16634" stroke="#93c5fd" stroke-width="0.5" />
-<text x="615.0" y="16583.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">26</text>
-<text x="633" y="16583.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">GP 5V Out</text>
-<a href="#pr-GEA24_-_Engine_Indication-J243-26" target="_self" class="pin-link">
-<rect x="602" y="16568" width="209" height="22" fill="none" pointer-events="all" />
+<text x="606" y="16379" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Right Position &amp; Strobe</text>
+<rect x="602" y="16382" width="209" height="88" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+<path d="M628,16382 L628,16470" stroke="#93c5fd" stroke-width="0.5" />
+<text x="615.0" y="16397.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S-</text>
+<text x="633" y="16397.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Neg</text>
+<a href="#pr-Right_Position___Strobe-S-" target="_self" class="pin-link">
+<rect x="602" y="16382" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<path d="M602,16590 L811,16590" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="16605.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">31</text>
-<text x="633" y="16605.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">GP6 High</text>
-<a href="#pr-GEA24_-_Engine_Indication-J243-31" target="_self" class="pin-link">
-<rect x="602" y="16590" width="209" height="22" fill="none" pointer-events="all" />
+<path d="M602,16404 L811,16404" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="16419.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">P+</text>
+<text x="633" y="16419.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Position Pos</text>
+<a href="#pr-Right_Position___Strobe-P_" target="_self" class="pin-link">
+<rect x="602" y="16404" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<path d="M602,16612 L811,16612" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="16627.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">27</text>
-<text x="633" y="16627.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">GP Ground 1</text>
-<a href="#pr-GEA24_-_Engine_Indication-J243-27" target="_self" class="pin-link">
-<rect x="602" y="16612" width="209" height="22" fill="none" pointer-events="all" />
+<path d="M602,16426 L811,16426" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="16441.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S+</text>
+<text x="633" y="16441.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Pos</text>
+<a href="#pr-Right_Position___Strobe-S_" target="_self" class="pin-link">
+<rect x="602" y="16426" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<text x="606" y="16707" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GSA 28 - Pitch Servo · J281</text>
-<rect x="602" y="16710" width="209" height="22" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
-<path d="M628,16710 L628,16732" stroke="#93c5fd" stroke-width="0.5" />
-<text x="615.0" y="16725.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">15</text>
-<text x="633" y="16725.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Disconnect</text>
-<a href="#pr-GSA_28_-_Pitch_Servo-J281-15" target="_self" class="pin-link">
-<rect x="602" y="16710" width="209" height="22" fill="none" pointer-events="all" />
+<path d="M602,16448 L811,16448" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="16463.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">P-</text>
+<text x="633" y="16463.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Position Neg</text>
+<a href="#pr-Right_Position___Strobe-P-" target="_self" class="pin-link">
+<rect x="602" y="16448" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<text x="606" y="16741" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Pilot Stick</text>
-<rect x="602" y="16744" width="209" height="22" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
-<path d="M628,16744 L628,16766" stroke="#93c5fd" stroke-width="0.5" />
-<text x="615.0" y="16759.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">1</text>
-<text x="633" y="16759.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">AP Disconnect</text>
-<a href="#pr-Pilot_Stick-1" target="_self" class="pin-link">
-<rect x="602" y="16744" width="209" height="22" fill="none" pointer-events="all" />
+<path d="M584,16450 L584,16459.0" stroke="#475569" stroke-width="1.5" />
+<path d="M584,16459.0 L602,16459.0" stroke="#475569" stroke-width="1.5" />
+<text x="606" y="16481" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Tail Light</text>
+<rect x="602" y="16484" width="209" height="44" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+<path d="M628,16484 L628,16528" stroke="#93c5fd" stroke-width="0.5" />
+<text x="615.0" y="16499.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">1</text>
+<text x="633" y="16499.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Power</text>
+<path d="M602,16506 L811,16506" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="16521.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
+<text x="633" y="16521.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Ground</text>
+<text x="606" y="16607" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">FlyLeds Essentials Controller</text>
+<rect x="602" y="16610" width="209" height="88" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+<path d="M628,16610 L628,16698" stroke="#93c5fd" stroke-width="0.5" />
+<text x="615.0" y="16625.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">3</text>
+<text x="633" y="16625.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Left Strobe -ve</text>
+<a href="#pr-FlyLeds_Essentials_Controller-3" target="_self" class="pin-link">
+<rect x="602" y="16610" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<text x="606" y="16789" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GMA 245 - Audio Panel · J2402</text>
-<rect x="602" y="16792" width="209" height="88" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
-<path d="M628,16792 L628,16880" stroke="#93c5fd" stroke-width="0.5" />
-<text x="615.0" y="16807.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">33</text>
-<text x="633" y="16807.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Copilot Mic Key In</text>
-<a href="#pr-GMA_245_-_Audio_Panel-J2402-33" target="_self" class="pin-link">
-<rect x="602" y="16792" width="209" height="22" fill="none" pointer-events="all" />
+<path d="M602,16632 L811,16632" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="16647.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">4</text>
+<text x="633" y="16647.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Left Position +ve</text>
+<a href="#pr-FlyLeds_Essentials_Controller-4" target="_self" class="pin-link">
+<rect x="602" y="16632" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<path d="M602,16814 L811,16814" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="16851.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">20</text>
-<text x="633" y="16851.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Com Swap</text>
-<a href="#pr-GMA_245_-_Audio_Panel-J2402-20" target="_self" class="pin-link">
-<rect x="602" y="16836" width="209" height="22" fill="none" pointer-events="all" />
+<path d="M602,16654 L811,16654" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="16669.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">11</text>
+<text x="633" y="16669.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Left Strobe +ve</text>
+<a href="#pr-FlyLeds_Essentials_Controller-11" target="_self" class="pin-link">
+<rect x="602" y="16654" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<path d="M602,16858 L811,16858" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="16873.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">22</text>
-<text x="633" y="16873.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Play Key</text>
-<a href="#pr-GMA_245_-_Audio_Panel-J2402-22" target="_self" class="pin-link">
-<rect x="602" y="16858" width="209" height="22" fill="none" pointer-events="all" />
+<path d="M602,16676 L811,16676" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="16691.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
+<text x="633" y="16691.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Left Shield (Position -ve)</text>
+<a href="#pr-FlyLeds_Essentials_Controller-2" target="_self" class="pin-link">
+<rect x="602" y="16676" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<text x="606" y="16903" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GAD 27 - Flap &amp; Light Controller · J271</text>
-<rect x="602" y="16906" width="209" height="110" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
-<path d="M628,16906 L628,17016" stroke="#93c5fd" stroke-width="0.5" />
+<path d="M584,16678 L584,16687.0" stroke="#475569" stroke-width="1.5" />
+<path d="M584,16687.0 L602,16687.0" stroke="#475569" stroke-width="1.5" />
+<text x="606" y="16755" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">FlyLeds Essentials Controller</text>
+<rect x="602" y="16758" width="209" height="88" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+<path d="M628,16758 L628,16846" stroke="#93c5fd" stroke-width="0.5" />
+<text x="615.0" y="16773.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
+<text x="633" y="16773.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Right Strobe -ve</text>
+<a href="#pr-FlyLeds_Essentials_Controller-6" target="_self" class="pin-link">
+<rect x="602" y="16758" width="209" height="22" fill="none" pointer-events="all" />
+</a>
+<path d="M602,16780 L811,16780" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="16795.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">13</text>
+<text x="633" y="16795.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Right Position +ve</text>
+<a href="#pr-FlyLeds_Essentials_Controller-13" target="_self" class="pin-link">
+<rect x="602" y="16780" width="209" height="22" fill="none" pointer-events="all" />
+</a>
+<path d="M602,16802 L811,16802" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="16817.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">12</text>
+<text x="633" y="16817.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Right Strobe +ve</text>
+<a href="#pr-FlyLeds_Essentials_Controller-12" target="_self" class="pin-link">
+<rect x="602" y="16802" width="209" height="22" fill="none" pointer-events="all" />
+</a>
+<path d="M602,16824 L811,16824" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="16839.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">14</text>
+<text x="633" y="16839.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Right Shield (Position -ve)</text>
+<a href="#pr-FlyLeds_Essentials_Controller-14" target="_self" class="pin-link">
+<rect x="602" y="16824" width="209" height="22" fill="none" pointer-events="all" />
+</a>
+<path d="M584,16826 L584,16835.0" stroke="#475569" stroke-width="1.5" />
+<path d="M584,16835.0 L602,16835.0" stroke="#475569" stroke-width="1.5" />
+<text x="606" y="16903" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GEA24 - Engine Indication · J243</text>
+<rect x="602" y="16906" width="209" height="66" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+<path d="M628,16906 L628,16972" stroke="#93c5fd" stroke-width="0.5" />
 <text x="615.0" y="16921.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">26</text>
-<text x="633" y="16921.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Pitch Trim Up</text>
-<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-26" target="_self" class="pin-link">
+<text x="633" y="16921.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">GP 5V Out</text>
+<a href="#pr-GEA24_-_Engine_Indication-J243-26" target="_self" class="pin-link">
 <rect x="602" y="16906" width="209" height="22" fill="none" pointer-events="all" />
 </a>
 <path d="M602,16928 L811,16928" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="16943.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">27</text>
-<text x="633" y="16943.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Pitch Trim Down</text>
-<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-27" target="_self" class="pin-link">
+<text x="615.0" y="16943.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">31</text>
+<text x="633" y="16943.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">GP6 High</text>
+<a href="#pr-GEA24_-_Engine_Indication-J243-31" target="_self" class="pin-link">
 <rect x="602" y="16928" width="209" height="22" fill="none" pointer-events="all" />
 </a>
 <path d="M602,16950 L811,16950" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="16965.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">30</text>
-<text x="633" y="16965.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Roll Trim Left</text>
-<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-30" target="_self" class="pin-link">
+<text x="615.0" y="16965.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">27</text>
+<text x="633" y="16965.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">GP Ground 1</text>
+<a href="#pr-GEA24_-_Engine_Indication-J243-27" target="_self" class="pin-link">
 <rect x="602" y="16950" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<path d="M602,16972 L811,16972" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="16987.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">31</text>
-<text x="633" y="16987.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Roll Trim Right</text>
-<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-31" target="_self" class="pin-link">
-<rect x="602" y="16972" width="209" height="22" fill="none" pointer-events="all" />
+<text x="606" y="17045" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GSA 28 - Pitch Servo · J281</text>
+<rect x="602" y="17048" width="209" height="22" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+<path d="M628,17048 L628,17070" stroke="#93c5fd" stroke-width="0.5" />
+<text x="615.0" y="17063.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">15</text>
+<text x="633" y="17063.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Disconnect</text>
+<a href="#pr-GSA_28_-_Pitch_Servo-J281-15" target="_self" class="pin-link">
+<rect x="602" y="17048" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<path d="M602,16994 L811,16994" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="17009.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">15</text>
-<text x="633" y="17009.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Discrete In 7</text>
-<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-15" target="_self" class="pin-link">
-<rect x="602" y="16994" width="209" height="22" fill="none" pointer-events="all" />
+<text x="606" y="17079" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Pilot Stick</text>
+<rect x="602" y="17082" width="209" height="22" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+<path d="M628,17082 L628,17104" stroke="#93c5fd" stroke-width="0.5" />
+<text x="615.0" y="17097.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">1</text>
+<text x="633" y="17097.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">AP Disconnect</text>
+<a href="#pr-Pilot_Stick-1" target="_self" class="pin-link">
+<rect x="602" y="17082" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<text x="606" y="17073" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Copilot Stick</text>
-<rect x="602" y="17076" width="209" height="22" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
-<path d="M628,17076 L628,17098" stroke="#93c5fd" stroke-width="0.5" />
-<text x="615.0" y="17091.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">1</text>
-<text x="633" y="17091.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">AP Disconnect</text>
-<a href="#pr-Copilot_Stick-1" target="_self" class="pin-link">
-<rect x="602" y="17076" width="209" height="22" fill="none" pointer-events="all" />
+<text x="606" y="17127" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GMA 245 - Audio Panel · J2402</text>
+<rect x="602" y="17130" width="209" height="88" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+<path d="M628,17130 L628,17218" stroke="#93c5fd" stroke-width="0.5" />
+<text x="615.0" y="17145.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">33</text>
+<text x="633" y="17145.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Copilot Mic Key In</text>
+<a href="#pr-GMA_245_-_Audio_Panel-J2402-33" target="_self" class="pin-link">
+<rect x="602" y="17130" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<text x="606" y="17121" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GMA 245 - Audio Panel · P2401</text>
-<rect x="602" y="17124" width="209" height="22" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
-<path d="M628,17124 L628,17146" stroke="#93c5fd" stroke-width="0.5" />
-<text x="615.0" y="17139.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">34</text>
-<text x="633" y="17139.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Pilot Mic Key In</text>
-<a href="#pr-GMA_245_-_Audio_Panel-P2401-34" target="_self" class="pin-link">
-<rect x="602" y="17124" width="209" height="22" fill="none" pointer-events="all" />
-</a>
-<text x="606" y="17165" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GMA 245 - Audio Panel · J2402</text>
-<rect x="602" y="17168" width="209" height="44" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
-<path d="M628,17168 L628,17212" stroke="#93c5fd" stroke-width="0.5" />
-<text x="615.0" y="17183.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">20</text>
-<text x="633" y="17183.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Com Swap</text>
+<path d="M602,17152 L811,17152" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="17189.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">20</text>
+<text x="633" y="17189.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Com Swap</text>
 <a href="#pr-GMA_245_-_Audio_Panel-J2402-20" target="_self" class="pin-link">
-<rect x="602" y="17168" width="209" height="22" fill="none" pointer-events="all" />
+<rect x="602" y="17174" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<path d="M602,17190 L811,17190" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="17205.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">22</text>
-<text x="633" y="17205.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Play Key</text>
+<path d="M602,17196 L811,17196" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="17211.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">22</text>
+<text x="633" y="17211.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Play Key</text>
 <a href="#pr-GMA_245_-_Audio_Panel-J2402-22" target="_self" class="pin-link">
-<rect x="602" y="17190" width="209" height="22" fill="none" pointer-events="all" />
+<rect x="602" y="17196" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<text x="606" y="17235" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GAD 27 - Flap &amp; Light Controller · J271</text>
-<rect x="602" y="17238" width="209" height="110" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
-<path d="M628,17238 L628,17348" stroke="#93c5fd" stroke-width="0.5" />
-<text x="615.0" y="17253.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">24</text>
-<text x="633" y="17253.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Pitch Trim Up</text>
-<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-24" target="_self" class="pin-link">
-<rect x="602" y="17238" width="209" height="22" fill="none" pointer-events="all" />
+<text x="606" y="17241" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GAD 27 - Flap &amp; Light Controller · J271</text>
+<rect x="602" y="17244" width="209" height="110" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+<path d="M628,17244 L628,17354" stroke="#93c5fd" stroke-width="0.5" />
+<text x="615.0" y="17259.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">26</text>
+<text x="633" y="17259.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Pitch Trim Up</text>
+<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-26" target="_self" class="pin-link">
+<rect x="602" y="17244" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<path d="M602,17260 L811,17260" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="17275.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">25</text>
-<text x="633" y="17275.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Pitch Trim Down</text>
-<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-25" target="_self" class="pin-link">
-<rect x="602" y="17260" width="209" height="22" fill="none" pointer-events="all" />
+<path d="M602,17266 L811,17266" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="17281.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">27</text>
+<text x="633" y="17281.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Pitch Trim Down</text>
+<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-27" target="_self" class="pin-link">
+<rect x="602" y="17266" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<path d="M602,17282 L811,17282" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="17297.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">28</text>
-<text x="633" y="17297.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Roll Trim Left</text>
-<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-28" target="_self" class="pin-link">
-<rect x="602" y="17282" width="209" height="22" fill="none" pointer-events="all" />
+<path d="M602,17288 L811,17288" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="17303.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">30</text>
+<text x="633" y="17303.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Roll Trim Left</text>
+<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-30" target="_self" class="pin-link">
+<rect x="602" y="17288" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<path d="M602,17304 L811,17304" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="17319.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">29</text>
-<text x="633" y="17319.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Roll Trim Right</text>
-<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-29" target="_self" class="pin-link">
-<rect x="602" y="17304" width="209" height="22" fill="none" pointer-events="all" />
+<path d="M602,17310 L811,17310" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="17325.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">31</text>
+<text x="633" y="17325.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Roll Trim Right</text>
+<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-31" target="_self" class="pin-link">
+<rect x="602" y="17310" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<path d="M602,17326 L811,17326" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="17341.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">15</text>
-<text x="633" y="17341.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Discrete In 7</text>
+<path d="M602,17332 L811,17332" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="17347.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">15</text>
+<text x="633" y="17347.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Discrete In 7</text>
 <a href="#pr-GAD_27_-_Flap___Light_Controller-J271-15" target="_self" class="pin-link">
-<rect x="602" y="17326" width="209" height="22" fill="none" pointer-events="all" />
+<rect x="602" y="17332" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<text x="606" y="17429" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">FlyLeds Essentials Controller</text>
-<rect x="602" y="17432" width="209" height="44" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
-<path d="M628,17432 L628,17476" stroke="#93c5fd" stroke-width="0.5" />
-<text x="615.0" y="17447.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">5</text>
-<text x="633" y="17447.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Position 12V In</text>
+<text x="606" y="17411" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Copilot Stick</text>
+<rect x="602" y="17414" width="209" height="22" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+<path d="M628,17414 L628,17436" stroke="#93c5fd" stroke-width="0.5" />
+<text x="615.0" y="17429.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">1</text>
+<text x="633" y="17429.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">AP Disconnect</text>
+<a href="#pr-Copilot_Stick-1" target="_self" class="pin-link">
+<rect x="602" y="17414" width="209" height="22" fill="none" pointer-events="all" />
+</a>
+<text x="606" y="17459" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GMA 245 - Audio Panel · P2401</text>
+<rect x="602" y="17462" width="209" height="22" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+<path d="M628,17462 L628,17484" stroke="#93c5fd" stroke-width="0.5" />
+<text x="615.0" y="17477.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">34</text>
+<text x="633" y="17477.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Pilot Mic Key In</text>
+<a href="#pr-GMA_245_-_Audio_Panel-P2401-34" target="_self" class="pin-link">
+<rect x="602" y="17462" width="209" height="22" fill="none" pointer-events="all" />
+</a>
+<text x="606" y="17503" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GMA 245 - Audio Panel · J2402</text>
+<rect x="602" y="17506" width="209" height="44" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+<path d="M628,17506 L628,17550" stroke="#93c5fd" stroke-width="0.5" />
+<text x="615.0" y="17521.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">20</text>
+<text x="633" y="17521.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Com Swap</text>
+<a href="#pr-GMA_245_-_Audio_Panel-J2402-20" target="_self" class="pin-link">
+<rect x="602" y="17506" width="209" height="22" fill="none" pointer-events="all" />
+</a>
+<path d="M602,17528 L811,17528" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="17543.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">22</text>
+<text x="633" y="17543.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Play Key</text>
+<a href="#pr-GMA_245_-_Audio_Panel-J2402-22" target="_self" class="pin-link">
+<rect x="602" y="17528" width="209" height="22" fill="none" pointer-events="all" />
+</a>
+<text x="606" y="17573" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GAD 27 - Flap &amp; Light Controller · J271</text>
+<rect x="602" y="17576" width="209" height="110" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+<path d="M628,17576 L628,17686" stroke="#93c5fd" stroke-width="0.5" />
+<text x="615.0" y="17591.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">24</text>
+<text x="633" y="17591.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Pitch Trim Up</text>
+<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-24" target="_self" class="pin-link">
+<rect x="602" y="17576" width="209" height="22" fill="none" pointer-events="all" />
+</a>
+<path d="M602,17598 L811,17598" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="17613.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">25</text>
+<text x="633" y="17613.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Pitch Trim Down</text>
+<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-25" target="_self" class="pin-link">
+<rect x="602" y="17598" width="209" height="22" fill="none" pointer-events="all" />
+</a>
+<path d="M602,17620 L811,17620" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="17635.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">28</text>
+<text x="633" y="17635.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Roll Trim Left</text>
+<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-28" target="_self" class="pin-link">
+<rect x="602" y="17620" width="209" height="22" fill="none" pointer-events="all" />
+</a>
+<path d="M602,17642 L811,17642" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="17657.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">29</text>
+<text x="633" y="17657.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Roll Trim Right</text>
+<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-29" target="_self" class="pin-link">
+<rect x="602" y="17642" width="209" height="22" fill="none" pointer-events="all" />
+</a>
+<path d="M602,17664 L811,17664" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="17679.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">15</text>
+<text x="633" y="17679.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Discrete In 7</text>
+<a href="#pr-GAD_27_-_Flap___Light_Controller-J271-15" target="_self" class="pin-link">
+<rect x="602" y="17664" width="209" height="22" fill="none" pointer-events="all" />
+</a>
+<text x="606" y="17767" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">FlyLeds Essentials Controller</text>
+<rect x="602" y="17770" width="209" height="44" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+<path d="M628,17770 L628,17814" stroke="#93c5fd" stroke-width="0.5" />
+<text x="615.0" y="17785.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">5</text>
+<text x="633" y="17785.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Position 12V In</text>
 <a href="#pr-FlyLeds_Essentials_Controller-5" target="_self" class="pin-link">
-<rect x="602" y="17432" width="209" height="22" fill="none" pointer-events="all" />
+<rect x="602" y="17770" width="209" height="22" fill="none" pointer-events="all" />
 </a>
-<path d="M602,17454 L811,17454" stroke="#bfdbfe" stroke-width="0.5" />
-<text x="615.0" y="17469.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">10</text>
-<text x="633" y="17469.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Strobe 12V In</text>
+<path d="M602,17792 L811,17792" stroke="#bfdbfe" stroke-width="0.5" />
+<text x="615.0" y="17807.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">10</text>
+<text x="633" y="17807.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Strobe 12V In</text>
 <a href="#pr-FlyLeds_Essentials_Controller-10" target="_self" class="pin-link">
-<rect x="602" y="17454" width="209" height="22" fill="none" pointer-events="all" />
+<rect x="602" y="17792" width="209" height="22" fill="none" pointer-events="all" />
 </a>
+<path d="M302,16278 L302,16287.0" stroke="#475569" stroke-width="1.5" />
+<path d="M302,16678 L302,16687.0" stroke="#475569" stroke-width="1.5" />
+<path d="M302,16450 L302,16459.0" stroke="#475569" stroke-width="1.5" />
+<path d="M302,16826 L302,16835.0" stroke="#475569" stroke-width="1.5" />
+<path d="M302,16530 L302,16539.0" stroke="#475569" stroke-width="1.5" />
 <rect x="268.0" y="742" width="18" height="44" rx="2" fill="#f0fdf4" stroke="#166534" stroke-width="1.5" />
 <text x="277" y="766.0" font-size="7" text-anchor="middle" fill="#166534" font-weight="bold" font-family="ui-monospace, monospace" transform="rotate(90, 277, 764.0)">TERM</text>
 <script type="text/ecmascript"><![CDATA[

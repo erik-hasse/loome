@@ -68,7 +68,11 @@ def _shield_ids(class_pin: Pin, inst_pin: Pin | None) -> set[int]:
     ids: set[int] = set()
     if class_pin.shield_group is not None:
         ids.add(id(class_pin.shield_group))
+    if class_pin._drain_for is not None:
+        ids.add(id(class_pin._drain_for))
     use = _effective(class_pin, inst_pin)
+    if use._drain_for is not None:
+        ids.add(id(use._drain_for))
     for seg in use._connections:
         if seg.shield_group is not None:
             ids.add(id(seg.shield_group))
@@ -80,8 +84,13 @@ def _shield_order(class_pin: Pin, inst_pin: Pin | None) -> int:
 
     Returns the canonical wire index (0=W, 1=WB, 2=WO) for this pin so that
     row order always matches wire color on both sides of a cross-connect.
+    Drain pins (``_drain_for`` set) sort after all shielded wires.
     """
     use = _effective(class_pin, inst_pin)
+    # Drain pins sort last within their shield sub-cluster.
+    if use._drain_for is not None or class_pin._drain_for is not None:
+        sg = use._drain_for or class_pin._drain_for
+        return len(sg.segments) if sg is not None else _INF - 1
     # Connection-level shield: position by segment index in sg.segments.
     for seg in use._connections:
         sg = seg.shield_group
@@ -210,12 +219,21 @@ def _shield_group_for_pin(class_pin: Pin, inst_pin: Pin | None):
 
     A pin can be in at most one shield in practice; if multiple, prefer the
     connection-level shield (matches ``_shield_order`` semantics).
+    Drain pins (``_drain_for`` set) are also considered shield members so they
+    sort and group alongside the wires they terminate.
     """
     use = _effective(class_pin, inst_pin)
     for seg in use._connections:
         if seg.shield_group is not None:
             return seg.shield_group
-    return class_pin.shield_group
+    if class_pin.shield_group is not None:
+        return class_pin.shield_group
+    # Drain pin: associated with its shield via _drain_for.
+    if use._drain_for is not None:
+        return use._drain_for
+    if class_pin._drain_for is not None:
+        return class_pin._drain_for
+    return None
 
 
 def _pin_group_key(class_pin: Pin, inst_pin: Pin | None, get_inst_pin) -> tuple:

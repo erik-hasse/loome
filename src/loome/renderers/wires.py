@@ -5,8 +5,8 @@ import re
 import drawsvg as draw
 
 from ..harness import Harness
-from ..layout.engine import PIN_NUM_W, WIRE_AREA_W, PinGroup, PinRowInfo
-from ..model import GroundSymbol, Pin, ShieldGroup, SpliceNode, Terminal, WireSegment
+from ..layout.engine import PIN_NUM_W, PIN_ROW_H, WIRE_AREA_W, PinGroup, PinRowInfo
+from ..model import GroundSymbol, Pin, ShieldDrainTerminal, ShieldGroup, SpliceNode, Terminal, WireSegment
 from .colors import _wire_attrs
 from .primitives import (
     _BULLET_CX,
@@ -29,6 +29,8 @@ from .primitives import (
     _remote_label,
 )
 from .splices import _draw_splice_connection, _draw_splice_fan
+
+_DRAIN_PIN_COLOR = "#475569"  # same as block-drain triangle
 
 
 class _AnchorLink(draw.DrawingParentElement):
@@ -139,6 +141,13 @@ def _draw_connection(
     start_x = wx + start_x_offset
     right_edge = wire_end_x if wire_end_x is not None else (wx + WIRE_AREA_W)
 
+    if isinstance(remote, ShieldDrainTerminal):
+        # Draw only a short horizontal stub from wire start to left shield oval x.
+        # The vertical connection from oval bottom to this row is drawn in svg.py.
+        stub_end = wx + _SHIELD_LEFT_CX + shield_x_offset
+        dwg.append(draw.Line(start_x, cy, stub_end, cy, stroke=_DRAIN_PIN_COLOR, stroke_width=1.5))
+        return
+
     if isinstance(remote, Terminal):
         label_text = _remote_label(remote, class_pin, harness, local_pin=local_pin)
         if isinstance(remote, GroundSymbol) and remote.style == "open":
@@ -222,16 +231,19 @@ def _draw_remote_box(
     harness: Harness,
     remote_box_w: float,
     rendered_pin_ids: set[int] | None = None,
-) -> None:
+    extra_drain_pins: list[Pin] | None = None,
+) -> list[float]:
+    """Draw the remote component box and return the cy of each drain pin row (if any)."""
     rows = group.rows
     if not rows:
-        return
+        return []
 
     wx = rows[0].wire_start_x
     y_top = rows[0].rect.y
     y_bot = rows[-1].rect.y + rows[-1].rect.h
     box_x = wx + _REMOTE_BOX_X
-    box_h = y_bot - y_top
+    drain_rows_h = len(extra_drain_pins) * PIN_ROW_H if extra_drain_pins else 0
+    box_h = y_bot - y_top + drain_rows_h
     box_w = remote_box_w
 
     comp_label = ""
@@ -256,7 +268,7 @@ def _draw_remote_box(
         row_remotes.append(rpin)
 
     if not any(p is not None for p in row_remotes):
-        return
+        return []
 
     header = comp_label
     if conn_name:
@@ -291,7 +303,7 @@ def _draw_remote_box(
             box_x + _REMOTE_BOX_PIN_NUM_W,
             y_top,
             box_x + _REMOTE_BOX_PIN_NUM_W,
-            y_bot,
+            y_bot + drain_rows_h,
             stroke="#93c5fd",
             stroke_width=0.5,
         )
@@ -351,6 +363,62 @@ def _draw_remote_box(
                     stroke_width=0.5,
                 )
             )
+
+    # Drain pin rows at the bottom.
+    drain_cys: list[float] = []
+    if extra_drain_pins:
+        dwg.append(draw.Line(box_x, y_bot, box_x + box_w, y_bot, stroke="#bfdbfe", stroke_width=0.5))
+        for j, dp in enumerate(extra_drain_pins):
+            row_y = y_bot + j * PIN_ROW_H
+            cy_dp = row_y + PIN_ROW_H / 2
+            drain_cys.append(cy_dp)
+            dwg.append(
+                draw.Text(
+                    str(dp.number),
+                    10,
+                    box_x + _REMOTE_BOX_PIN_NUM_W / 2,
+                    cy_dp + 4,
+                    text_anchor="middle",
+                    fill="#64748b",
+                    font_family="ui-monospace, monospace",
+                )
+            )
+            dwg.append(
+                draw.Text(
+                    dp.signal_name,
+                    9,
+                    box_x + _REMOTE_BOX_PIN_NUM_W + 5,
+                    cy_dp + 4,
+                    fill="#1e293b",
+                    font_family="ui-monospace, monospace",
+                )
+            )
+            if rendered_pin_ids is None or id(dp) in rendered_pin_ids:
+                target_id = _pin_row_id(dp)
+                link = _AnchorLink(href=f"#{target_id}", target="_self", **{"class": "pin-link"})
+                link.append(
+                    draw.Rectangle(
+                        box_x,
+                        row_y,
+                        box_w,
+                        PIN_ROW_H,
+                        fill="none",
+                        **{"pointer-events": "all"},
+                    )
+                )
+                dwg.append(link)
+            if j < len(extra_drain_pins) - 1:
+                dwg.append(
+                    draw.Line(
+                        box_x,
+                        row_y + PIN_ROW_H,
+                        box_x + box_w,
+                        row_y + PIN_ROW_H,
+                        stroke="#bfdbfe",
+                        stroke_width=0.5,
+                    )
+                )
+    return drain_cys
 
 
 # ── pin row ────────────────────────────────────────────────────────────────

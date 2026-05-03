@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Literal, Self
 if TYPE_CHECKING:
     from .disconnects import DisconnectPin
 
+# Also accepts a Pin instance — that pin becomes the drain connection point.
 DrainSpec = Literal["block", "ground"] | None
 
 WireColor = Literal[
@@ -79,6 +80,18 @@ class CircuitBreaker(Terminal):
 
     def display_name(self) -> str:
         return f"{self.name} {self.amps}A"
+
+
+@dataclass
+class ShieldDrainTerminal(Terminal):
+    """Internal placeholder terminal on a shield drain pin.
+
+    Created by Shield.__init__ when ``drain`` or ``drain_remote`` is a Pin.
+    Keeps the drain pin visible in the layout without appearing as a normal wire end.
+    """
+
+    def display_name(self) -> str:
+        return ""
 
 
 @dataclass
@@ -194,17 +207,21 @@ class SpliceNode:
 _lgnd_counter = itertools.count()
 
 
-def _resolve_drain(value: "DrainSpec") -> "WireEndpoint | None":
+def _resolve_drain(value) -> "WireEndpoint | None":
     """Normalize a drain specification.
 
     ``"block"``  → new open-triangle GroundSymbol.
     ``"ground"`` → new three-line earth GroundSymbol.
+    Pin         → returned as-is; Shield.__init__ creates the drain connection.
     ``None``     → ``None`` (floating, no drain).
     """
     if value == "block":
         return GroundSymbol(id=f"_lgnd_{next(_lgnd_counter)}", label="GND", style="open")
     if value == "ground":
         return GroundSymbol(id=f"_lgnd_{next(_lgnd_counter)}", label="GND", style="earth")
+    # Pin instance — returned directly; caller handles connection setup.
+    if hasattr(value, "_connections"):
+        return value
     return None
 
 
@@ -224,6 +241,17 @@ class ShieldGroup:
 _active_shield_stack: list[ShieldGroup] = []
 
 
+def _attach_drain_pin(pin: "Pin", sg: "ShieldGroup") -> None:
+    """Connect a drain Pin to a ShieldDrainTerminal so it appears in the layout.
+
+    Also marks the pin with ``_drain_for`` so ordering and rendering can identify it.
+    """
+    sdt = ShieldDrainTerminal(id=f"_sd_{next(_lgnd_counter)}")
+    seg = WireSegment(wire_id="", gauge="", color="", end_a=pin, end_b=sdt)
+    pin._connections.append(seg)
+    pin._drain_for = sg
+
+
 class Shield:
     """Connection-level shield context manager.
 
@@ -239,13 +267,17 @@ class Shield:
 
     def __init__(
         self,
-        drain: "DrainSpec" = None,
-        drain_remote: "DrainSpec" = None,
+        drain=None,
+        drain_remote=None,
         label: str = "",
     ) -> None:
         self._sg = ShieldGroup(
             label=label, pins=[], drain=_resolve_drain(drain), drain_remote=_resolve_drain(drain_remote)
         )
+        if hasattr(drain, "_connections"):
+            _attach_drain_pin(drain, self._sg)
+        if hasattr(drain_remote, "_connections"):
+            _attach_drain_pin(drain_remote, self._sg)
 
     def __enter__(self) -> "Shield":
         _active_shield_stack.append(self._sg)
@@ -296,6 +328,7 @@ class Pin:
     shield_group: "ShieldGroup | None" = field(default=None, repr=False)
     _can_terminated: bool = field(default=False, repr=False)
     disconnect_pins: list["DisconnectPin"] = field(default_factory=list, repr=False)
+    _drain_for: "ShieldGroup | None" = field(default=None, repr=False)
 
     def local_ground(self, label: str = "") -> None:
         sym = GroundSymbol(id=f"lgnd_{id(self)}", label=label, style="open")

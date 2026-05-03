@@ -545,7 +545,10 @@ def _draw_shield_ovals(
     # Drain symbol below each oval that has a drain endpoint.
     # drain → left oval (source/component-proximal side)
     # drain_remote → right oval (remote/cable-exit side)
+    # Pin drains are connected by a red L-line drawn in svg.py — skip the triangle here.
     for cx_off, endpoint in ((left_cx, drain), (_SHIELD_RIGHT_CX, drain_remote)):
+        if isinstance(endpoint, Pin):
+            continue  # rendered separately as a red L-connection to the drain pin row
         dlabel = _drain_label(endpoint)
         if not dlabel:
             continue

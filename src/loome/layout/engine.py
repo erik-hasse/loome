@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from ..harness import Harness
-from ..model import Component, Connector, GroundSymbol, Pin, SpliceNode, WireSegment
+from ..model import Component, Connector, GroundSymbol, Pin, ShieldDrainTerminal, SpliceNode, WireSegment
 from .geometry import Rect
 from .ordering import (
     _shield_ids as _pin_shield_ids,
@@ -160,8 +160,20 @@ def _effective_pin(class_pin: Pin, inst_pin: Pin | None) -> Pin:
 
 
 def _pin_is_connected(class_pin: Pin, inst_pin: Pin | None = None) -> bool:
-    """Return True if this pin has at least one connection at either level."""
-    return bool(_effective_pin(class_pin, inst_pin)._connections)
+    """Return True if this pin has at least one real connection.
+
+    Drain pins (either sg.drain or sg.drain_remote) keep their drain stub as a
+    connection so they render with a wire to the shield oval when their owning
+    component is rendered locally. They also still appear in the OTHER component's
+    remote box as extra rows.
+    """
+    use = _effective_pin(class_pin, inst_pin)
+    sg = use._drain_for
+    if sg is not None and (use is sg.drain or use is sg.drain_remote):
+        return bool(use._connections)
+    return any(
+        not isinstance(seg.end_b if seg.end_a is use else seg.end_a, ShieldDrainTerminal) for seg in use._connections
+    )
 
 
 def _pin_display_rows(class_pin: Pin, inst_pin: Pin | None = None) -> int:

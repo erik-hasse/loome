@@ -6,12 +6,14 @@ import drawsvg as draw
 
 from ..harness import Harness
 from ..layout.engine import MARGIN, LayoutResult, PinRowInfo
-from ..model import Component, Pin, ShieldGroup, SpliceNode, Terminal
+from ..model import Component, Pin, ShieldDrainTerminal, ShieldGroup, SpliceNode, Terminal
 from .colors import _SHIELD_PALETTE, _wire_attrs
 from .primitives import (
     _CAN_TERM_BOX_CX,
     _CAN_TERM_SHIELD_SHIFT,
     _MONO_CHAR_W,
+    _SHIELD_LEFT_CX,
+    _SHIELD_RIGHT_CX,
     _TERM_SYMBOL_W,
     _draw_bullet,
     _draw_can_term_box,
@@ -20,7 +22,7 @@ from .primitives import (
     _draw_shield_ovals,
     _remote_label,
 )
-from .wires import _draw_bullet_and_drop, _draw_pin_row, _draw_remote_box
+from .wires import _DRAIN_PIN_COLOR, _REMOTE_BOX_X, _draw_bullet_and_drop, _draw_pin_row, _draw_remote_box
 
 
 def _compute_min_term_cx(layout: LayoutResult, harness: Harness) -> float:
@@ -47,7 +49,7 @@ def _compute_min_term_cx(layout: LayoutResult, harness: Harness) -> float:
             remote = (
                 seg.end_b if (seg.end_a is use_pin or seg.end_a is row.pin or seg.end_a is row.class_pin) else seg.end_a
             )
-            if not isinstance(remote, Terminal):
+            if not isinstance(remote, Terminal) or isinstance(remote, ShieldDrainTerminal):
                 continue
             _check(_remote_label(remote, row.class_pin, harness), row.wire_end_x)
 
@@ -369,6 +371,43 @@ def render(
             )
         )
 
+    # ── drain-pin connection setup ──────────────────────────────────────────
+    # A drain pin (sg.drain or sg.drain_remote) belongs to one component but
+    # should appear as an extra row only in remote-box views drawn FROM the
+    # OTHER components actually wired through that shield. Keying by target
+    # alone over-includes (every box pointing to the drain's component would
+    # show every drain). So key by (local_comp_key, target_key) instead.
+    def _comp_key(p: Pin) -> int:
+        return id(p._component) if p._component is not None else id(p._component_class)
+
+    def _conn_key(p: Pin) -> int:
+        return id(p._connector) if p._connector is not None else id(p._connector_class)
+
+    drains_for_pair: dict[tuple[int, tuple], list[tuple[Pin, ShieldGroup]]] = {}
+    for sg in harness.shield_groups:
+        if not sg.segments:
+            continue
+        # Component instances touched by this shield's segments.
+        touched: set[int] = set()
+        for seg in sg.segments:
+            for ep in (seg.end_a, seg.end_b):
+                if isinstance(ep, Pin):
+                    touched.add(_comp_key(ep))
+        for p in (sg.drain, sg.drain_remote):
+            if not isinstance(p, Pin):
+                continue
+            ptkey = ("component", _comp_key(p), _conn_key(p))
+            for local_ck in touched:
+                if local_ck == _comp_key(p):
+                    continue  # drain pin's own component renders it as a local row
+                drains_for_pair.setdefault((local_ck, ptkey), []).append((p, sg))
+
+    # Pending vertical connections drawn after remote boxes:
+    #   source-side: (oval_x, oval_bottom, drain_pin_cy)
+    #   remote-side: (oval_x, oval_bottom, target_key, drain_pin)
+    pending_drain_src: list[tuple[float, float, float]] = []
+    pending_drain_rem: list[tuple[float, float, tuple, Pin]] = []
+
     # ── shield ovals ────────────────────────────────────────────────────────
     for sg in harness.shield_groups:
         if sg.cable_only:
@@ -433,6 +472,23 @@ def render(
                         drain=sg.drain if i == left_run else None,
                         drain_remote=sg.drain_remote if i == right_run else None,
                     )
+                    # Collect Pin-drain connections (drawn after remote boxes).
+                    wx_run = run[0].wire_start_x
+                    y_bot_run = max(r.rect.y + r.rect.h for r in run)
+                    oval_bottom = y_bot_run + 2
+                    if isinstance(sg.drain, Pin) and i == left_run:
+                        drain_row = inst_pin_to_row.get(id(sg.drain))
+                        if drain_row is not None:
+                            pending_drain_src.append(
+                                (wx_run + _SHIELD_LEFT_CX, oval_bottom, drain_row.rect.y + drain_row.rect.h / 2)
+                            )
+                    if isinstance(sg.drain_remote, Pin) and i == right_run:
+                        p = sg.drain_remote
+                        comp_key = id(p._component) if p._component is not None else id(p._component_class)
+                        conn_key = id(p._connector) if p._connector is not None else id(p._connector_class)
+                        pending_drain_rem.append(
+                            (wx_run + _SHIELD_RIGHT_CX, oval_bottom, ("component", comp_key, conn_key), p)
+                        )
             for inst_rows in rem_rows_by_inst.values():
                 runs = _split_contiguous(inst_rows)
                 # On remote view: LEFT oval is local (near remote pins) so it
@@ -448,6 +504,23 @@ def render(
                         drain=sg.drain_remote if i == left_run else None,
                         drain_remote=sg.drain if i == right_run else None,
                     )
+                    # Mirror of src-side: wire drain Pins on this view.
+                    wx_run = run[0].wire_start_x
+                    y_bot_run = max(r.rect.y + r.rect.h for r in run)
+                    oval_bottom = y_bot_run + 2
+                    if isinstance(sg.drain_remote, Pin) and i == left_run:
+                        drain_row = inst_pin_to_row.get(id(sg.drain_remote))
+                        if drain_row is not None:
+                            pending_drain_src.append(
+                                (wx_run + _SHIELD_LEFT_CX, oval_bottom, drain_row.rect.y + drain_row.rect.h / 2)
+                            )
+                    if isinstance(sg.drain, Pin) and i == right_run:
+                        p = sg.drain
+                        comp_key = id(p._component) if p._component is not None else id(p._component_class)
+                        conn_key = id(p._connector) if p._connector is not None else id(p._connector_class)
+                        pending_drain_rem.append(
+                            (wx_run + _SHIELD_RIGHT_CX, oval_bottom, ("component", comp_key, conn_key), p)
+                        )
         else:
             # Class-body shield: group rows from sg.pins by component instance.
             #
@@ -561,8 +634,39 @@ def render(
     # ── remote component boxes ───────────────────────────────────────────────
     rendered_pin_ids = set(inst_pin_to_row.keys())
     for group in layout.pin_groups:
-        if group.target_key[0] == "component":
-            _draw_remote_box(dwg, group, harness, layout.remote_box_w, rendered_pin_ids)
+        if group.target_key[0] != "component":
+            continue
+        if not group.rows:
+            continue
+        local_pin = group.rows[0].pin
+        local_ck = _comp_key(local_pin) if isinstance(local_pin, Pin) else id(local_pin)
+        extras = drains_for_pair.get((local_ck, group.target_key), [])
+        extra = [p for p, _ in extras]
+        drain_cys = _draw_remote_box(
+            dwg,
+            group,
+            harness,
+            layout.remote_box_w,
+            rendered_pin_ids,
+            extra_drain_pins=extra if extra else None,
+        )
+        # Draw the remote-side drain L-connections for this box.
+        if drain_cys:
+            box_x = group.rows[0].wire_start_x + _REMOTE_BOX_X
+            for oval_x, oval_bottom, tkey, drain_pin in pending_drain_rem:
+                if tkey != group.target_key:
+                    continue
+                idx = next((i for i, (p, _) in enumerate(extras) if p is drain_pin), None)
+                if idx is not None and idx < len(drain_cys):
+                    drain_cy = drain_cys[idx]
+                    dwg.append(
+                        draw.Line(oval_x, oval_bottom, oval_x, drain_cy, stroke=_DRAIN_PIN_COLOR, stroke_width=1.5)
+                    )
+                    dwg.append(draw.Line(oval_x, drain_cy, box_x, drain_cy, stroke=_DRAIN_PIN_COLOR, stroke_width=1.5))
+
+    # ── source-side drain connections ────────────────────────────────────────
+    for oval_x, oval_bottom, drain_cy in pending_drain_src:
+        dwg.append(draw.Line(oval_x, oval_bottom, oval_x, drain_cy, stroke=_DRAIN_PIN_COLOR, stroke_width=1.5))
 
     # ── CAN TERM boxes ───────────────────────────────────────────────────────
     for comp in components_to_render:

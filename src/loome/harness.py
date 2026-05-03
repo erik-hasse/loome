@@ -141,6 +141,7 @@ class Harness:
         Skips objects already added (safe to call after manual harness.add()).
         """
         seen: set[int] = {id(obj) for obj in (*self.components, *self.splice_nodes, *self.terminals)}
+        seen.update(id(sg) for sg in self.shield_groups)
 
         def _register(obj) -> None:
             if id(obj) in seen:
@@ -388,18 +389,30 @@ class Harness:
     def _collect_shield_groups(self, comp: Component) -> None:
         existing_ids = {id(sg) for sg in self.shield_groups}
 
-        def _add(pin: Pin) -> None:
-            sg = pin.shield_group
+        def _add_sg(sg) -> None:
             if sg is not None and id(sg) not in existing_ids:
                 existing_ids.add(id(sg))
                 self.shield_groups.append(sg)
 
-        for conn in comp._connectors.values():
-            for _, pin in _iter_class_pins(type(conn), Connector):
-                _add(pin)
+        def _add(pin: Pin) -> None:
+            _add_sg(pin.shield_group)
 
-        for _, pin in _iter_class_pins(type(comp), Component):
+        def _add_inst(pin: Pin) -> None:
+            for seg in pin._connections:
+                _add_sg(seg.shield_group)
+
+        for conn in comp._connectors.values():
+            for attr_name, pin in _iter_class_pins(type(conn), Connector):
+                _add(pin)
+                inst = getattr(conn, attr_name, None)
+                if isinstance(inst, Pin):
+                    _add_inst(inst)
+
+        for attr_name, pin in _iter_class_pins(type(comp), Component):
             _add(pin)
+            inst = getattr(comp, attr_name, None)
+            if isinstance(inst, Pin):
+                _add_inst(inst)
 
     def segments(self) -> list[WireSegment]:
         """Return all unique WireSegments.
