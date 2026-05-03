@@ -77,12 +77,23 @@ class OnOffOnSwitch(Component):
         self.momentary_down = momentary_down
 
 
-class DP3TProgressive(Component):
-    """The first position connects com1 to no1, the second position connects com2 to
-    no2 (keeping com1-no1 connected)."""
+class DPOnOnOnSwitch(Component):
+    """The first position switches com1 from nc1 to no1, the second position switches
+    com2 from nc2 to no2 (keeping com1-no1 connected).
+
+    Honeywell 2TL1-10, Carling 2-10, or similar
+    """
 
     render = False
-    com1 = Pin(1, "COM1")
+
+    def __init__(self, label: str | None = None, *, labels: tuple[str, str, str] | None = None, render: bool = False):
+        super().__init__(label, render=render)
+        self.labels = labels
+
+    nc2 = Pin(1, "NC2")
+    no2 = Pin(3, "NO2")
     com2 = Pin(2, "COM2")
-    no1 = Pin(3, "NO 1")
-    no2 = Pin(4, "NO 2")
+
+    nc1 = Pin(4, "NC1")
+    com1 = Pin(5, "COM1")
+    no1 = Pin(6, "NO1")

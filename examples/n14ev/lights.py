@@ -1,17 +1,18 @@
 from examples.n14ev.power import gnd
-from loome.components import LED
+from loome.components import LED, FlyLedsEssentials, FlyLedsSevenStars
 
 cabin_lights = LED("Cabin Lights")
 cabin_lights.ground >> gnd
 
-left_landing_lights = LED("Landing Lights Left")
-left_landing_lights.ground >> gnd
-right_landing_lights = LED("Landing Lights Right")
-right_landing_lights.ground >> gnd
-left_taxi_lights = LED("Taxi Lights Left")
-left_taxi_lights.ground >> gnd
-right_taxi_lights = LED("Taxi Lights Right")
-right_taxi_lights.ground >> gnd
+left_7_stars = FlyLedsSevenStars("Left 7 Stars")
+left_7_stars.ground >> gnd
+right_7_stars = FlyLedsSevenStars("Right 7 Stars")
+right_7_stars.ground >> gnd
+
+left_pos_strobe = FlyLedsEssentials("Left Position & Strobe")
+right_pos_strobe = FlyLedsEssentials("Right Position & Strobe")
+tail_light = LED("Tail Light")
+
 
 master_warning = LED("Master Warning")
 master_warning.ground >> gnd

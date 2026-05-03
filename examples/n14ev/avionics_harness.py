@@ -1,12 +1,13 @@
 from examples.n14ev.disconnects import left_wing_root
 from examples.n14ev.lights import (
     cabin_lights,
-    left_landing_lights,
-    left_taxi_lights,
+    left_7_stars,
+    left_pos_strobe,
     master_caution,
     master_warning,
-    right_landing_lights,
-    right_taxi_lights,
+    right_7_stars,
+    right_pos_strobe,
+    tail_light,
 )
 from examples.n14ev.lrus import (
     co2_sensor,
@@ -53,6 +54,7 @@ from examples.n14ev.switches import (
     cabin_light_rheo,
     flaps,
     landing_light_switch,
+    nav_strobe_switch,
     toga,
     wig_wag,
 )
@@ -238,8 +240,8 @@ with gad27.J271 as c:
     # Page 12
     landing_light_switch.com2 >> gnd
     landing_light_switch.com1 >> main_block.taxi_lights
-    landing_light_switch.no1 >> left_taxi_lights.power
-    landing_light_switch.no1 >> right_taxi_lights.power
+    landing_light_switch.no1 >> left_7_stars.taxi
+    landing_light_switch.no1 >> right_7_stars.taxi
 
     c.light_1_switch >> landing_light_switch.no2
     c.light_2_switch >> landing_light_switch.no2
@@ -274,8 +276,8 @@ with gad27.TB273 as c:
     (c.flap_power_out_1 >> flap_motor.extend).gauge(18)
     (c.flap_power_out_2 >> flap_motor.retract).gauge(18)
 
-    (c.light_1_output >> left_landing_lights.power).gauge(18)
-    (c.light_2_output >> right_landing_lights.power).gauge(18)
+    (c.light_1_output >> left_7_stars.landing).gauge(18)
+    (c.light_2_output >> right_7_stars.landing).gauge(18)
 
 # Page 15
 gad27.J271.dc_lighting_1 >> mfd.P4602.lighting_bus_high_14V
@@ -493,7 +495,28 @@ with elt.DIN as c:
 
 # Other stuff
 
-flyleds_controller.ground >> gnd
+nav_strobe_switch.com1 >> main_block.nav_lights
+nav_strobe_switch.com2 >> main_block.strobe_lights
+
+with flyleds_controller as c:
+    c.ground >> gnd
+    with Shield(drain=c.left_shield, drain_remote=left_pos_strobe.position_neg):
+        c.left_strobe_neg >> left_pos_strobe.strobe_neg
+        c.left_position_pos >> left_pos_strobe.position_pos
+        c.left_strobe_pos >> left_pos_strobe.strobe_pos
+
+    with Shield(drain=c.tail_shield):
+        c.tail_pos >> tail_light.power
+        c.tail_neg >> tail_light.ground
+
+    with Shield(drain=c.right_shield, drain_remote=right_pos_strobe.position_neg):
+        c.right_strobe_neg >> right_pos_strobe.strobe_neg
+        c.right_position_pos >> right_pos_strobe.position_pos
+        c.right_strobe_pos >> right_pos_strobe.strobe_pos
+
+    c.strobe_12v_in >> nav_strobe_switch.no1
+    c.position_12v_in >> nav_strobe_switch.no2
+
 
 harness = Harness(
     "Avionics Harness",

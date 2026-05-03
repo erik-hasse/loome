@@ -1,5 +1,5 @@
-from examples.n14ev.lights import left_landing_lights, left_taxi_lights
-from examples.n14ev.lrus import gad27, gmu11, gsa28_roll, gsa28_yaw, mfd
+from examples.n14ev.lights import left_7_stars, left_pos_strobe
+from examples.n14ev.lrus import flyleds_controller, gad27, gmu11, gsa28_roll, gsa28_yaw, mfd
 from examples.n14ev.power import avionics_block_1, avionics_block_2, avionics_block_3, gnd
 from examples.n14ev.switches import landing_light_switch
 from loome import Disconnect
@@ -16,8 +16,12 @@ left_wing_root_items = [
     (gmu11.J441.aircraft_power_1, avionics_block_1.GMU11),
     (gmu11.J441.aircraft_power_2, avionics_block_2.GMU11),
     (gmu11.J441.ground, gnd),
-    (gad27.TB273.light_1_output, left_landing_lights.power),
-    (landing_light_switch.no1, left_taxi_lights.power),
+    # (flyleds_controller.left_shield, left_pos_strobe.position_neg),
+    (flyleds_controller.left_position_pos, left_pos_strobe.position_pos),
+    (flyleds_controller.left_strobe_neg, left_pos_strobe.strobe_neg),
+    (flyleds_controller.left_strobe_pos, left_pos_strobe.strobe_pos),
+    (landing_light_switch.no1, left_7_stars.taxi),
+    (gad27.TB273.light_1_output, left_7_stars.landing),
 ]
 for left, right in left_wing_root_items:
     left_wing_root.between(left, right)

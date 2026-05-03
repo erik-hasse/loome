@@ -34,6 +34,8 @@ class MainBus(FuseBlock):
     taxi_lights = Fuse("Taxi Lights", amps=5)
     flaps = Fuse("Flaps", amps=10)
     pitot_heat = Fuse("Pitot Heat", amps=15)
+    nav_lights = Fuse("Nav Lights", amps=5)
+    strobe_lights = Fuse("Strobe Lights", amps=10)
 
 
 avionics_block_1 = DualFeedBlock("Left Dual")

@@ -135,3 +135,18 @@ class FlyLedsEssentialsController(Component):
     right_position_pos = Pin(13, "Right Position +ve")
     right_shield = Pin(14, "Right Shield (Position -ve)")
     tail_pos = Pin(15, "Tail +ve")
+
+
+class FlyLedsEssentials(Component):
+    render = False
+    position_neg = Pin("P-", "Position Neg")
+    position_pos = Pin("P+", "Position Pos")
+    strobe_neg = Pin("S-", "Strobe Neg")
+    strobe_pos = Pin("S+", "Strobe Pos")
+
+
+class FlyLedsSevenStars(Component):
+    render = False
+    ground = Pin("GND", "Ground")
+    landing = Pin("LND", "Landing")
+    taxi = Pin("TXI", "Taxi")
