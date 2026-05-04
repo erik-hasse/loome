@@ -29,7 +29,7 @@ from .model import (
     Terminal,
     WireSegment,
 )
-from .wire_ids import _is_local_segment
+from .wire_ids import _is_local_segment, _resolve_system
 
 if TYPE_CHECKING:
     from .harness import Harness
@@ -66,6 +66,7 @@ class BomWireRow:
     length: float | None
     from_label: str
     to_label: str
+    system: str = ""
 
 
 @dataclass
@@ -73,6 +74,15 @@ class GaugeTotals:
     count: int
     total_length: float
     unresolved: int
+
+
+@dataclass
+class SystemTotals:
+    wires: int = 0
+    cables: int = 0
+    conductors: int = 0
+    total_length: float = 0.0
+    unresolved: int = 0
 
 
 @dataclass
@@ -85,6 +95,7 @@ class BomShieldedRow:
     from_label: str
     to_label: str
     has_drain: bool
+    system: str = ""
 
 
 @dataclass
@@ -114,6 +125,7 @@ class Bom:
     terminals_by_type: dict[str, list[str]]
     disconnects: list[DisconnectEntry] = field(default_factory=list)
     shielded_cables: list[BomShieldedRow] = field(default_factory=list)
+    system_totals: dict[str, SystemTotals] = field(default_factory=dict)
 
 
 # ── endpoint labels ────────────────────────────────────────────────────────
@@ -362,6 +374,18 @@ def _can_pin_gauge(devices, all_segments: list[WireSegment]) -> int | str:
     return ""
 
 
+def _segment_system(seg: WireSegment, harness: "Harness") -> str:
+    return _resolve_system(seg, harness.default_system) or ""
+
+
+def _shield_system(segs: list[WireSegment], harness: "Harness") -> str:
+    for s in segs:
+        sys = _resolve_system(s, None)
+        if sys:
+            return sys
+    return harness.default_system or ""
+
+
 def build_bom(harness: "Harness") -> Bom:
     wires: list[BomWireRow] = []
     gauge_totals: dict[str, GaugeTotals] = {}
@@ -417,6 +441,24 @@ def build_bom(harness: "Harness") -> Bom:
             disc = pair_disc.get((id(dev_a), id(dev_b)))
             from_lbl = _connector_label(dev_a)
             to_lbl = _connector_label(dev_b)
+            comp_a = getattr(dev_a, "_component", None)
+            comp_b = getattr(dev_b, "_component", None)
+            pair_segs = [
+                s
+                for s in all_segments
+                if id(s) in shielded_seg_ids
+                and isinstance(s.end_a, Pin)
+                and isinstance(s.end_b, Pin)
+                and {id(s.end_a._component), id(s.end_b._component)} == {id(comp_a), id(comp_b)}
+            ]
+            cable_sys = (
+                _shield_system(pair_segs, harness)
+                or getattr(comp_a, "_system", None)
+                or getattr(comp_b, "_system", None)
+                or harness.default_system
+                or cbl.name
+                or ""
+            )
             if disc is None:
                 shielded_cables.append(
                     BomShieldedRow(
@@ -428,6 +470,7 @@ def build_bom(harness: "Harness") -> Bom:
                         from_label=from_lbl,
                         to_label=to_lbl,
                         has_drain=True,
+                        system=cable_sys,
                     )
                 )
             else:
@@ -441,6 +484,7 @@ def build_bom(harness: "Harness") -> Bom:
                     from_label=from_lbl,
                     to_label=disc_label,
                     has_drain=True,
+                    system=cable_sys,
                 )
                 row_b = BomShieldedRow(
                     cable_id=f"{base_id}B",
@@ -451,6 +495,7 @@ def build_bom(harness: "Harness") -> Bom:
                     from_label=disc_label,
                     to_label=to_lbl,
                     has_drain=True,
+                    system=cable_sys,
                 )
                 shielded_cables.extend([row_a, row_b])
                 can_disc_cables.setdefault((id(disc), id(cbl)), []).extend([row_a, row_b])
@@ -493,6 +538,7 @@ def build_bom(harness: "Harness") -> Bom:
                 from_label=_endpoint_label(bucket[0].end_a),
                 to_label=_endpoint_label(bucket[0].end_b),
                 has_drain=sg.drain is not None or sg.drain_remote is not None,
+                system=_shield_system(bucket, harness),
             )
             shielded_cables.append(row)
             rows_for_sg.append(row)
@@ -505,6 +551,7 @@ def build_bom(harness: "Harness") -> Bom:
             continue
         wid = seg.wire_id or f"{seg.gauge}{seg.effective_color or '-'}-?"
         color = seg.effective_color
+        seg_sys = _segment_system(seg, harness)
 
         if seg.disconnect_pin is not None and seg.disconnect_pin._can_bus is None:
             sides = harness.resolved_sides(seg) or (None, None)
@@ -529,6 +576,7 @@ def build_bom(harness: "Harness") -> Bom:
                         length=length,
                         from_label=from_label,
                         to_label=to_label,
+                        system=seg_sys,
                     )
                 )
             disc = seg.disconnect_pin._disconnect
@@ -551,10 +599,29 @@ def build_bom(harness: "Harness") -> Bom:
                 length=length,
                 from_label=_endpoint_label(seg.end_a),
                 to_label=_endpoint_label(seg.end_b),
+                system=seg_sys,
             )
         )
 
     wires.sort(key=lambda r: (_gauge_sort_key(r.gauge), r.color, _natsort_key(r.wire_id)))
+
+    system_totals: dict[str, SystemTotals] = {}
+    for w in wires:
+        s = system_totals.setdefault(w.system or "—", SystemTotals())
+        s.wires += 1
+        s.conductors += 1
+        if w.length is None:
+            s.unresolved += 1
+        else:
+            s.total_length += w.length
+    for c in shielded_cables:
+        s = system_totals.setdefault(c.system or "—", SystemTotals())
+        s.cables += 1
+        s.conductors += c.conductors
+        if c.length is None:
+            s.unresolved += 1
+        else:
+            s.total_length += c.length
 
     connectors: list[tuple[str, str, int]] = []
     for comp in harness.components:
@@ -668,6 +735,7 @@ def build_bom(harness: "Harness") -> Bom:
         terminals_by_type=terminals_by_type,
         disconnects=disconnects,
         shielded_cables=shielded_cables,
+        system_totals=system_totals,
     )
 
 
@@ -713,17 +781,85 @@ def render_fuse_schedule_md(entries: list[FuseScheduleEntry], harness: "Harness"
     return f"{title}\n{_md_table(headers, rows)}\n"
 
 
-def _bom_wire_rows(bom: Bom, harness: "Harness") -> list[list[str]]:
-    return [
-        [r.wire_id, str(r.gauge), r.color or "", harness.format_length(r.length), r.from_label, r.to_label]
-        for r in bom.wires
-    ]
+def _shield_label(r: BomShieldedRow) -> str:
+    return "foil+drain" if r.has_drain else "foil"
+
+
+def _bom_combined_rows(bom: Bom, harness: "Harness") -> list[list[str]]:
+    rows: list[tuple[str, str, list[str]]] = []
+    for r in bom.wires:
+        rows.append(
+            (
+                r.system or "",
+                r.wire_id,
+                [
+                    r.wire_id,
+                    "1",
+                    str(r.gauge),
+                    r.color or "",
+                    harness.format_length(r.length),
+                    "",
+                    r.from_label,
+                    r.to_label,
+                ],
+            )
+        )
+    for r in bom.shielded_cables:
+        rows.append(
+            (
+                r.system or "",
+                r.cable_id,
+                [
+                    r.cable_id,
+                    str(r.conductors),
+                    str(r.gauge),
+                    r.color or "",
+                    harness.format_length(r.length),
+                    _shield_label(r),
+                    r.from_label,
+                    r.to_label,
+                ],
+            )
+        )
+    rows.sort(key=lambda t: (t[0], _natsort_key(t[1])))
+    return [r[2] for r in rows]
+
+
+_COMBINED_HEADERS = ["ID", "Cond.", "Gauge", "Color", "Length", "Shield", "From", "To"]
 
 
 def _bom_gauge_rows(bom: Bom, harness: "Harness") -> list[list[str]]:
     return [
         [g, str(t.count), harness.format_length(t.total_length if t.count > t.unresolved else None), str(t.unresolved)]
         for g, t in sorted(bom.gauge_totals.items(), key=lambda kv: _gauge_sort_key(kv[0]))
+    ]
+
+
+def _bom_system_rows(bom: Bom, harness: "Harness") -> list[list[str]]:
+    rows = []
+    for sys_code, t in sorted(bom.system_totals.items()):
+        items = t.wires + t.cables
+        length = harness.format_length(t.total_length) if t.total_length and t.unresolved < items else "—"
+        rows.append([sys_code, str(t.wires), str(t.cables), str(t.conductors), length, str(t.unresolved)])
+    return rows
+
+
+def _bom_summary_rows(bom: Bom, harness: "Harness") -> list[list[str]]:
+    total_wires = len(bom.wires)
+    total_cables = len(bom.shielded_cables)
+    total_conductors = total_wires + sum(c.conductors for c in bom.shielded_cables)
+    total_pins = sum(p for _, _, p in bom.connectors)
+    total_terminals = sum(len(ids) for ids in bom.terminals_by_type.values())
+    return [
+        ["Components", str(len(harness.components))],
+        ["Connectors", str(len(bom.connectors))],
+        ["Connector pins", str(total_pins)],
+        ["Wires", str(total_wires)],
+        ["Shielded cables", str(total_cables)],
+        ["Total conductors", str(total_conductors)],
+        ["Terminals", str(total_terminals)],
+        ["Disconnects", str(len(bom.disconnects))],
+        ["Systems", str(len(bom.system_totals))],
     ]
 
 
@@ -739,33 +875,21 @@ def _bom_disconnect_pin_rows(entry: DisconnectEntry) -> list[list[str]]:
     return [[r.pin, r.signal_name, r.wire_id, str(r.gauge), r.color, r.from_label, r.to_label] for r in entry.pins]
 
 
-def _bom_shielded_rows(bom: Bom, harness: "Harness") -> list[list[str]]:
-    return [
-        [
-            r.cable_id,
-            str(r.conductors),
-            str(r.gauge),
-            r.color or "",
-            harness.format_length(r.length),
-            r.from_label,
-            r.to_label,
-        ]
-        for r in bom.shielded_cables
-    ]
-
-
 def render_bom_md(bom: Bom, harness: "Harness") -> str:
     parts: list[str] = [f"# Bill of Materials — {harness.name}", ""]
 
-    parts += ["## Wires", ""]
-    parts.append(_md_table(["Wire ID", "Gauge", "Color", "Length", "From", "To"], _bom_wire_rows(bom, harness)))
+    parts += ["## Wires & cables", ""]
+    parts.append(_md_table(_COMBINED_HEADERS, _bom_combined_rows(bom, harness)))
 
-    if bom.shielded_cables:
-        parts += ["", "## Shielded cables", ""]
+    parts += ["", "## Summary", ""]
+    parts.append(_md_table(["Metric", "Count"], _bom_summary_rows(bom, harness)))
+
+    if bom.system_totals:
+        parts += ["", "## Totals by system", ""]
         parts.append(
             _md_table(
-                ["Cable ID", "Conductors", "Gauge", "Color", "Length", "From", "To"],
-                _bom_shielded_rows(bom, harness),
+                ["System", "Wires", "Cables", "Conductors", "Total Length", "Unresolved"],
+                _bom_system_rows(bom, harness),
             )
         )
 
@@ -832,14 +956,16 @@ def render_fuse_schedule_csv(entries: list[FuseScheduleEntry], harness: "Harness
 
 def render_bom_csv(bom: Bom, harness: "Harness") -> str:
     buf = io.StringIO()
-    _csv_section(buf, "Wires", ["Wire ID", "Gauge", "Color", "Length", "From", "To"], _bom_wire_rows(bom, harness))
-    if bom.shielded_cables:
+    _csv_section(buf, "Wires & cables", _COMBINED_HEADERS, _bom_combined_rows(bom, harness))
+    buf.write("\n")
+    _csv_section(buf, "Summary", ["Metric", "Count"], _bom_summary_rows(bom, harness))
+    if bom.system_totals:
         buf.write("\n")
         _csv_section(
             buf,
-            "Shielded cables",
-            ["Cable ID", "Conductors", "Gauge", "Color", "Length", "From", "To"],
-            _bom_shielded_rows(bom, harness),
+            "Totals by system",
+            ["System", "Wires", "Cables", "Conductors", "Total Length", "Unresolved"],
+            _bom_system_rows(bom, harness),
         )
     buf.write("\n")
     _csv_section(

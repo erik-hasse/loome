@@ -86,6 +86,10 @@ with System("AD"):
         c.aircraft_power_2 >> avionics_block_2.GMU11
         c.ground >> gnd
 
+    (pitot_heat_switch.com >> main_block.pitot_heat).gauge(14)
+    (pitot_heat_switch.no >> gap26.power).gauge(14)
+    (gap26.ground >> gnd).gauge(14)
+
 with System("AP"):
     with gsa28_roll.J281 as c:
         c.ground >> gnd
@@ -114,7 +118,7 @@ with System("AP"):
     (toga.com1 >> toga.com2).color("B")
     toga.com1 >> gnd
 
-with System("GDL"):
+with System("AUD"):
     with gdl51r as c:
         c.aircraft_power >> avionics_block_3.GDL51R
         c.ground >> gnd
@@ -122,7 +126,6 @@ with System("GDL"):
         c.rs232_1 >> pfd.P4602.rs232_1
         c.rs232_2 >> mfd.P4602.rs232_4
 
-with System("AUD"):
     with gdl51r as c, Shield(drain_remote="block"):
         c.music_out_left >> gma245.J2402.music_2_in_left
         c.music_out_right >> gma245.J2402.music_2_in_right
@@ -207,6 +210,10 @@ with System("COM"):
         c.aircraft_gnd_b >> gnd
         c.aircraft_gnd_c >> gnd
 
+    with gad27.J271 as c:
+        c.discrete_in_7 >> pilot_stick.frequency_swap
+        c.discrete_in_7 >> copilot_stick.frequency_swap
+
 with System("NAV"):
     with gma245.P2401 as c:
         with Shield(drain="block"):
@@ -227,11 +234,7 @@ with System("NAV"):
         c.aircraft_power_b >> avionics_block_3.GTN650_nav
 
 
-with System("AFR"):
-    with gma245.J2402 as c:
-        c.lighting_bus_high >> c.lighting_bus_14v_high_28v_low
-        c.lighting_bus_low.local_ground()
-
+with System("FCTL"):
     with gsa28_roll.J281 as c:
         c.trim_in_1 >> gad27.J272.roll_trim_out_1
         c.trim_in_2 >> gad27.J272.roll_trim_out_2
@@ -260,28 +263,6 @@ with System("AFR"):
         c.copilot_roll_trim_left >> copilot_stick.trim_left
         c.copilot_roll_trim_right >> copilot_stick.trim_right
 
-        c.discrete_in_7 >> pilot_stick.frequency_swap
-        c.discrete_in_7 >> copilot_stick.frequency_swap
-
-        landing_light_switch.com2 >> gnd
-        landing_light_switch.com1 >> main_block.taxi_lights
-        (landing_light_switch.no1 >> left_7_stars.taxi).gauge(20)
-        (landing_light_switch.no1 >> right_7_stars.taxi).gauge(20)
-
-        c.light_1_switch >> landing_light_switch.no2
-        c.light_2_switch >> landing_light_switch.no2
-        c.alternating_flash_on >> wig_wag.no
-
-        c.output_12v >> backlight_rheo.power
-        c.lighting_bus_gnd >> backlight_rheo.ground
-        c.lighting_control_in_1 >> backlight_rheo.out
-
-        c.output_12v >> cabin_light_rheo.power
-        c.lighting_bus_gnd >> cabin_light_rheo.ground
-        c.lighting_control_in_2 >> cabin_light_rheo.out
-
-        c.pwm_lighting_1 >> cabin_lights.power
-
     with gad27.J272 as c:
         c.pitch_trim_power_gnd >> gnd
         c.roll_trim_power_gnd >> gnd
@@ -291,27 +272,34 @@ with System("AFR"):
         c.keep_alive_power_out >> gad27.J272.pitch_trim_power_in
         c.keep_alive_power_out >> gad27.J272.roll_trim_power_in
 
-        (c.light_1_power >> main_block.landing_lights).gauge(18)
-        (c.light_2_power >> main_block.landing_lights).gauge(18)
-
         (c.flap_power_in >> main_block.flaps).gauge(18)
         (c.flap_power_gnd >> gnd).gauge(18)
         (c.flap_power_out_1 >> flap_motor.extend).gauge(18)
         (c.flap_power_out_2 >> flap_motor.retract).gauge(18)
 
+    with gea24.J244 as c:
+        (c.gp1 >> pitch_trim.position).drain()
+        (c.gp2 >> roll_trim.position).drain()
+        (c.gp3 >> flap_motor.position).drain()
+
+    flaps.com >> gnd
+
+with System("LGHT"):
+    with gad27.J271 as c:
+        landing_light_switch.com2 >> gnd
+        landing_light_switch.com1 >> main_block.taxi_lights
+        (landing_light_switch.no1 >> left_7_stars.taxi).gauge(20)
+        (landing_light_switch.no1 >> right_7_stars.taxi).gauge(20)
+
+        c.light_1_switch >> landing_light_switch.no2
+        c.light_2_switch >> landing_light_switch.no2
+        c.alternating_flash_on >> wig_wag.no
+
+    with gad27.TB273 as c:
         (c.light_1_output >> left_7_stars.landing).gauge(14)
         (c.light_2_output >> right_7_stars.landing).gauge(14)
-
-    gad27.J271.dc_lighting_1 >> mfd.P4602.lighting_bus_high_14V
-    mfd.P4602.lighting_bus_high_14V >> pfd.P4602.lighting_bus_high_14V
-    pfd.P4602.lighting_bus_high_14V >> gtn650xi.P1001.lighting_bus_1_hi
-    gtn650xi.P1001.lighting_bus_1_hi >> gmc507.J7001.lighting_bus_high
-    gmc507.J7001.lighting_bus_high >> gma245.J2402.lighting_bus_high
-
-    (pitot_heat_switch.com >> main_block.pitot_heat).gauge(14)
-    (pitot_heat_switch.no >> gap26.power).gauge(14)
-    (gap26.ground >> gnd).gauge(14)
-    gtn650xi.P1001.lighting_bus_1_lo.local_ground()
+        (c.light_1_power >> main_block.landing_lights).gauge(18)
+        (c.light_2_power >> main_block.landing_lights).gauge(18)
 
     nav_strobe_switch.com1 >> main_block.nav_lights
     nav_strobe_switch.com2 >> main_block.strobe_lights
@@ -335,7 +323,37 @@ with System("AFR"):
         c.strobe_12v_in >> nav_strobe_switch.no1
         c.position_12v_in >> nav_strobe_switch.no2
 
-with System("ALT"):
+    left_7_stars.ground >> gnd
+    right_7_stars.ground >> gnd
+    wig_wag.com >> gnd
+
+with System("CAB"):
+    with gma245.J2402 as c:
+        c.lighting_bus_high >> c.lighting_bus_14v_high_28v_low
+        c.lighting_bus_low.local_ground()
+
+    with gad27.J271 as c:
+        c.output_12v >> backlight_rheo.power
+        c.lighting_bus_gnd >> backlight_rheo.ground
+        c.lighting_control_in_1 >> backlight_rheo.out
+
+        c.output_12v >> cabin_light_rheo.power
+        c.lighting_bus_gnd >> cabin_light_rheo.ground
+        c.lighting_control_in_2 >> cabin_light_rheo.out
+
+        c.pwm_lighting_1 >> cabin_lights.power
+
+    gad27.J271.dc_lighting_1 >> mfd.P4602.lighting_bus_high_14V
+    mfd.P4602.lighting_bus_high_14V >> pfd.P4602.lighting_bus_high_14V
+    pfd.P4602.lighting_bus_high_14V >> gtn650xi.P1001.lighting_bus_1_hi
+    gtn650xi.P1001.lighting_bus_1_hi >> gmc507.J7001.lighting_bus_high
+    gmc507.J7001.lighting_bus_high >> gma245.J2402.lighting_bus_high
+    gtn650xi.P1001.lighting_bus_1_lo.local_ground()
+    cabin_lights.ground >> gnd
+    master_warning.ground >> gnd
+    master_caution.ground >> gnd
+
+with System("POW"):
     # c.discrete_in_1 >> alt_regulator
     # c.discrete_in_2 >> monkworkz_active
     pass
@@ -450,9 +468,6 @@ with System("EIS"):
     with gea24.J244 as c:
         c.fuel_quantity_1.signal >> left_fuel.power
         c.fuel_quantity_2.signal >> right_fuel.power
-        (c.gp1 >> pitch_trim.position).drain()
-        (c.gp2 >> roll_trim.position).drain()
-        (c.gp3 >> flap_motor.position).drain()
 
         c.volts_1 >> Fuse("Main Bus", amps=1)
         c.volts_2 >> Fuse("Engine Bus", amps=1)
@@ -462,13 +477,13 @@ with System("EIS"):
         c.discrete_out_2 >> master_caution.power
 
 
-with System("BKUP"), g5.J51 as c:
-    c.ground >> gnd
-    (c.aircraft_power_1 >> avionics_block_1.G5).notes("Lightning Protection Module")
-    c.aircraft_power_2 >> avionics_block_2.G5
-    c.can.note("Lightning Protection Module")
-
 with System("EMR"):
+    with g5.J51 as c:
+        c.ground >> gnd
+        (c.aircraft_power_1 >> avionics_block_1.G5).notes("Lightning Protection Module")
+        c.aircraft_power_2 >> avionics_block_2.G5
+        c.can.note("Lightning Protection Module")
+
     with elt.DIN as c:
         with Shield(drain_remote="block"):
             c.remote_switch >> avionics_block_3.elt
@@ -501,7 +516,7 @@ can_bus = CanBusLine(
 harness = Harness(
     "Avionics Harness",
     length_unit="in",
-    default_system="GEN",
+    default_system=None,
     components=[
         gsu25,
         gtp59,

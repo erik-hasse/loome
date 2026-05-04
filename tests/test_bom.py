@@ -296,11 +296,11 @@ def test_shielded_section_appears_in_md_and_csv():
     h = _harness({"src": src, "dst": dst})
     bom = build_bom(h)
     md = render_bom_md(bom, h)
-    assert "## Shielded cables" in md
+    assert "## Wires & cables" in md
     assert "DAT" in md
     csv_out = render_bom_csv(bom, h)
-    assert "# Shielded cables" in csv_out
-    assert "Cable ID,Conductors" in csv_out
+    assert "# Wires & cables" in csv_out
+    assert "ID,Cond.,Gauge,Color" in csv_out
 
 
 def test_can_bus_line_emits_cable_per_adjacent_pair():
@@ -343,5 +343,5 @@ def test_csv_renderers_parse_back():
     assert rows[1][1] == "F1"
 
     bom_csv = render_bom_csv(build_bom(h), h)
-    assert "Wire ID,Gauge,Color" in bom_csv
-    assert "# Wires" in bom_csv
+    assert "ID,Cond.,Gauge,Color" in bom_csv
+    assert "# Wires & cables" in bom_csv

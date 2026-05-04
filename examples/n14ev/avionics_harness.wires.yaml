@@ -1,5 +1,17 @@
 version: 1
 wires:
+- id: AD14B11
+  fingerprint: GAP 26-20 - Regulated Pitot Heat[Blk] <-> GroundSymbol[GND]
+  system: AD
+  kind: segment
+- id: AD14R12
+  fingerprint: Fuse[pitot_heat] <-> Pitot Heat[1]
+  system: AD
+  kind: segment
+- id: AD14W10
+  fingerprint: GAP 26-20 - Regulated Pitot Heat[Red] <-> Pitot Heat[2]
+  system: AD
+  kind: segment
 - id: AD22B06
   fingerprint: GSU 25 - Air Data[J251.6] <-> GroundSymbol[GND]
   system: AD
@@ -93,267 +105,6 @@ wires:
   fingerprint: GTX 45R - Transponder[P3251.45] <-> GTX45R USB Config[BLK]
   system: ADSB
   kind: segment
-- id: AFR14B55
-  fingerprint: GAP 26-20 - Regulated Pitot Heat[Blk] <-> GroundSymbol[GND]
-  system: AFR
-  kind: segment
-- id: AFR14R63
-  fingerprint: Fuse[pitot_heat] <-> Pitot Heat[1]
-  system: AFR
-  kind: segment
-- id: AFR14W48
-  fingerprint: GAD 27 - Flap & Light Controller[TB273.9] <-> Left 7 Stars[LND]
-  system: AFR
-  kind: segment
-- id: AFR14W49
-  fingerprint: GAD 27 - Flap & Light Controller[TB273.10] <-> Right 7 Stars[LND]
-  system: AFR
-  kind: segment
-- id: AFR14W54
-  fingerprint: GAP 26-20 - Regulated Pitot Heat[Red] <-> Pitot Heat[2]
-  system: AFR
-  kind: segment
-- id: AFR18B45
-  fingerprint: GAD 27 - Flap & Light Controller[TB273.6] <-> GroundSymbol[GND]
-  system: AFR
-  kind: segment
-- id: AFR18R42
-  fingerprint: Fuse[landing_lights] <-> GAD 27 - Flap & Light Controller[TB273.3]
-  system: AFR
-  kind: segment
-- id: AFR18R43
-  fingerprint: Fuse[landing_lights] <-> GAD 27 - Flap & Light Controller[TB273.4]
-  system: AFR
-  kind: segment
-- id: AFR18R44
-  fingerprint: Fuse[flaps] <-> GAD 27 - Flap & Light Controller[TB273.5]
-  system: AFR
-  kind: segment
-- id: AFR18W46
-  fingerprint: Flap Motor[BRN] <-> GAD 27 - Flap & Light Controller[TB273.7]
-  system: AFR
-  kind: segment
-- id: AFR18W47
-  fingerprint: Flap Motor[BLU] <-> GAD 27 - Flap & Light Controller[TB273.8]
-  system: AFR
-  kind: segment
-- id: AFR20W52
-  fingerprint: Landing Lights[6] <-> Left 7 Stars[TXI]
-  system: AFR
-  kind: segment
-- id: AFR20W53
-  fingerprint: Landing Lights[6] <-> Right 7 Stars[TXI]
-  system: AFR
-  kind: segment
-- id: AFR22B13
-  fingerprint: GAD 27 - Flap & Light Controller[J271.8] <-> GroundSymbol[GND]
-  system: AFR
-  kind: segment
-- id: AFR22B38
-  fingerprint: GAD 27 - Flap & Light Controller[J272.2] <-> GroundSymbol[GND]
-  system: AFR
-  kind: segment
-- id: AFR22B40
-  fingerprint: GAD 27 - Flap & Light Controller[J272.4] <-> GroundSymbol[GND]
-  system: AFR
-  kind: segment
-- id: AFR22B50
-  fingerprint: GroundSymbol[GND] <-> Landing Lights[2]
-  system: AFR
-  kind: segment
-- id: AFR22B58
-  fingerprint: FlyLeds Essentials Controller[1] <-> GroundSymbol[GND]
-  system: AFR
-  kind: segment
-- id: AFR22R12
-  fingerprint: Fuse[GAD27] <-> GAD 27 - Flap & Light Controller[J271.7]
-  system: AFR
-  kind: segment
-- id: AFR22R41
-  fingerprint: Fuse[GAD27] <-> GAD 27 - Flap & Light Controller[TB273.1]
-  system: AFR
-  kind: segment
-- id: AFR22R51
-  fingerprint: Fuse[taxi_lights] <-> Landing Lights[5]
-  system: AFR
-  kind: segment
-- id: AFR22R61
-  fingerprint: Fuse[strobe_lights] <-> Nav & Strobe Lights[2]
-  system: AFR
-  kind: segment
-- id: AFR22R62
-  fingerprint: Fuse[nav_lights] <-> Nav & Strobe Lights[5]
-  system: AFR
-  kind: segment
-- id: AFR22SH01
-  fingerprint: shield:GSA 28 - Roll Servo[J281.13] <-> Roll Trim[Wh]|GSA 28 - Roll
-    Servo[J281.14] <-> Roll Trim[Gy]
-  system: AFR
-  kind: shield
-- id: AFR22SH02
-  fingerprint: shield:GSA 28 - Pitch Servo[J281.13] <-> Pitch Trim[Wh]|GSA 28 - Pitch
-    Servo[J281.14] <-> Pitch Trim[Gy]
-  system: AFR
-  kind: shield
-- id: AFR22SH03
-  fingerprint: shield:FlyLeds Essentials Controller[11] <-> Left Position & Strobe[S+]|FlyLeds
-    Essentials Controller[3] <-> Left Position & Strobe[S-]|FlyLeds Essentials Controller[4]
-    <-> Left Position & Strobe[P+]
-  system: AFR
-  kind: shield
-- id: AFR22SH04
-  fingerprint: shield:FlyLeds Essentials Controller[12] <-> Right Position & Strobe[S+]|FlyLeds
-    Essentials Controller[13] <-> Right Position & Strobe[P+]|FlyLeds Essentials Controller[6]
-    <-> Right Position & Strobe[S-]
-  system: AFR
-  kind: shield
-- id: AFR22SH05
-  fingerprint: shield:FlyLeds Essentials Controller[15] <-> Tail Light[1]|FlyLeds
-    Essentials Controller[8] <-> Tail Light[2]
-  system: AFR
-  kind: shield
-- id: AFR22W06
-  fingerprint: GAD 27 - Flap & Light Controller[J272.9] <-> GSA 28 - Roll Servo[J281.11]
-  system: AFR
-  kind: segment
-- id: AFR22W07
-  fingerprint: GAD 27 - Flap & Light Controller[J272.10] <-> GSA 28 - Roll Servo[J281.12]
-  system: AFR
-  kind: segment
-- id: AFR22W08
-  fingerprint: GMC 507 - AP Controller[J7001.11] <-> GTN 650Xi - GPS/NAV/COM[P1001.18]
-  system: AFR
-  kind: segment
-- id: AFR22W09
-  fingerprint: GMA 245 - Audio Panel[J2402.7] <-> GMC 507 - AP Controller[J7001.11]
-  system: AFR
-  kind: segment
-- id: AFR22W10
-  fingerprint: GAD 27 - Flap & Light Controller[J272.11] <-> GSA 28 - Pitch Servo[J281.11]
-  system: AFR
-  kind: segment
-- id: AFR22W11
-  fingerprint: GAD 27 - Flap & Light Controller[J272.12] <-> GSA 28 - Pitch Servo[J281.12]
-  system: AFR
-  kind: segment
-- id: AFR22W14
-  fingerprint: GAD 27 - Flap & Light Controller[J271.15] <-> Pilot Stick[9]
-  system: AFR
-  kind: segment
-- id: AFR22W15
-  fingerprint: Copilot Stick[9] <-> GAD 27 - Flap & Light Controller[J271.15]
-  system: AFR
-  kind: segment
-- id: AFR22W16
-  fingerprint: Flap Switch[2] <-> GAD 27 - Flap & Light Controller[J271.18]
-  system: AFR
-  kind: segment
-- id: AFR22W17
-  fingerprint: Flap Switch[3] <-> GAD 27 - Flap & Light Controller[J271.19]
-  system: AFR
-  kind: segment
-- id: AFR22W18
-  fingerprint: GAD 27 - Flap & Light Controller[J271.24] <-> Pilot Stick[5]
-  system: AFR
-  kind: segment
-- id: AFR22W19
-  fingerprint: GAD 27 - Flap & Light Controller[J271.25] <-> Pilot Stick[6]
-  system: AFR
-  kind: segment
-- id: AFR22W20
-  fingerprint: Copilot Stick[5] <-> GAD 27 - Flap & Light Controller[J271.26]
-  system: AFR
-  kind: segment
-- id: AFR22W21
-  fingerprint: Copilot Stick[6] <-> GAD 27 - Flap & Light Controller[J271.27]
-  system: AFR
-  kind: segment
-- id: AFR22W22
-  fingerprint: GAD 27 - Flap & Light Controller[J271.28] <-> Pilot Stick[7]
-  system: AFR
-  kind: segment
-- id: AFR22W23
-  fingerprint: GAD 27 - Flap & Light Controller[J271.29] <-> Pilot Stick[8]
-  system: AFR
-  kind: segment
-- id: AFR22W24
-  fingerprint: Copilot Stick[7] <-> GAD 27 - Flap & Light Controller[J271.30]
-  system: AFR
-  kind: segment
-- id: AFR22W25
-  fingerprint: Copilot Stick[8] <-> GAD 27 - Flap & Light Controller[J271.31]
-  system: AFR
-  kind: segment
-- id: AFR22W26
-  fingerprint: GAD 27 - Flap & Light Controller[J271.34] <-> Landing Lights[3]
-  system: AFR
-  kind: segment
-- id: AFR22W27
-  fingerprint: GAD 27 - Flap & Light Controller[J271.35] <-> Landing Lights[3]
-  system: AFR
-  kind: segment
-- id: AFR22W28
-  fingerprint: GAD 27 - Flap & Light Controller[J271.36] <-> Wig Wag Lights[2]
-  system: AFR
-  kind: segment
-- id: AFR22W29
-  fingerprint: Backlight[RED] <-> GAD 27 - Flap & Light Controller[J271.37]
-  system: AFR
-  kind: segment
-- id: AFR22W30
-  fingerprint: Cabin Light[RED] <-> GAD 27 - Flap & Light Controller[J271.37]
-  system: AFR
-  kind: segment
-- id: AFR22W31
-  fingerprint: Backlight[BLK] <-> GAD 27 - Flap & Light Controller[J271.38]
-  system: AFR
-  kind: segment
-- id: AFR22W32
-  fingerprint: Cabin Light[BLK] <-> GAD 27 - Flap & Light Controller[J271.38]
-  system: AFR
-  kind: segment
-- id: AFR22W33
-  fingerprint: Backlight[BLU] <-> GAD 27 - Flap & Light Controller[J271.39]
-  system: AFR
-  kind: segment
-- id: AFR22W34
-  fingerprint: Cabin Light[BLU] <-> GAD 27 - Flap & Light Controller[J271.40]
-  system: AFR
-  kind: segment
-- id: AFR22W35
-  fingerprint: GAD 27 - Flap & Light Controller[J271.42] <-> GDU 460 MFD[P4602.43]
-  system: AFR
-  kind: segment
-- id: AFR22W36
-  fingerprint: Cabin Lights[1] <-> GAD 27 - Flap & Light Controller[J271.45]
-  system: AFR
-  kind: segment
-- id: AFR22W37
-  fingerprint: GAD 27 - Flap & Light Controller[J272.1] <-> GAD 27 - Flap & Light
-    Controller[TB273.2]
-  system: AFR
-  kind: segment
-- id: AFR22W39
-  fingerprint: GAD 27 - Flap & Light Controller[J272.3] <-> GAD 27 - Flap & Light
-    Controller[TB273.2]
-  system: AFR
-  kind: segment
-- id: AFR22W56
-  fingerprint: GDU 460 PFD[P4602.43] <-> GTN 650Xi - GPS/NAV/COM[P1001.18]
-  system: AFR
-  kind: segment
-- id: AFR22W57
-  fingerprint: GDU 460 MFD[P4602.43] <-> GDU 460 PFD[P4602.43]
-  system: AFR
-  kind: segment
-- id: AFR22W59
-  fingerprint: FlyLeds Essentials Controller[5] <-> Nav & Strobe Lights[3]
-  system: AFR
-  kind: segment
-- id: AFR22W60
-  fingerprint: FlyLeds Essentials Controller[10] <-> Nav & Strobe Lights[6]
-  system: AFR
-  kind: segment
 - id: AP22B01
   fingerprint: GSA 28 - Roll Servo[J281.9] <-> GroundSymbol[GND]
   system: AP
@@ -419,18 +170,26 @@ wires:
   system: AP
   kind: segment
 - id: AUD22B11
+  fingerprint: GDL 51R - Sirius XM[9] <-> GroundSymbol[GND]
+  system: AUD
+  kind: segment
+- id: AUD22B15
   fingerprint: GMA 245 - Audio Panel[J2402.10] <-> GroundSymbol[GND]
   system: AUD
   kind: segment
-- id: AUD22B12
+- id: AUD22B16
   fingerprint: GMA 245 - Audio Panel[J2402.11] <-> GroundSymbol[GND]
   system: AUD
   kind: segment
-- id: AUD22R09
+- id: AUD22R12
+  fingerprint: Fuse[GDL51R] <-> GDL 51R - Sirius XM[10]
+  system: AUD
+  kind: segment
+- id: AUD22R13
   fingerprint: Fuse[GMA245] <-> GMA 245 - Audio Panel[J2402.8]
   system: AUD
   kind: segment
-- id: AUD22R10
+- id: AUD22R14
   fingerprint: Fuse[GMA245] <-> GMA 245 - Audio Panel[J2402.9]
   system: AUD
   kind: segment
@@ -441,70 +200,128 @@ wires:
   system: AUD
   kind: shield
 - id: AUD22SH02
+  fingerprint: shield:GDL 51R - Sirius XM[11] <-> GDU 460 MFD[P4602.36]|GDL 51R -
+    Sirius XM[5] <-> GDU 460 MFD[P4602.23]|GDL 51R - Sirius XM[6] <-> GDU 460 MFD[P4602.40]
+  system: AUD
+  kind: shield
+- id: AUD22SH03
+  fingerprint: shield:GDL 51R - Sirius XM[12] <-> GDU 460 PFD[P4602.27]|GDL 51R -
+    Sirius XM[7] <-> GDU 460 PFD[P4602.47]|GDL 51R - Sirius XM[8] <-> GDU 460 PFD[P4602.48]
+  system: AUD
+  kind: shield
+- id: AUD22SH04
   fingerprint: shield:GDU 460 PFD[P4602.18] <-> GMA 245 - Audio Panel[P2401.32]|GDU
     460 PFD[P4602.1] <-> GMA 245 - Audio Panel[P2401.31]
   system: AUD
   kind: shield
-- id: AUD22SH03
+- id: AUD22SH05
   fingerprint: shield:GMA 245 - Audio Panel[P2401.33] <-> Pilot Lemo[5]|GMA 245 -
     Audio Panel[P2401.34] <-> Pilot Stick[2]|GMA 245 - Audio Panel[P2401.35] <-> Pilot
     Lemo[6]
   system: AUD
   kind: shield
-- id: AUD22SH04
+- id: AUD22SH06
   fingerprint: shield:GMA 245 - Audio Panel[P2401.43] <-> GTN 650Xi - GPS/NAV/COM[P1001.23]|GMA
     245 - Audio Panel[P2401.44] <-> GTN 650Xi - GPS/NAV/COM[P1001.4]
   system: AUD
   kind: shield
-- id: AUD22SH05
+- id: AUD22SH07
   fingerprint: shield:GMA 245 - Audio Panel[J2402.16] <-> Pilot Lemo[3]|GMA 245 -
     Audio Panel[J2402.1] <-> Pilot Lemo[2]|GMA 245 - Audio Panel[J2402.31] <-> Pilot
     Lemo[4]
   system: AUD
   kind: shield
-- id: AUD22SH06
+- id: AUD22SH08
   fingerprint: shield:Copilot Lemo[2] <-> GMA 245 - Audio Panel[J2402.2]|Copilot Lemo[3]
     <-> GMA 245 - Audio Panel[J2402.3]|Copilot Lemo[4] <-> GMA 245 - Audio Panel[J2402.4]
   system: AUD
   kind: shield
-- id: AUD22SH07
+- id: AUD22SH09
   fingerprint: shield:GMA 245 - Audio Panel[J2402.23] <-> Music In[T]|GMA 245 - Audio
     Panel[J2402.24] <-> Music In[R]|GMA 245 - Audio Panel[J2402.25] <-> Music In[S]
   system: AUD
   kind: shield
-- id: AUD22SH08
+- id: AUD22SH10
   fingerprint: shield:Copilot Lemo[5] <-> GMA 245 - Audio Panel[J2402.32]|Copilot
     Lemo[6] <-> GMA 245 - Audio Panel[J2402.34]|Copilot Stick[2] <-> GMA 245 - Audio
     Panel[J2402.33]
   system: AUD
   kind: shield
-- id: AUD22W13
+- id: AUD22W17
   fingerprint: GMA 245 - Audio Panel[J2402.20] <-> Pilot Stick[3]
   system: AUD
   kind: segment
-- id: AUD22W14
+- id: AUD22W18
   fingerprint: Copilot Stick[3] <-> GMA 245 - Audio Panel[J2402.20]
   system: AUD
   kind: segment
-- id: AUD22W15
+- id: AUD22W19
   fingerprint: GMA 245 - Audio Panel[J2402.22] <-> Pilot Stick[4]
   system: AUD
   kind: segment
-- id: AUD22W16
+- id: AUD22W20
   fingerprint: Copilot Stick[4] <-> GMA 245 - Audio Panel[J2402.22]
   system: AUD
   kind: segment
-- id: BKUP22B03
-  fingerprint: G5 - Backup Instrument[J51.9] <-> GroundSymbol[GND]
-  system: BKUP
+- id: CAB22B13
+  fingerprint: Cabin Lights[2] <-> GroundSymbol[GND]
+  system: CAB
   kind: segment
-- id: BKUP22R01
-  fingerprint: Fuse[G5] <-> G5 - Backup Instrument[J51.7]
-  system: BKUP
+- id: CAB22B14
+  fingerprint: GroundSymbol[GND] <-> Master Caution[2]
+  system: CAB
   kind: segment
-- id: BKUP22R02
-  fingerprint: Fuse[G5] <-> G5 - Backup Instrument[J51.8]
-  system: BKUP
+- id: CAB22B15
+  fingerprint: GroundSymbol[GND] <-> Master Warning[2]
+  system: CAB
+  kind: segment
+- id: CAB22W01
+  fingerprint: GMC 507 - AP Controller[J7001.11] <-> GTN 650Xi - GPS/NAV/COM[P1001.18]
+  system: CAB
+  kind: segment
+- id: CAB22W02
+  fingerprint: GMA 245 - Audio Panel[J2402.7] <-> GMC 507 - AP Controller[J7001.11]
+  system: CAB
+  kind: segment
+- id: CAB22W03
+  fingerprint: Backlight[RED] <-> GAD 27 - Flap & Light Controller[J271.37]
+  system: CAB
+  kind: segment
+- id: CAB22W04
+  fingerprint: Cabin Light[RED] <-> GAD 27 - Flap & Light Controller[J271.37]
+  system: CAB
+  kind: segment
+- id: CAB22W05
+  fingerprint: Backlight[BLK] <-> GAD 27 - Flap & Light Controller[J271.38]
+  system: CAB
+  kind: segment
+- id: CAB22W06
+  fingerprint: Cabin Light[BLK] <-> GAD 27 - Flap & Light Controller[J271.38]
+  system: CAB
+  kind: segment
+- id: CAB22W07
+  fingerprint: Backlight[BLU] <-> GAD 27 - Flap & Light Controller[J271.39]
+  system: CAB
+  kind: segment
+- id: CAB22W08
+  fingerprint: Cabin Light[BLU] <-> GAD 27 - Flap & Light Controller[J271.40]
+  system: CAB
+  kind: segment
+- id: CAB22W09
+  fingerprint: GAD 27 - Flap & Light Controller[J271.42] <-> GDU 460 MFD[P4602.43]
+  system: CAB
+  kind: segment
+- id: CAB22W10
+  fingerprint: Cabin Lights[1] <-> GAD 27 - Flap & Light Controller[J271.45]
+  system: CAB
+  kind: segment
+- id: CAB22W11
+  fingerprint: GDU 460 PFD[P4602.43] <-> GTN 650Xi - GPS/NAV/COM[P1001.18]
+  system: CAB
+  kind: segment
+- id: CAB22W12
+  fingerprint: GDU 460 MFD[P4602.43] <-> GDU 460 PFD[P4602.43]
+  system: CAB
   kind: segment
 - id: CAN22SH01
   fingerprint: canbus:CAN Bus:GMU 11 - Magnetometer->GSA 28 - Roll Servo
@@ -566,27 +383,27 @@ wires:
   fingerprint: Fuse[GTR20] <-> GTR 20 - Com Radio[J2001.1]
   system: COM
   kind: segment
-- id: COM22B09
+- id: COM22B11
   fingerprint: GTN 650Xi - GPS/NAV/COM[P1003.37] <-> GroundSymbol[GND]
   system: COM
   kind: segment
-- id: COM22B10
+- id: COM22B12
   fingerprint: GTN 650Xi - GPS/NAV/COM[P1003.38] <-> GroundSymbol[GND]
   system: COM
   kind: segment
-- id: COM22B11
+- id: COM22B13
   fingerprint: GTN 650Xi - GPS/NAV/COM[P1003.40] <-> GroundSymbol[GND]
   system: COM
   kind: segment
-- id: COM22R08
+- id: COM22R10
   fingerprint: Fuse[GTN650_com] <-> GTN 650Xi - GPS/NAV/COM[P1003.30]
   system: COM
   kind: segment
-- id: COM22R12
+- id: COM22R14
   fingerprint: Fuse[GTN650_com] <-> GTN 650Xi - GPS/NAV/COM[P1003.43]
   system: COM
   kind: segment
-- id: COM22R13
+- id: COM22R15
   fingerprint: Fuse[GTN650_com] <-> GTN 650Xi - GPS/NAV/COM[P1003.44]
   system: COM
   kind: segment
@@ -614,6 +431,14 @@ wires:
   kind: shield
 - id: COM22W05
   fingerprint: GMA 245 - Audio Panel[P2401.12] <-> GTR 20 - Com Radio[J2001.5]
+  system: COM
+  kind: segment
+- id: COM22W08
+  fingerprint: GAD 27 - Flap & Light Controller[J271.15] <-> Pilot Stick[9]
+  system: COM
+  kind: segment
+- id: COM22W09
+  fingerprint: Copilot Stick[9] <-> GAD 27 - Flap & Light Controller[J271.15]
   system: COM
   kind: segment
 - id: EFIS22B03
@@ -696,31 +521,31 @@ wires:
     - Engine Indication[J242.6] <-> IO390-EXP119[Cylinder4.RED]
   system: EIS
   kind: shield
-- id: EIS22B27
+- id: EIS22B24
   fingerprint: GEA24 - Engine Indication[J241.9] <-> GroundSymbol[GND]
   system: EIS
   kind: segment
-- id: EIS22R25
+- id: EIS22R22
   fingerprint: Fuse[GEA24] <-> GEA24 - Engine Indication[J241.7]
   system: EIS
   kind: segment
-- id: EIS22R26
+- id: EIS22R23
   fingerprint: Fuse[GEA24] <-> GEA24 - Engine Indication[J241.8]
   system: EIS
   kind: segment
-- id: EIS22R28
+- id: EIS22R25
   fingerprint: Fuse[Load Side] <-> GEA24 - Engine Indication[J243.36]
   system: EIS
   kind: segment
-- id: EIS22R29
+- id: EIS22R26
   fingerprint: Fuse[Alternator Side] <-> GEA24 - Engine Indication[J243.37]
   system: EIS
   kind: segment
-- id: EIS22R30
+- id: EIS22R27
   fingerprint: Fuse[Main Bus] <-> GEA24 - Engine Indication[J244.25]
   system: EIS
   kind: segment
-- id: EIS22R31
+- id: EIS22R28
   fingerprint: Fuse[Engine Bus] <-> GEA24 - Engine Indication[J244.28]
   system: EIS
   kind: segment
@@ -746,7 +571,7 @@ wires:
     - Engine Indication[J243.4]
   system: EIS
   kind: shield
-- id: EIS22SH14
+- id: EIS22SH13
   fingerprint: shield:GEA24 - Engine Indication[J243.8] <-> SDSECU[TBD1]
   system: EIS
   kind: shield
@@ -766,7 +591,7 @@ wires:
     <-> Oil Pressure[RED]
   system: EIS
   kind: shield
-- id: EIS22SH18
+- id: EIS22SH17
   fingerprint: shield:GEA24 - Engine Indication[J243.23] <-> SDSECU[TBD2]
   system: EIS
   kind: shield
@@ -782,86 +607,168 @@ wires:
   fingerprint: shield:GEA24 - Engine Indication[J244.9] <-> Right Fuel Quantity[1]
   system: EIS
   kind: shield
-- id: EIS22SH21
-  fingerprint: shield:GEA24 - Engine Indication[J244.18] <-> Pitch Trim[Or]|GEA24
-    - Engine Indication[J244.19] <-> Pitch Trim[Gr]|GEA24 - Engine Indication[J244.20]
-    <-> Pitch Trim[Bl]
-  system: EIS
-  kind: shield
-- id: EIS22SH22
-  fingerprint: shield:GEA24 - Engine Indication[J244.21] <-> Roll Trim[Or]|GEA24 -
-    Engine Indication[J244.22] <-> Roll Trim[Gr]|GEA24 - Engine Indication[J244.23]
-    <-> Roll Trim[Bl]
-  system: EIS
-  kind: shield
-- id: EIS22SH23
-  fingerprint: shield:Flap Motor[RED] <-> GEA24 - Engine Indication[J244.13]|Flap
-    Motor[WHT] <-> GEA24 - Engine Indication[J244.12]|Flap Motor[YLW] <-> GEA24 -
-    Engine Indication[J244.11]
-  system: EIS
-  kind: shield
-- id: EIS22W24
+- id: EIS22W21
   fingerprint: GAP 26-20 - Regulated Pitot Heat[Blu] <-> GEA24 - Engine Indication[J244.43]
   system: EIS
   kind: segment
-- id: EIS22W32
+- id: EIS22W29
   fingerprint: GEA24 - Engine Indication[J244.44] <-> Master Warning[1]
   system: EIS
   kind: segment
-- id: EIS22W33
+- id: EIS22W30
   fingerprint: GEA24 - Engine Indication[J244.45] <-> Master Caution[1]
   system: EIS
+  kind: segment
+- id: EMR22B04
+  fingerprint: G5 - Backup Instrument[J51.9] <-> GroundSymbol[GND]
+  system: EMR
+  kind: segment
+- id: EMR22R02
+  fingerprint: Fuse[G5] <-> G5 - Backup Instrument[J51.7]
+  system: EMR
+  kind: segment
+- id: EMR22R03
+  fingerprint: Fuse[G5] <-> G5 - Backup Instrument[J51.8]
+  system: EMR
   kind: segment
 - id: EMR22SH01
   fingerprint: shield:ACK E-04 ELT[DIN.1] <-> Fuse[elt]|ACK E-04 ELT[DIN.3] <-> GroundSymbol[GND]|ACK
     E-04 ELT[DIN.4] <-> GTN 650Xi - GPS/NAV/COM[P1001.8]
   system: EMR
   kind: shield
-- id: GDL22B03
-  fingerprint: GDL 51R - Sirius XM[9] <-> GroundSymbol[GND]
-  system: GDL
+- id: FCTL18B28
+  fingerprint: GAD 27 - Flap & Light Controller[TB273.6] <-> GroundSymbol[GND]
+  system: FCTL
   kind: segment
-- id: GDL22R04
-  fingerprint: Fuse[GDL51R] <-> GDL 51R - Sirius XM[10]
-  system: GDL
+- id: FCTL18R27
+  fingerprint: Fuse[flaps] <-> GAD 27 - Flap & Light Controller[TB273.5]
+  system: FCTL
   kind: segment
-- id: GDL22SH01
-  fingerprint: shield:GDL 51R - Sirius XM[11] <-> GDU 460 MFD[P4602.36]|GDL 51R -
-    Sirius XM[5] <-> GDU 460 MFD[P4602.23]|GDL 51R - Sirius XM[6] <-> GDU 460 MFD[P4602.40]
-  system: GDL
-  kind: shield
-- id: GDL22SH02
-  fingerprint: shield:GDL 51R - Sirius XM[12] <-> GDU 460 PFD[P4602.27]|GDL 51R -
-    Sirius XM[7] <-> GDU 460 PFD[P4602.47]|GDL 51R - Sirius XM[8] <-> GDU 460 PFD[P4602.48]
-  system: GDL
-  kind: shield
-- id: GEN22B01
-  fingerprint: Cabin Lights[2] <-> GroundSymbol[GND]
-  system: GEN
+- id: FCTL18W29
+  fingerprint: Flap Motor[BRN] <-> GAD 27 - Flap & Light Controller[TB273.7]
+  system: FCTL
   kind: segment
-- id: GEN22B02
-  fingerprint: GroundSymbol[GND] <-> Left 7 Stars[GND]
-  system: GEN
+- id: FCTL18W30
+  fingerprint: Flap Motor[BLU] <-> GAD 27 - Flap & Light Controller[TB273.8]
+  system: FCTL
   kind: segment
-- id: GEN22B03
-  fingerprint: GroundSymbol[GND] <-> Master Caution[2]
-  system: GEN
+- id: FCTL22B11
+  fingerprint: GAD 27 - Flap & Light Controller[J271.8] <-> GroundSymbol[GND]
+  system: FCTL
   kind: segment
-- id: GEN22B04
-  fingerprint: GroundSymbol[GND] <-> Master Warning[2]
-  system: GEN
+- id: FCTL22B23
+  fingerprint: GAD 27 - Flap & Light Controller[J272.2] <-> GroundSymbol[GND]
+  system: FCTL
   kind: segment
-- id: GEN22B05
-  fingerprint: GroundSymbol[GND] <-> Right 7 Stars[GND]
-  system: GEN
+- id: FCTL22B25
+  fingerprint: GAD 27 - Flap & Light Controller[J272.4] <-> GroundSymbol[GND]
+  system: FCTL
   kind: segment
-- id: GEN22B06
+- id: FCTL22B31
   fingerprint: Flap Switch[1] <-> GroundSymbol[GND]
-  system: GEN
+  system: FCTL
   kind: segment
-- id: GEN22B07
-  fingerprint: GroundSymbol[GND] <-> Wig Wag Lights[1]
-  system: GEN
+- id: FCTL22R10
+  fingerprint: Fuse[GAD27] <-> GAD 27 - Flap & Light Controller[J271.7]
+  system: FCTL
+  kind: segment
+- id: FCTL22R26
+  fingerprint: Fuse[GAD27] <-> GAD 27 - Flap & Light Controller[TB273.1]
+  system: FCTL
+  kind: segment
+- id: FCTL22SH01
+  fingerprint: shield:GSA 28 - Roll Servo[J281.13] <-> Roll Trim[Wh]|GSA 28 - Roll
+    Servo[J281.14] <-> Roll Trim[Gy]
+  system: FCTL
+  kind: shield
+- id: FCTL22SH02
+  fingerprint: shield:GSA 28 - Pitch Servo[J281.13] <-> Pitch Trim[Wh]|GSA 28 - Pitch
+    Servo[J281.14] <-> Pitch Trim[Gy]
+  system: FCTL
+  kind: shield
+- id: FCTL22SH03
+  fingerprint: shield:GEA24 - Engine Indication[J244.18] <-> Pitch Trim[Or]|GEA24
+    - Engine Indication[J244.19] <-> Pitch Trim[Gr]|GEA24 - Engine Indication[J244.20]
+    <-> Pitch Trim[Bl]
+  system: FCTL
+  kind: shield
+- id: FCTL22SH04
+  fingerprint: shield:GEA24 - Engine Indication[J244.21] <-> Roll Trim[Or]|GEA24 -
+    Engine Indication[J244.22] <-> Roll Trim[Gr]|GEA24 - Engine Indication[J244.23]
+    <-> Roll Trim[Bl]
+  system: FCTL
+  kind: shield
+- id: FCTL22SH05
+  fingerprint: shield:Flap Motor[RED] <-> GEA24 - Engine Indication[J244.13]|Flap
+    Motor[WHT] <-> GEA24 - Engine Indication[J244.12]|Flap Motor[YLW] <-> GEA24 -
+    Engine Indication[J244.11]
+  system: FCTL
+  kind: shield
+- id: FCTL22W06
+  fingerprint: GAD 27 - Flap & Light Controller[J272.9] <-> GSA 28 - Roll Servo[J281.11]
+  system: FCTL
+  kind: segment
+- id: FCTL22W07
+  fingerprint: GAD 27 - Flap & Light Controller[J272.10] <-> GSA 28 - Roll Servo[J281.12]
+  system: FCTL
+  kind: segment
+- id: FCTL22W08
+  fingerprint: GAD 27 - Flap & Light Controller[J272.11] <-> GSA 28 - Pitch Servo[J281.11]
+  system: FCTL
+  kind: segment
+- id: FCTL22W09
+  fingerprint: GAD 27 - Flap & Light Controller[J272.12] <-> GSA 28 - Pitch Servo[J281.12]
+  system: FCTL
+  kind: segment
+- id: FCTL22W12
+  fingerprint: Flap Switch[2] <-> GAD 27 - Flap & Light Controller[J271.18]
+  system: FCTL
+  kind: segment
+- id: FCTL22W13
+  fingerprint: Flap Switch[3] <-> GAD 27 - Flap & Light Controller[J271.19]
+  system: FCTL
+  kind: segment
+- id: FCTL22W14
+  fingerprint: GAD 27 - Flap & Light Controller[J271.24] <-> Pilot Stick[5]
+  system: FCTL
+  kind: segment
+- id: FCTL22W15
+  fingerprint: GAD 27 - Flap & Light Controller[J271.25] <-> Pilot Stick[6]
+  system: FCTL
+  kind: segment
+- id: FCTL22W16
+  fingerprint: Copilot Stick[5] <-> GAD 27 - Flap & Light Controller[J271.26]
+  system: FCTL
+  kind: segment
+- id: FCTL22W17
+  fingerprint: Copilot Stick[6] <-> GAD 27 - Flap & Light Controller[J271.27]
+  system: FCTL
+  kind: segment
+- id: FCTL22W18
+  fingerprint: GAD 27 - Flap & Light Controller[J271.28] <-> Pilot Stick[7]
+  system: FCTL
+  kind: segment
+- id: FCTL22W19
+  fingerprint: GAD 27 - Flap & Light Controller[J271.29] <-> Pilot Stick[8]
+  system: FCTL
+  kind: segment
+- id: FCTL22W20
+  fingerprint: Copilot Stick[7] <-> GAD 27 - Flap & Light Controller[J271.30]
+  system: FCTL
+  kind: segment
+- id: FCTL22W21
+  fingerprint: Copilot Stick[8] <-> GAD 27 - Flap & Light Controller[J271.31]
+  system: FCTL
+  kind: segment
+- id: FCTL22W22
+  fingerprint: GAD 27 - Flap & Light Controller[J272.1] <-> GAD 27 - Flap & Light
+    Controller[TB273.2]
+  system: FCTL
+  kind: segment
+- id: FCTL22W24
+  fingerprint: GAD 27 - Flap & Light Controller[J272.3] <-> GAD 27 - Flap & Light
+    Controller[TB273.2]
+  system: FCTL
   kind: segment
 - id: GPS22B13
   fingerprint: GTN 650Xi - GPS/NAV/COM[P1001.77] <-> GroundSymbol[GND]
@@ -942,6 +849,99 @@ wires:
 - id: GPS22W12
   fingerprint: GTN 650Xi - GPS/NAV/COM[P1001.65] <-> GTN 650Xi Config[RED]
   system: GPS
+  kind: segment
+- id: LGHT14W09
+  fingerprint: GAD 27 - Flap & Light Controller[TB273.9] <-> Left 7 Stars[LND]
+  system: LGHT
+  kind: segment
+- id: LGHT14W10
+  fingerprint: GAD 27 - Flap & Light Controller[TB273.10] <-> Right 7 Stars[LND]
+  system: LGHT
+  kind: segment
+- id: LGHT18R07
+  fingerprint: Fuse[landing_lights] <-> GAD 27 - Flap & Light Controller[TB273.3]
+  system: LGHT
+  kind: segment
+- id: LGHT18R08
+  fingerprint: Fuse[landing_lights] <-> GAD 27 - Flap & Light Controller[TB273.4]
+  system: LGHT
+  kind: segment
+- id: LGHT20W13
+  fingerprint: Landing Lights[6] <-> Left 7 Stars[TXI]
+  system: LGHT
+  kind: segment
+- id: LGHT20W14
+  fingerprint: Landing Lights[6] <-> Right 7 Stars[TXI]
+  system: LGHT
+  kind: segment
+- id: LGHT22B11
+  fingerprint: GroundSymbol[GND] <-> Landing Lights[2]
+  system: LGHT
+  kind: segment
+- id: LGHT22B15
+  fingerprint: FlyLeds Essentials Controller[1] <-> GroundSymbol[GND]
+  system: LGHT
+  kind: segment
+- id: LGHT22B18
+  fingerprint: GroundSymbol[GND] <-> Left 7 Stars[GND]
+  system: LGHT
+  kind: segment
+- id: LGHT22B19
+  fingerprint: GroundSymbol[GND] <-> Right 7 Stars[GND]
+  system: LGHT
+  kind: segment
+- id: LGHT22B22
+  fingerprint: GroundSymbol[GND] <-> Wig Wag Lights[1]
+  system: LGHT
+  kind: segment
+- id: LGHT22R12
+  fingerprint: Fuse[taxi_lights] <-> Landing Lights[5]
+  system: LGHT
+  kind: segment
+- id: LGHT22R20
+  fingerprint: Fuse[strobe_lights] <-> Nav & Strobe Lights[2]
+  system: LGHT
+  kind: segment
+- id: LGHT22R21
+  fingerprint: Fuse[nav_lights] <-> Nav & Strobe Lights[5]
+  system: LGHT
+  kind: segment
+- id: LGHT22SH01
+  fingerprint: shield:FlyLeds Essentials Controller[11] <-> Left Position & Strobe[S+]|FlyLeds
+    Essentials Controller[3] <-> Left Position & Strobe[S-]|FlyLeds Essentials Controller[4]
+    <-> Left Position & Strobe[P+]
+  system: LGHT
+  kind: shield
+- id: LGHT22SH02
+  fingerprint: shield:FlyLeds Essentials Controller[12] <-> Right Position & Strobe[S+]|FlyLeds
+    Essentials Controller[13] <-> Right Position & Strobe[P+]|FlyLeds Essentials Controller[6]
+    <-> Right Position & Strobe[S-]
+  system: LGHT
+  kind: shield
+- id: LGHT22SH03
+  fingerprint: shield:FlyLeds Essentials Controller[15] <-> Tail Light[1]|FlyLeds
+    Essentials Controller[8] <-> Tail Light[2]
+  system: LGHT
+  kind: shield
+- id: LGHT22W04
+  fingerprint: GAD 27 - Flap & Light Controller[J271.34] <-> Landing Lights[3]
+  system: LGHT
+  kind: segment
+- id: LGHT22W05
+  fingerprint: GAD 27 - Flap & Light Controller[J271.35] <-> Landing Lights[3]
+  system: LGHT
+  kind: segment
+- id: LGHT22W06
+  fingerprint: GAD 27 - Flap & Light Controller[J271.36] <-> Wig Wag Lights[2]
+  system: LGHT
+  kind: segment
+- id: LGHT22W16
+  fingerprint: FlyLeds Essentials Controller[5] <-> Nav & Strobe Lights[3]
+  system: LGHT
+  kind: segment
+- id: LGHT22W17
+  fingerprint: FlyLeds Essentials Controller[10] <-> Nav & Strobe Lights[6]
+  system: LGHT
   kind: segment
 - id: NAV22B07
   fingerprint: GTN 650Xi - GPS/NAV/COM[P1004.60] <-> GroundSymbol[GND]
