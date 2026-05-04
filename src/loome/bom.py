@@ -29,6 +29,7 @@ from .model import (
     Terminal,
     WireSegment,
 )
+from .wire_ids import _is_local_segment
 
 if TYPE_CHECKING:
     from .harness import Harness
@@ -373,17 +374,15 @@ def build_bom(harness: "Harness") -> Bom:
     sg_to_rows: dict[int, list[BomShieldedRow]] = {}
     sc_counter = 0
 
-    # CAN bus cables: each adjacent device pair on a CanBusLine is one shielded
-    # cable carrying CAN H + CAN L. Mark every segment touching a CAN pin as
-    # shielded so it disappears from the per-conductor Wires section.
-    can_pin_ids: set[int] = set()
-    for cbl in harness.can_buses:
-        can_pin_ids.update(cbl._pin_ids)
-    if can_pin_ids:
-        for seg in all_segments:
-            a, b = seg.end_a, seg.end_b
-            if (isinstance(a, Pin) and id(a) in can_pin_ids) or (isinstance(b, Pin) and id(b) in can_pin_ids):
+    # Mark every segment touching a CAN-bus pin (shield_group.single_oval=True)
+    # as shielded so it disappears from the per-conductor Wires section, whether
+    # or not the port appears on a CanBusLine. CAN pins auto-connect to a shared
+    # off-page ref; that plumbing isn't a real wire.
+    for seg in all_segments:
+        for ep in (seg.end_a, seg.end_b):
+            if isinstance(ep, Pin) and ep.shield_group is not None and ep.shield_group.single_oval:
                 shielded_seg_ids.add(id(seg))
+                break
     can_disc_cables: dict[tuple[int, int], list[BomShieldedRow]] = {}
     can_disc_base_ids: dict[tuple[int, int], list[str]] = {}
     for cbl in harness.can_buses:
@@ -501,6 +500,8 @@ def build_bom(harness: "Harness") -> Bom:
 
     for seg in all_segments:
         if id(seg) in shielded_seg_ids:
+            continue
+        if _is_local_segment(seg):
             continue
         wid = seg.wire_id or f"{seg.gauge}{seg.effective_color or '-'}-?"
         color = seg.effective_color

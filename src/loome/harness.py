@@ -49,6 +49,7 @@ class Harness:
 
     name: str
     length_unit: str = "in"
+    default_system: str | None = "GEN"
     components: list[Component] = field(default_factory=list)
     splice_nodes: list[SpliceNode] = field(default_factory=list)
     terminals: list[Terminal] = field(default_factory=list)

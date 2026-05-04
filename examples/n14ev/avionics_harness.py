@@ -111,9 +111,8 @@ with System("AP"):
     gsa28_yaw.J281.disconnect >> gsa28_roll.J281.disconnect
 
     (toga.no1 >> gtn650xi.P1001[37]).notes("Reconfigure to Remote Go Around")
-    toga.com1 >> toga.com2
+    (toga.com1 >> toga.com2).color("B")
     toga.com1 >> gnd
-
 
 with System("GDL"):
     with gdl51r as c:
@@ -502,6 +501,7 @@ can_bus = CanBusLine(
 harness = Harness(
     "Avionics Harness",
     length_unit="in",
+    default_system="GEN",
     components=[
         gsu25,
         gtp59,

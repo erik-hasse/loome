@@ -34,6 +34,7 @@ from .model import (
     GroundSymbol,
     OffPageReference,
     Pin,
+    ShieldDrainTerminal,
     ShieldGroup,
     SpliceNode,
     Terminal,
@@ -106,25 +107,37 @@ def _component_system(ep) -> str | None:
     return None
 
 
-DEFAULT_SYSTEM = "GEN"
+DEFAULT_SYSTEM = "GEN"  # legacy fallback when neither harness nor caller supply one
 
 
-def _resolve_system(seg: WireSegment, fallback: str | None = None) -> str:
+def _resolve_system(seg: WireSegment, default: str | None) -> str | None:
     if seg.system:
         return seg.system
-    if fallback:
-        return fallback
     a = _component_system(seg.end_a)
     if a:
         return a
     b = _component_system(seg.end_b)
     if b:
         return b
-    return DEFAULT_SYSTEM
+    return default
 
 
-def _resolve_shield_system(sg: ShieldGroup, members: list[WireSegment]) -> str:
-    explicit: set[str] = {_resolve_system(s) for s in members if _resolve_system(s) != DEFAULT_SYSTEM}
+def _require_system(seg: WireSegment, default: str | None) -> str:
+    sys = _resolve_system(seg, default)
+    if sys is None:
+        raise ValueError(
+            f"wire segment {fingerprint_segment(seg)} has no system assigned and harness.default_system is None; "
+            "wrap it in a System(...) block, set the component's system, or set a Harness.default_system."
+        )
+    return sys
+
+
+def _resolve_shield_system(sg: ShieldGroup, members: list[WireSegment], default: str | None) -> str:
+    explicit: set[str] = set()
+    for s in members:
+        sys = _resolve_system(s, None)
+        if sys is not None:
+            explicit.add(sys)
     if len(explicit) > 1:
         raise ValueError(
             f"Shielded cable {fingerprint_shield(sg, members)} spans multiple systems: {sorted(explicit)}. "
@@ -132,7 +145,35 @@ def _resolve_shield_system(sg: ShieldGroup, members: list[WireSegment]) -> str:
         )
     if explicit:
         return next(iter(explicit))
-    return DEFAULT_SYSTEM
+    if default is None:
+        raise ValueError(
+            f"Shielded cable {fingerprint_shield(sg, members)} has no system and harness.default_system is None."
+        )
+    return default
+
+
+def _is_local_segment(seg: WireSegment) -> bool:
+    """True for wires that stay inside one connector — straps, local grounds, shield drain stubs.
+
+    These are layout/visual artifacts, not bill-of-materials wires: they don't
+    get IDs, don't appear in the BOM wires section, and don't need fingerprints.
+    """
+    a, b = seg.end_a, seg.end_b
+    if isinstance(a, ShieldDrainTerminal) or isinstance(b, ShieldDrainTerminal):
+        return True
+    if isinstance(a, GroundSymbol) and a.local:
+        return True
+    if isinstance(b, GroundSymbol) and b.local:
+        return True
+    if isinstance(a, Pin) and isinstance(b, Pin):
+        ca, cb = a._connector, b._connector
+        if ca is not None and ca is cb:
+            return True
+        # Direct component pins (no inner Connector) — straps between e.g.
+        # switch poles. Treat same-component as local too.
+        if ca is None and cb is None and a._component is not None and a._component is b._component:
+            return True
+    return False
 
 
 # ── formatting ─────────────────────────────────────────────────────────────
@@ -226,6 +267,7 @@ def assign_wire_ids(harness: "Harness", spec_path: Path | None) -> None:
     """
     sidecar = _sidecar_path(spec_path) if spec_path else None
     by_fp, orphans = _load_sidecar(sidecar) if sidecar else ({}, [])
+    default_system = getattr(harness, "default_system", DEFAULT_SYSTEM)
 
     next_nn: dict[str, int] = {}
     for entry in list(by_fp.values()) + orphans:
@@ -261,7 +303,7 @@ def assign_wire_ids(harness: "Harness", spec_path: Path | None) -> None:
         seen_sg.add(id(sg))
         members = shield_members[id(sg)]
         fp = fingerprint_shield(sg, members)
-        system = _resolve_shield_system(sg, members)
+        system = _resolve_shield_system(sg, members, default_system)
         gauge = _dominant_gauge(members)
         gauge_str = _format_gauge(gauge)
         existing = by_fp.get(fp)
@@ -290,13 +332,19 @@ def assign_wire_ids(harness: "Harness", spec_path: Path | None) -> None:
     # underlying segments — we just compute one ID per (bus, adjacent-pair)
     # for BOM rows and renderer labels.
     can_pair_ids: dict[tuple[int, int, int], str] = {}  # (cbl_id, dev_a_id, dev_b_id) → wire_id
-    can_pin_ids_all: set[int] = set()
-    for cbl in harness.can_buses:
-        can_pin_ids_all.update(cbl._pin_ids)
-    # Mark all CAN segments shielded so step 2 doesn't assign per-segment IDs.
+
+    # Mark every segment touching a CAN-bus pin as "shielded" for ID purposes,
+    # whether or not the port appears on a CanBusLine. CAN ports auto-connect
+    # their H/L pins to a shared "To CAN Bus" off-page reference; that plumbing
+    # shouldn't surface as an individual wire.
+    def _is_can_pin(ep) -> bool:
+        if not isinstance(ep, Pin):
+            return False
+        sg = ep.shield_group
+        return sg is not None and sg.single_oval
+
     for seg in all_segments:
-        a, b = seg.end_a, seg.end_b
-        if (isinstance(a, Pin) and id(a) in can_pin_ids_all) or (isinstance(b, Pin) and id(b) in can_pin_ids_all):
+        if _is_can_pin(seg.end_a) or _is_can_pin(seg.end_b):
             shielded_seg_ids.add(id(seg))
 
     for cbl in harness.can_buses:
@@ -343,8 +391,10 @@ def assign_wire_ids(harness: "Harness", spec_path: Path | None) -> None:
     for seg in all_segments:
         if id(seg) in shielded_seg_ids:
             continue  # already inherits the shield-group ID
+        if _is_local_segment(seg):
+            continue  # straps, local grounds, shield drain stubs — no ID, no BOM row
         fp = fingerprint_segment(seg)
-        system = _resolve_system(seg)
+        system = _require_system(seg, default_system)
         gauge_str = _format_gauge(seg.gauge)
         color_str = _format_color(seg)
         existing = by_fp.get(fp)

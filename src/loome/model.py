@@ -51,6 +51,7 @@ class Terminal:
 class GroundSymbol(Terminal):
     label: str = "GND"
     style: Literal["filled", "open", "earth"] = "filled"
+    local: bool = False  # auto-created per-pin ground (skip wire-ID assignment)
 
     def display_name(self) -> str:
         return self.label
@@ -395,7 +396,11 @@ class Pin:
     _drain_for: "ShieldGroup | None" = field(default=None, repr=False)
 
     def local_ground(self, label: str = "") -> None:
-        sym = GroundSymbol(id=f"lgnd_{id(self)}", label=label, style="open")
+        comp = self._component
+        owner = comp.label if comp is not None else (self._component_class.__name__ if self._component_class else "?")
+        conn = self._connector_class._connector_name if self._connector_class is not None else ""
+        slot = f"{conn}.{self.number}" if conn else str(self.number)
+        sym = GroundSymbol(id=f"lgnd_{owner}_{slot}", label=label, style="open", local=True)
         self.connect(sym)
 
     def connect(
