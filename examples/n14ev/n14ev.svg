@@ -4167,8 +4167,6 @@
 <ellipse cx="584" cy="158.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,182.0 L302,186.0" stroke="#475569" stroke-width="1" />
 <path d="M297,186.0 L307,186.0 L302,194.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,182.0 L584,186.0" stroke="#475569" stroke-width="1" />
-<path d="M579,186.0 L589,186.0 L584,194.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="381.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="381.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,416.0 L302,420.0" stroke="#475569" stroke-width="1" />
@@ -4185,8 +4183,6 @@
 <ellipse cx="584" cy="481.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,516.0 L302,520.0" stroke="#475569" stroke-width="1" />
 <path d="M297,520.0 L307,520.0 L302,528.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,516.0 L584,520.0" stroke="#475569" stroke-width="1" />
-<path d="M579,520.0 L589,520.0 L584,528.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="324" cy="764.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M324,788.0 L324,792.0" stroke="#475569" stroke-width="1" />
 <path d="M319,792.0 L329,792.0 L324,800.0 Z" fill="white" stroke="#475569" stroke-width="1" />
@@ -4246,14 +4242,10 @@
 <ellipse cx="584" cy="2835.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,2870.0 L302,2874.0" stroke="#475569" stroke-width="1" />
 <path d="M297,2874.0 L307,2874.0 L302,2882.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,2870.0 L584,2874.0" stroke="#475569" stroke-width="1" />
-<path d="M579,2874.0 L589,2874.0 L584,2882.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="2935.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="2935.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,2970.0 L302,2974.0" stroke="#475569" stroke-width="1" />
 <path d="M297,2974.0 L307,2974.0 L302,2982.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,2970.0 L584,2974.0" stroke="#475569" stroke-width="1" />
-<path d="M579,2974.0 L589,2974.0 L584,2982.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="3260.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="3260.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,3284.0 L302,3288.0" stroke="#475569" stroke-width="1" />
@@ -4365,70 +4357,50 @@
 <path d="M297,5848.0 L307,5848.0 L302,5856.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="7837.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="7837.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,7872.0 L584,7876.0" stroke="#475569" stroke-width="1" />
-<path d="M579,7876.0 L589,7876.0 L584,7884.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="7979.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="7979.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,8014.0 L584,8018.0" stroke="#475569" stroke-width="1" />
-<path d="M579,8018.0 L589,8018.0 L584,8026.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="8199.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="8199.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M584,8234.0 L584,8238.0" stroke="#475569" stroke-width="1" />
-<path d="M579,8238.0 L589,8238.0 L584,8246.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="8921.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="8921.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,8956.0 L302,8960.0" stroke="#475569" stroke-width="1" />
 <path d="M297,8960.0 L307,8960.0 L302,8968.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,8956.0 L584,8960.0" stroke="#475569" stroke-width="1" />
-<path d="M579,8960.0 L589,8960.0 L584,8968.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="8821.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="8821.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,8856.0 L302,8860.0" stroke="#475569" stroke-width="1" />
 <path d="M297,8860.0 L307,8860.0 L302,8868.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,8856.0 L584,8860.0" stroke="#475569" stroke-width="1" />
-<path d="M579,8860.0 L589,8860.0 L584,8868.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="8721.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="8721.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,8756.0 L302,8760.0" stroke="#475569" stroke-width="1" />
 <path d="M297,8760.0 L307,8760.0 L302,8768.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,8756.0 L584,8760.0" stroke="#475569" stroke-width="1" />
-<path d="M579,8760.0 L589,8760.0 L584,8768.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="9318.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="9318.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,9342.0 L302,9346.0" stroke="#475569" stroke-width="1" />
 <path d="M297,9346.0 L307,9346.0 L302,9354.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,9342.0 L584,9346.0" stroke="#475569" stroke-width="1" />
-<path d="M579,9346.0 L589,9346.0 L584,9354.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="9384.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="9384.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,9408.0 L302,9412.0" stroke="#475569" stroke-width="1" />
 <path d="M297,9412.0 L307,9412.0 L302,9420.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,9408.0 L584,9412.0" stroke="#475569" stroke-width="1" />
-<path d="M579,9412.0 L589,9412.0 L584,9420.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="9473.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="9473.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,9508.0 L302,9512.0" stroke="#475569" stroke-width="1" />
 <path d="M297,9512.0 L307,9512.0 L302,9520.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,9508.0 L584,9512.0" stroke="#475569" stroke-width="1" />
-<path d="M579,9512.0 L589,9512.0 L584,9520.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="9715.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="9715.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,9750.0 L302,9754.0" stroke="#475569" stroke-width="1" />
 <path d="M297,9754.0 L307,9754.0 L302,9762.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,9750.0 L584,9754.0" stroke="#475569" stroke-width="1" />
-<path d="M579,9754.0 L589,9754.0 L584,9762.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="9815.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="9815.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,9850.0 L302,9854.0" stroke="#475569" stroke-width="1" />
 <path d="M297,9854.0 L307,9854.0 L302,9862.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,9850.0 L584,9854.0" stroke="#475569" stroke-width="1" />
-<path d="M579,9854.0 L589,9854.0 L584,9862.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="9903.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="9903.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,9938.0 L302,9942.0" stroke="#475569" stroke-width="1" />
 <path d="M297,9942.0 L307,9942.0 L302,9950.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,9938.0 L584,9942.0" stroke="#475569" stroke-width="1" />
-<path d="M579,9942.0 L589,9942.0 L584,9950.0 Z" fill="white" stroke="#475569" stroke-width="1" />
+<ellipse cx="302" cy="16099.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<ellipse cx="584" cy="16099.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+<path d="M584,16112.0 L584,16116.0" stroke="#475569" stroke-width="1" />
+<path d="M579,16116.0 L589,16116.0 L584,16124.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="16061.0" rx="7" ry="51.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="16061.0" rx="7" ry="51.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M584,16112.0 L584,16116.0" stroke="#475569" stroke-width="1" />
@@ -4441,34 +4413,24 @@
 <ellipse cx="584" cy="10130.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,10154.0 L302,10158.0" stroke="#475569" stroke-width="1" />
 <path d="M297,10158.0 L307,10158.0 L302,10166.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,10154.0 L584,10158.0" stroke="#475569" stroke-width="1" />
-<path d="M579,10158.0 L589,10158.0 L584,10166.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="10427.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="10427.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="10196.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="10196.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,10220.0 L302,10224.0" stroke="#475569" stroke-width="1" />
 <path d="M297,10224.0 L307,10224.0 L302,10232.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,10220.0 L584,10224.0" stroke="#475569" stroke-width="1" />
-<path d="M579,10224.0 L589,10224.0 L584,10232.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="10718.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="10718.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,10742.0 L302,10746.0" stroke="#475569" stroke-width="1" />
 <path d="M297,10746.0 L307,10746.0 L302,10754.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,10742.0 L584,10746.0" stroke="#475569" stroke-width="1" />
-<path d="M579,10746.0 L589,10746.0 L584,10754.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="10784.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="10784.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,10808.0 L302,10812.0" stroke="#475569" stroke-width="1" />
 <path d="M297,10812.0 L307,10812.0 L302,10820.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,10808.0 L584,10812.0" stroke="#475569" stroke-width="1" />
-<path d="M579,10812.0 L589,10812.0 L584,10820.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="11338.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="11338.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,11362.0 L302,11366.0" stroke="#475569" stroke-width="1" />
 <path d="M297,11366.0 L307,11366.0 L302,11374.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,11362.0 L584,11366.0" stroke="#475569" stroke-width="1" />
-<path d="M579,11366.0 L589,11366.0 L584,11374.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="11640.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,11664.0 L302,11668.0" stroke="#475569" stroke-width="1" />
 <path d="M297,11668.0 L307,11668.0 L302,11676.0 Z" fill="white" stroke="#475569" stroke-width="1" />
@@ -4476,68 +4438,46 @@
 <ellipse cx="584" cy="11984.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,12008.0 L302,12012.0" stroke="#475569" stroke-width="1" />
 <path d="M297,12012.0 L307,12012.0 L302,12020.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,12008.0 L584,12012.0" stroke="#475569" stroke-width="1" />
-<path d="M579,12012.0 L589,12012.0 L584,12020.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="11918.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="11918.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,11942.0 L302,11946.0" stroke="#475569" stroke-width="1" />
 <path d="M297,11946.0 L307,11946.0 L302,11954.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,11942.0 L584,11946.0" stroke="#475569" stroke-width="1" />
-<path d="M579,11946.0 L589,11946.0 L584,11954.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="11852.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="11852.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,11876.0 L302,11880.0" stroke="#475569" stroke-width="1" />
 <path d="M297,11880.0 L307,11880.0 L302,11888.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,11876.0 L584,11880.0" stroke="#475569" stroke-width="1" />
-<path d="M579,11880.0 L589,11880.0 L584,11888.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="12126.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="12126.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,12150.0 L302,12154.0" stroke="#475569" stroke-width="1" />
 <path d="M297,12154.0 L307,12154.0 L302,12162.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,12150.0 L584,12154.0" stroke="#475569" stroke-width="1" />
-<path d="M579,12154.0 L589,12154.0 L584,12162.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="12789.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="12789.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,12824.0 L302,12828.0" stroke="#475569" stroke-width="1" />
 <path d="M297,12828.0 L307,12828.0 L302,12836.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,12824.0 L584,12828.0" stroke="#475569" stroke-width="1" />
-<path d="M579,12828.0 L589,12828.0 L584,12836.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="13386.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="13386.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,13410.0 L302,13414.0" stroke="#475569" stroke-width="1" />
 <path d="M297,13414.0 L307,13414.0 L302,13422.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,13410.0 L584,13414.0" stroke="#475569" stroke-width="1" />
-<path d="M579,13414.0 L589,13414.0 L584,13422.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="13161.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="13161.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,13196.0 L302,13200.0" stroke="#475569" stroke-width="1" />
 <path d="M297,13200.0 L307,13200.0 L302,13208.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,13196.0 L584,13200.0" stroke="#475569" stroke-width="1" />
-<path d="M579,13200.0 L589,13200.0 L584,13208.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="12351.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="12351.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,12386.0 L302,12390.0" stroke="#475569" stroke-width="1" />
 <path d="M297,12390.0 L307,12390.0 L302,12398.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,12386.0 L584,12390.0" stroke="#475569" stroke-width="1" />
-<path d="M579,12390.0 L589,12390.0 L584,12398.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="12601.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="12601.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,12636.0 L302,12640.0" stroke="#475569" stroke-width="1" />
 <path d="M297,12640.0 L307,12640.0 L302,12648.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,12636.0 L584,12640.0" stroke="#475569" stroke-width="1" />
-<path d="M579,12640.0 L589,12640.0 L584,12648.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="13297.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="13297.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,13332.0 L302,13336.0" stroke="#475569" stroke-width="1" />
 <path d="M297,13336.0 L307,13336.0 L302,13344.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,13332.0 L584,13336.0" stroke="#475569" stroke-width="1" />
-<path d="M579,13336.0 L589,13336.0 L584,13344.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="12689.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="12689.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,12724.0 L302,12728.0" stroke="#475569" stroke-width="1" />
 <path d="M297,12728.0 L307,12728.0 L302,12736.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,12724.0 L584,12728.0" stroke="#475569" stroke-width="1" />
-<path d="M579,12728.0 L589,12728.0 L584,12736.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="13008.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,13032.0 L302,13036.0" stroke="#475569" stroke-width="1" />
 <path d="M297,13036.0 L307,13036.0 L302,13044.0 Z" fill="white" stroke="#475569" stroke-width="1" />
@@ -4554,8 +4494,6 @@
 <ellipse cx="584" cy="14038.0" rx="7" ry="24.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,14062.0 L302,14066.0" stroke="#475569" stroke-width="1" />
 <path d="M297,14066.0 L307,14066.0 L302,14074.0 Z" fill="white" stroke="#475569" stroke-width="1" />
-<path d="M584,14062.0 L584,14066.0" stroke="#475569" stroke-width="1" />
-<path d="M579,14066.0 L589,14066.0 L584,14074.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="15095.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="15095.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,15130.0 L302,15134.0" stroke="#475569" stroke-width="1" />
@@ -4570,8 +4508,6 @@
 <path d="M297,15248.0 L307,15248.0 L302,15256.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="14695.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="14695.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,14730.0 L302,14734.0" stroke="#475569" stroke-width="1" />
-<path d="M297,14734.0 L307,14734.0 L302,14742.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="14773.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="14773.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,14786.0 L302,14790.0" stroke="#475569" stroke-width="1" />
@@ -4580,12 +4516,8 @@
 <path d="M579,14790.0 L589,14790.0 L584,14798.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="14895.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="14895.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,14930.0 L302,14934.0" stroke="#475569" stroke-width="1" />
-<path d="M297,14934.0 L307,14934.0 L302,14942.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="14995.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="14995.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,15030.0 L302,15034.0" stroke="#475569" stroke-width="1" />
-<path d="M297,15034.0 L307,15034.0 L302,15042.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="14817.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="14817.0" rx="7" ry="13.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <path d="M302,14830.0 L302,14834.0" stroke="#475569" stroke-width="1" />
@@ -4594,16 +4526,10 @@
 <path d="M579,14834.0 L589,14834.0 L584,14842.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="15591.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="15591.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,15626.0 L302,15630.0" stroke="#475569" stroke-width="1" />
-<path d="M297,15630.0 L307,15630.0 L302,15638.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="15691.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="15691.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,15726.0 L302,15730.0" stroke="#475569" stroke-width="1" />
-<path d="M297,15730.0 L307,15730.0 L302,15738.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="15491.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="15491.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
-<path d="M302,15526.0 L302,15530.0" stroke="#475569" stroke-width="1" />
-<path d="M297,15530.0 L307,15530.0 L302,15538.0 Z" fill="white" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="16255.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="584" cy="16255.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
 <ellipse cx="302" cy="16655.0" rx="7" ry="35.0" fill="#f1f5f9" stroke="#475569" stroke-width="1" />

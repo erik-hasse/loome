@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import drawsvg as draw
 
+from .._internal.endpoints import pin_owner_label
 from ..harness import Harness
 from ..layout.engine import COMPONENT_HEADER_H, CONNECTOR_HEADER_H, PIN_NUM_W, PinRowInfo
 from ..model import (
@@ -64,7 +65,7 @@ def _pin_comp_label(pin: Pin, harness: Harness) -> str:
     comp = getattr(pin, "_component", None)
     if comp is not None:
         return comp.label
-    return _comp_label(pin._component_class, harness)
+    return _comp_label(pin._component_class, harness) if pin._component_class is not None else pin_owner_label(pin)
 
 
 def _remote_label(remote, class_pin: Pin, harness: Harness, local_pin: Pin | None = None) -> str:

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from .._internal.endpoints import other_endpoint
+from .._internal.shields import segment_shield_for_endpoint
 from ..harness import Harness
 from ..model import Component, Connector, GroundSymbol, Pin, ShieldDrainTerminal, SpliceNode, WireSegment
 from .geometry import Rect
@@ -171,9 +173,7 @@ def _pin_is_connected(class_pin: Pin, inst_pin: Pin | None = None) -> bool:
     sg = use._drain_for
     if sg is not None and (use is sg.drain or use is sg.drain_remote):
         return bool(use._connections)
-    return any(
-        not isinstance(seg.end_b if seg.end_a is use else seg.end_a, ShieldDrainTerminal) for seg in use._connections
-    )
+    return any(not isinstance(other_endpoint(seg, use, class_pin), ShieldDrainTerminal) for seg in use._connections)
 
 
 def _pin_display_rows(class_pin: Pin, inst_pin: Pin | None = None) -> int:
@@ -183,7 +183,7 @@ def _pin_display_rows(class_pin: Pin, inst_pin: Pin | None = None) -> int:
         return 1
     total = 0
     for seg in use._connections:
-        remote = seg.end_b if seg.end_a is use else seg.end_a
+        remote = other_endpoint(seg, use, class_pin)
         if isinstance(remote, SpliceNode):
             outward = [s for s in remote._connections if s is not seg]
             total += max(len(outward), 1)
@@ -196,15 +196,15 @@ def _has_splice_connection(class_pin: Pin, inst_pin: Pin | None = None) -> bool:
     """True if any of this pin's connections terminates at a SpliceNode."""
     use = _effective_pin(class_pin, inst_pin)
     for seg in use._connections:
-        remote = seg.end_b if seg.end_a is use else seg.end_a
+        remote = other_endpoint(seg, use, class_pin)
         if isinstance(remote, SpliceNode):
             return True
     return False
 
 
-def _seg_ends_at_ground(seg: WireSegment, pin: Pin) -> bool:
+def _seg_ends_at_ground(seg: WireSegment, pin: Pin, class_pin: Pin | None = None) -> bool:
     """True when the far end of seg (away from pin) is a GroundSymbol."""
-    remote = seg.end_b if seg.end_a is pin else seg.end_a
+    remote = other_endpoint(seg, pin, class_pin)
     return isinstance(remote, GroundSymbol)
 
 
@@ -282,7 +282,7 @@ def _collect_displayed_signal_names(harness: Harness, show_unconnected: bool) ->
                 continue
             local.append((ip or cp).signal_name)
             for seg in _pin_outgoing_segments(cp, ip):
-                rp = seg.end_b if seg.end_a is (ip or cp) else seg.end_a
+                rp = other_endpoint(seg, ip or cp, cp)
                 if isinstance(rp, Pin):
                     remote.append(rp.signal_name)
         for conn in comp._connectors.values():
@@ -296,7 +296,7 @@ def _collect_displayed_signal_names(harness: Harness, show_unconnected: bool) ->
                     continue
                 local.append((ip or cp).signal_name)
                 for seg in _pin_outgoing_segments(cp, ip):
-                    rp = seg.end_b if seg.end_a is (ip or cp) else seg.end_a
+                    rp = other_endpoint(seg, ip or cp, cp)
                     if isinstance(rp, Pin):
                         remote.append(rp.signal_name)
 
@@ -363,7 +363,8 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
 
         if not segments or _has_splice_connection(class_pin, inst_pin) or len(segments) == 1:
             seg0 = segments[0] if len(segments) == 1 else None
-            seg_shields = frozenset({id(seg0.shield_group)}) if (seg0 and seg0.shield_group) else pin_shields
+            seg_sg = segment_shield_for_endpoint(seg0, inst_pin, class_pin) if seg0 is not None else None
+            seg_shields = frozenset({id(seg_sg)}) if seg_sg is not None else pin_shields
             key = _pin_target_key(class_pin, inst_pin)
             ctx = _RowCtx(
                 target_key=key,
@@ -375,7 +376,7 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
             if current_group is None or current_group.target_key != key:
                 current_group = PinGroup(rows=[], target_key=key, first_in_section=(prev_ctx is None))
                 pin_groups.append(current_group)
-            is_ground_row = seg0 is not None and _seg_ends_at_ground(seg0, inst_pin or class_pin)
+            is_ground_row = seg0 is not None and _seg_ends_at_ground(seg0, inst_pin or class_pin, class_pin)
             row_h = GROUND_ROW_H if is_ground_row else _pin_display_rows(class_pin, inst_pin) * PIN_ROW_H
             row_info = PinRowInfo(
                 pin=inst_pin,
@@ -396,7 +397,8 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
         ctx: _RowCtx | None = None
         for i, seg in enumerate(segments):
             leg_key = _segment_target_key(seg, inst_pin, inst_pin)
-            seg_shields = frozenset({id(seg.shield_group)}) if seg.shield_group else frozenset()
+            seg_sg = segment_shield_for_endpoint(seg, inst_pin, class_pin)
+            seg_shields = frozenset({id(seg_sg)}) if seg_sg is not None else frozenset()
             ctx = _RowCtx(
                 target_key=leg_key,
                 shield_ids=seg_shields,
@@ -413,7 +415,7 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
             is_jumper_leg = leg_key == ("jumper",)
             if i > 0 and is_jumper_leg:
                 leg_h = 0
-            elif i == 0 and _seg_ends_at_ground(seg, inst_pin or class_pin):
+            elif i == 0 and _seg_ends_at_ground(seg, inst_pin or class_pin, class_pin):
                 leg_h = GROUND_ROW_H
             else:
                 leg_h = PIN_ROW_H

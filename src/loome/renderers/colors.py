@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .._internal.endpoints import other_endpoint
 from ..model import CircuitBreaker, Fuse, GroundSymbol, Pin, SpliceNode, WireSegment
 
 _POWER_STROKE = "#dc2626"  # red  — connected to fuse or CB
@@ -129,13 +130,13 @@ def _splice_color_code(
     for s in out_segs:
         if s is None:
             continue
-        remote = s.end_b if s.end_a is splice else s.end_a
+        remote = other_endpoint(s, splice)
         if isinstance(remote, (Fuse, CircuitBreaker)):
             return "R"
     for s in out_segs:
         if s is None:
             continue
-        remote = s.end_b if s.end_a is splice else s.end_a
+        remote = other_endpoint(s, splice)
         if isinstance(remote, GroundSymbol):
             return "B"
     return ""
@@ -165,14 +166,14 @@ def _incoming_splice_attrs(
     for out_seg in out_segs:
         if out_seg is None:
             continue
-        remote = out_seg.end_b if out_seg.end_a is splice else out_seg.end_a
+        remote = other_endpoint(out_seg, splice)
         if isinstance(remote, (Fuse, CircuitBreaker)):
             return {"stroke": _POWER_STROKE, "stroke_width": 1.5}
 
     for out_seg in out_segs:
         if out_seg is None:
             continue
-        remote = out_seg.end_b if out_seg.end_a is splice else out_seg.end_a
+        remote = other_endpoint(out_seg, splice)
         if isinstance(remote, GroundSymbol):
             return {"stroke": _GROUND_STROKE, "stroke_width": 1.5}
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import drawsvg as draw
 
+from .._internal.endpoints import other_endpoint
 from ..harness import Harness
 from ..layout.engine import WIRE_AREA_W
 from ..model import Pin, ShieldGroup, SpliceNode, Terminal, WireSegment
@@ -149,7 +150,7 @@ def _draw_splice_connection(
         return
 
     out_start = splice_cx + 6
-    out_remote = out_seg.end_b if out_seg.end_a is splice else out_seg.end_a
+    out_remote = other_endpoint(out_seg, splice)
     out_attrs = _wire_attrs(out_seg, psp, colored)
     out_cc = _effective_color_code(out_seg, psp, colored)
 
@@ -217,7 +218,7 @@ def _draw_splice_fan(
     right_edge = wire_end_x if wire_end_x is not None else (wx + WIRE_AREA_W)
     leg_wire_ends: list[float] = []
     for _, _, out_seg in expanded:
-        out_remote = None if out_seg is None else (out_seg.end_b if out_seg.end_a is splice else out_seg.end_a)
+        out_remote = None if out_seg is None else other_endpoint(out_seg, splice)
         leg_wire_ends.append(
             _splice_leg_wire_end(
                 wx, fan_x, out_seg, out_remote, class_pin, harness, min_term_cx, default_wire_end, right_edge
@@ -229,7 +230,7 @@ def _draw_splice_fan(
         sub_y = rect.y + row_h * (i + 0.5)
 
         if out_seg is not None:
-            out_remote = out_seg.end_b if out_seg.end_a is splice else out_seg.end_a
+            out_remote = other_endpoint(out_seg, splice)
             out_attrs = _wire_attrs(out_seg, psp, colored)
             out_cc = _effective_color_code(out_seg, psp, colored)
         else:

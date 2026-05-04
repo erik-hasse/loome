@@ -4,10 +4,12 @@ from pathlib import Path
 
 import drawsvg as draw
 
+from .._internal.endpoints import component_key_for_pin, connector_key_for_pin, other_endpoint
 from ..harness import Harness
 from ..layout.engine import MARGIN, LayoutResult, PinRowInfo
 from ..model import Component, Pin, ShieldDrainTerminal, ShieldGroup, SpliceNode, Terminal
-from .colors import _SHIELD_PALETTE, _wire_attrs
+from .colors import _wire_attrs
+from .context import build_render_context
 from .primitives import (
     _CAN_TERM_BOX_CX,
     _CAN_TERM_SHIELD_SHIFT,
@@ -46,9 +48,7 @@ def _compute_min_term_cx(layout: LayoutResult, harness: Harness) -> float:
             if not use_pin._connections:
                 continue
             seg = use_pin._connections[0]
-            remote = (
-                seg.end_b if (seg.end_a is use_pin or seg.end_a is row.pin or seg.end_a is row.class_pin) else seg.end_a
-            )
+            remote = other_endpoint(seg, use_pin, row.pin, row.class_pin)
             if not isinstance(remote, Terminal) or isinstance(remote, ShieldDrainTerminal):
                 continue
             _check(_remote_label(remote, row.class_pin, harness), row.wire_end_x)
@@ -57,7 +57,7 @@ def _compute_min_term_cx(layout: LayoutResult, harness: Harness) -> float:
         wire_end_x = next(iter(layout.pin_rows.values())).wire_end_x
         for splice in harness.splice_nodes:
             for seg in splice._connections:
-                remote = seg.end_b if seg.end_a is splice else seg.end_a
+                remote = other_endpoint(seg, splice)
                 if isinstance(remote, Terminal):
                     _check(remote.display_name(), wire_end_x)
 
@@ -189,107 +189,7 @@ def render(
     When *component* is provided only that component's section is drawn and the
     SVG canvas is sized to fit it — useful for per-component output.
     """
-    # Build shield palette lookup: pin id → (stroke, dasharray or None)
-    # Step 1a: assign canonical W→WB→WO entries from each shield group's pin order
-    # (class-body shields defined via ShieldGroup.pins).
-    pin_shield_palette: dict[int, tuple[str, str | None]] = {}
-    for sg in harness.shield_groups:
-        if sg.cable_only:
-            continue
-        for idx, p in enumerate(sg.pins):
-            pin_shield_palette[id(p)] = _SHIELD_PALETTE[min(idx, len(_SHIELD_PALETTE) - 1)]
-
-    # Step 1b: connection-level shields (``with Shield(...)``) derive color
-    # directly from seg.shield_group in _wire_attrs — no pin_shield_palette
-    # entries needed.  However, we still propagate remote-pin entries so
-    # class-body pins that cross-connect to Shield()-shielded remotes pick
-    # up a palette color.
-
-    # Step 2: propagate source palette to remote pins so cross-connected wires
-    # (e.g. RS-232 TX↔RX) show the same color at both ends.  The pin that
-    # initiated connect() is end_a; its palette entry wins.
-    for sg in harness.shield_groups:
-        for p in sg.pins:
-            src = pin_shield_palette.get(id(p))
-            if src is None:
-                continue
-            for seg in p._connections:
-                remote = seg.end_b if seg.end_a is p else seg.end_a
-                if isinstance(remote, Pin) and id(remote) not in pin_shield_palette:
-                    pin_shield_palette[id(remote)] = src
-
-    # Step 3: propagate palette entries from class pins to their instance-pin
-    # copies.  Connections are made on instance pins (which are copy.copy'd
-    # from the class pin), so wire segment endpoints carry instance-pin ids.
-    # Without this step non-CAN shielded wires fail the palette lookup.
-    for ri in layout.all_rows:
-        class_entry = pin_shield_palette.get(id(ri.class_pin))
-        if class_entry is not None and id(ri.pin) not in pin_shield_palette:
-            pin_shield_palette[id(ri.pin)] = class_entry
-
-    # Build pin→row lookups (primary row only — for legacy lookup paths).
-    class_pin_to_row: dict[int, object] = {}
-    inst_pin_to_row: dict[int, object] = {}
-    class_pin_to_rows: dict[int, list] = {}
-    inst_pin_to_rows: dict[int, list] = {}
-    segment_to_rows: dict[int, list] = {}
-    for ri in layout.all_rows:
-        # Primary row "wins" for the by-pin lookups (continuations don't
-        # overwrite). class_pin_to_rows / inst_pin_to_rows list every row.
-        if not ri.is_continuation:
-            class_pin_to_row.setdefault(id(ri.class_pin), ri)
-            inst_pin_to_row.setdefault(id(ri.pin), ri)
-        class_pin_to_rows.setdefault(id(ri.class_pin), []).append(ri)
-        inst_pin_to_rows.setdefault(id(ri.pin), []).append(ri)
-        if ri.segment is not None:
-            segment_to_rows.setdefault(id(ri.segment), []).append(ri)
-
-    def _find_row(pin: Pin):
-        return class_pin_to_row.get(id(pin)) or inst_pin_to_row.get(id(pin))
-
-    # Per-row shield lookup: each row knows its own shield based on its segment.
-    # Falls back to class-body shield membership for rows whose segment is None
-    # (single-connection or splice-fan rows still use the existing pin-keyed flow).
-    shield_by_row_id: dict[int, ShieldGroup] = {}
-    for ri in layout.all_rows:
-        seg = ri.segment
-        if seg is not None and seg.shield_group is not None and not seg.shield_group.cable_only:
-            shield_by_row_id[id(ri)] = seg.shield_group
-
-    # Legacy pin-keyed shield lookup for splice-fan / single-connection rows.
-    shield_by_pin: dict[int, ShieldGroup] = {}
-    for sg in harness.shield_groups:
-        if sg.cable_only:
-            continue
-        for p in sg.pins:
-            shield_by_pin[id(p)] = sg
-            for seg in p._connections:
-                remote = seg.end_b if seg.end_a is p else seg.end_a
-                if isinstance(remote, Pin):
-                    shield_by_pin[id(remote)] = sg
-                    row = inst_pin_to_row.get(id(remote))
-                    if row:
-                        shield_by_pin[id(row.class_pin)] = sg
-        for seg in sg.segments:
-            for ep in (seg.end_a, seg.end_b):
-                if isinstance(ep, Pin):
-                    shield_by_pin[id(ep)] = sg
-                    row = inst_pin_to_row.get(id(ep))
-                    if row:
-                        shield_by_pin[id(row.class_pin)] = sg
-                elif isinstance(ep, SpliceNode):
-                    # A shielded segment that terminates at a splice visually extends
-                    # through the splice to the upstream pin row — mark that pin so
-                    # the row's wire renders with shield ovals.
-                    for other_seg in ep._connections:
-                        if other_seg is seg:
-                            continue
-                        other_ep = other_seg.end_b if other_seg.end_a is ep else other_seg.end_a
-                        if isinstance(other_ep, Pin):
-                            shield_by_pin[id(other_ep)] = sg
-                            row = inst_pin_to_row.get(id(other_ep))
-                            if row:
-                                shield_by_pin[id(row.class_pin)] = sg
+    ctx = build_render_context(harness, layout)
 
     min_term_cx = _compute_min_term_cx(layout, harness)
 
@@ -325,17 +225,14 @@ def render(
         sect_rect = layout.section_rects[id(comp)]
         _draw_section_bg(dwg, sect_rect, comp.label)
 
-        def _resolve_shield(ri):
-            return shield_by_row_id.get(id(ri)) or shield_by_pin.get(id(ri.class_pin))
-
         def _draw_row_and_continuations(primary):
-            sh = _resolve_shield(primary)
-            _draw_pin_row(dwg, primary, harness, sh, min_term_cx, colored, pin_shield_palette, jumper_stubs)
+            sh = ctx.shield_for_row(primary)
+            _draw_pin_row(dwg, primary, harness, sh, min_term_cx, colored, ctx.pin_shield_palette, jumper_stubs)
             for cont in primary.continuation_rows:
-                csh = _resolve_shield(cont)
-                _draw_pin_row(dwg, cont, harness, csh, min_term_cx, colored, pin_shield_palette, jumper_stubs)
+                csh = ctx.shield_for_row(cont)
+                _draw_pin_row(dwg, cont, harness, csh, min_term_cx, colored, ctx.pin_shield_palette, jumper_stubs)
             # Drop lines drawn now; bullet glyph deferred until after jumper bars.
-            pos = _draw_bullet_and_drop(dwg, primary, colored=colored, pin_shield_palette=pin_shield_palette)
+            pos = _draw_bullet_and_drop(dwg, primary, colored=colored, pin_shield_palette=ctx.pin_shield_palette)
             if pos is not None:
                 deferred_bullets.append(pos)
 
@@ -378,12 +275,6 @@ def render(
     # OTHER components actually wired through that shield. Keying by target
     # alone over-includes (every box pointing to the drain's component would
     # show every drain). So key by (local_comp_key, target_key) instead.
-    def _comp_key(p: Pin) -> int:
-        return id(p._component) if p._component is not None else id(p._component_class)
-
-    def _conn_key(p: Pin) -> int:
-        return id(p._connector) if p._connector is not None else id(p._connector_class)
-
     drains_for_pair: dict[tuple[int, tuple], list[tuple[Pin, ShieldGroup]]] = {}
     for sg in harness.shield_groups:
         if not sg.segments:
@@ -393,13 +284,13 @@ def render(
         for seg in sg.segments:
             for ep in (seg.end_a, seg.end_b):
                 if isinstance(ep, Pin):
-                    touched.add(_comp_key(ep))
+                    touched.add(component_key_for_pin(ep))
         for p in (sg.drain, sg.drain_remote):
             if not isinstance(p, Pin):
                 continue
-            ptkey = ("component", _comp_key(p), _conn_key(p))
+            ptkey = ("component", component_key_for_pin(p), connector_key_for_pin(p))
             for local_ck in touched:
-                if local_ck == _comp_key(p):
+                if local_ck == component_key_for_pin(p):
                     continue  # drain pin's own component renders it as a local row
                 drains_for_pair.setdefault((local_ck, ptkey), []).append((p, sg))
 
@@ -429,7 +320,7 @@ def render(
                     bucket.append(ri)
 
             for seg in sg.segments:
-                seg_rows = segment_to_rows.get(id(seg), [])
+                seg_rows = ctx.rows.rows_for_segment(seg)
                 for ep, target in ((seg.end_a, src_rows_by_inst), (seg.end_b, rem_rows_by_inst)):
                     if isinstance(ep, Pin):
                         # Per-leg layout: pick the row whose pin matches this
@@ -440,7 +331,7 @@ def render(
                             for ri in matched:
                                 _add_row(target, ri)
                         else:
-                            row = _find_row(ep)
+                            row = ctx.rows.row_for_pin(ep)
                             if row is not None:
                                 _add_row(target, row)
                     elif isinstance(ep, SpliceNode):
@@ -449,17 +340,15 @@ def render(
                         for other_seg in ep._connections:
                             if other_seg is seg:
                                 continue
-                            other_ep = other_seg.end_b if other_seg.end_a is ep else other_seg.end_a
+                            other_ep = other_endpoint(other_seg, ep)
                             if isinstance(other_ep, Pin):
                                 # Prefer the row whose segment is the splice's upstream wire.
-                                up_rows = [
-                                    ri for ri in inst_pin_to_rows.get(id(other_ep), []) if ri.segment is other_seg
-                                ]
+                                up_rows = [ri for ri in ctx.rows.rows_for_inst_pin(other_ep) if ri.segment is other_seg]
                                 if up_rows:
                                     for ri in up_rows:
                                         _add_row(target, ri)
                                 else:
-                                    for ri in inst_pin_to_rows.get(id(other_ep), []):
+                                    for ri in ctx.rows.rows_for_inst_pin(other_ep):
                                         _add_row(target, ri)
             for inst_rows in src_rows_by_inst.values():
                 runs = _split_contiguous(inst_rows)
@@ -478,17 +367,20 @@ def render(
                     y_bot_run = max(r.rect.y + r.rect.h for r in run)
                     oval_bottom = y_bot_run + 2
                     if isinstance(sg.drain, Pin) and i == left_run:
-                        drain_row = inst_pin_to_row.get(id(sg.drain))
+                        drain_row = ctx.rows.primary_inst_row(sg.drain)
                         if drain_row is not None:
                             pending_drain_src.append(
                                 (wx_run + _SHIELD_LEFT_CX, oval_bottom, drain_row.rect.y + drain_row.rect.h / 2)
                             )
                     if isinstance(sg.drain_remote, Pin) and i == right_run:
                         p = sg.drain_remote
-                        comp_key = id(p._component) if p._component is not None else id(p._component_class)
-                        conn_key = id(p._connector) if p._connector is not None else id(p._connector_class)
                         pending_drain_rem.append(
-                            (wx_run + _SHIELD_RIGHT_CX, oval_bottom, ("component", comp_key, conn_key), p)
+                            (
+                                wx_run + _SHIELD_RIGHT_CX,
+                                oval_bottom,
+                                ("component", component_key_for_pin(p), connector_key_for_pin(p)),
+                                p,
+                            )
                         )
             for inst_rows in rem_rows_by_inst.values():
                 runs = _split_contiguous(inst_rows)
@@ -510,17 +402,20 @@ def render(
                     y_bot_run = max(r.rect.y + r.rect.h for r in run)
                     oval_bottom = y_bot_run + 2
                     if isinstance(sg.drain_remote, Pin) and i == left_run:
-                        drain_row = inst_pin_to_row.get(id(sg.drain_remote))
+                        drain_row = ctx.rows.primary_inst_row(sg.drain_remote)
                         if drain_row is not None:
                             pending_drain_src.append(
                                 (wx_run + _SHIELD_LEFT_CX, oval_bottom, drain_row.rect.y + drain_row.rect.h / 2)
                             )
                     if isinstance(sg.drain, Pin) and i == right_run:
                         p = sg.drain
-                        comp_key = id(p._component) if p._component is not None else id(p._component_class)
-                        conn_key = id(p._connector) if p._connector is not None else id(p._connector_class)
                         pending_drain_rem.append(
-                            (wx_run + _SHIELD_RIGHT_CX, oval_bottom, ("component", comp_key, conn_key), p)
+                            (
+                                wx_run + _SHIELD_RIGHT_CX,
+                                oval_bottom,
+                                ("component", component_key_for_pin(p), connector_key_for_pin(p)),
+                                p,
+                            )
                         )
         else:
             # Class-body shield: group rows from sg.pins by component instance.
@@ -536,7 +431,7 @@ def render(
             #    port connect(), which should not render a shield oval.
             source_by_inst: dict[int, list] = {}
             for p in sg.pins:
-                for ri in class_pin_to_rows.get(id(p), []):
+                for ri in ctx.rows.rows_for_class_pin(p):
                     if not ri.pin._connections and not p._connections:
                         continue
                     # Filter 1: skip if all connections are in a different connection-level shield.
@@ -588,18 +483,18 @@ def render(
 
             def _add_remote_for_source(src_pin: Pin, source_key: int) -> None:
                 for seg in src_pin._connections:
-                    remote = seg.end_b if seg.end_a is src_pin else seg.end_a
+                    remote = other_endpoint(seg, src_pin)
                     if not isinstance(remote, Pin):
                         continue
                     if remote.shield_group is not None:
                         continue
-                    row = _find_row(remote)
+                    row = ctx.rows.row_for_pin(remote)
                     if row is not None:
                         remote_rows_by_source.setdefault(source_key, []).append(row)
 
             for p in sg.pins:
                 _add_remote_for_source(p, id(sg))
-                for ri in class_pin_to_rows.get(id(p), []):
+                for ri in ctx.rows.rows_for_class_pin(p):
                     if id(ri.pin) not in included_inst_pins:
                         continue
                     source_key = id(ri.pin._component) if ri.pin._component is not None else id(ri.pin)
@@ -625,7 +520,7 @@ def render(
     for entry in jumper_stubs.values():
         seg, wx, bar_x, cys = entry
         if len(cys) == 2:
-            attrs = _wire_attrs(seg, pin_shield_palette, colored)
+            attrs = _wire_attrs(seg, ctx.pin_shield_palette, colored)
             dwg.append(draw.Line(bar_x, min(cys), bar_x, max(cys), **attrs))
 
     # ── bullets (on top of jumper bars) ──────────────────────────────────────
@@ -633,14 +528,14 @@ def render(
         _draw_bullet(dwg, bullet_cx, bullet_cy)
 
     # ── remote component boxes ───────────────────────────────────────────────
-    rendered_pin_ids = set(inst_pin_to_row.keys())
+    rendered_pin_ids = ctx.rows.rendered_pin_ids
     for group in layout.pin_groups:
         if group.target_key[0] != "component":
             continue
         if not group.rows:
             continue
         local_pin = group.rows[0].pin
-        local_ck = _comp_key(local_pin) if isinstance(local_pin, Pin) else id(local_pin)
+        local_ck = component_key_for_pin(local_pin) if isinstance(local_pin, Pin) else id(local_pin)
         extras = drains_for_pair.get((local_ck, group.target_key), [])
         extra = [p for p, _ in extras]
         drain_cys = _draw_remote_box(
@@ -675,7 +570,7 @@ def render(
             term_rows = []
             for inst_pin in vars(conn).values():
                 if isinstance(inst_pin, Pin) and inst_pin._can_terminated:
-                    row = inst_pin_to_row.get(id(inst_pin))
+                    row = ctx.rows.primary_inst_row(inst_pin)
                     if row is not None:
                         term_rows.append(row)
             if len(term_rows) >= 2:

@@ -5,6 +5,8 @@ import itertools
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Literal, Self
 
+from ._internal.names import default_signal_name
+
 if TYPE_CHECKING:
     from .disconnects import DisconnectPin
 
@@ -257,7 +259,7 @@ class SpliceNode:
 _lgnd_counter = itertools.count()
 
 
-def _resolve_drain(value) -> "WireEndpoint | None":
+def resolve_drain(value) -> "WireEndpoint | None":
     """Normalize a drain specification.
 
     ``"block"``  → new open-triangle GroundSymbol.
@@ -333,6 +335,11 @@ def _append_connection(endpoint: object, seg: "WireSegment") -> None:
         connections.append(seg)
 
 
+def _endpoint_shield_group(endpoint: object) -> "ShieldGroup | None":
+    sg = getattr(endpoint, "shield_group", None)
+    return sg if isinstance(sg, ShieldGroup) else None
+
+
 def _connect_endpoints(
     end_a: "WireEndpoint",
     end_b: "WireEndpoint",
@@ -354,6 +361,8 @@ def _connect_endpoints(
         shielded=shielded,
         notes=notes,
         system=system if system is not None else current_system(),
+        end_a_shield_group=_endpoint_shield_group(end_a),
+        end_b_shield_group=_endpoint_shield_group(end_b),
         **kwargs,
     )
     if _active_shield_stack:
@@ -397,7 +406,7 @@ class Shield:
         label: str = "",
     ) -> None:
         self._sg = ShieldGroup(
-            label=label, pins=[], drain=_resolve_drain(drain), drain_remote=_resolve_drain(drain_remote)
+            label=label, pins=[], drain=resolve_drain(drain), drain_remote=resolve_drain(drain_remote)
         )
         if hasattr(drain, "_connections"):
             _attach_drain_pin(drain, self._sg)
@@ -430,6 +439,8 @@ class WireSegment:
     notes: str = ""
     system: str | None = None
     shield_group: "ShieldGroup | None" = field(default=None, repr=False)
+    end_a_shield_group: "ShieldGroup | None" = field(default=None, repr=False)
+    end_b_shield_group: "ShieldGroup | None" = field(default=None, repr=False)
     port_order: int | None = field(default=None, repr=False)
     disconnect_pin: "DisconnectPin | None" = field(default=None, repr=False)
 
@@ -540,10 +551,6 @@ class WireBuilder:
 # ── connectors / components ────────────────────────────────────────────────
 
 
-def _default_signal_name(attr_name: str) -> str:
-    return attr_name.replace("_", " ").title()
-
-
 class Connector:
     _component_class: type | None = None
     _connector_name: str = ""
@@ -555,7 +562,7 @@ class Connector:
                 val._attr_name = attr_name
                 val._connector_class = cls
                 if not val.signal_name:
-                    val.signal_name = _default_signal_name(attr_name)
+                    val.signal_name = default_signal_name(attr_name)
 
     def __init__(self):
         self._pins: dict[int | str, Pin] = {}
@@ -605,12 +612,12 @@ class Component:
                             pin_val._connector_class = val
                             pin_val._attr_name = pin_name
                             if not pin_val.signal_name:
-                                pin_val.signal_name = _default_signal_name(pin_name)
+                                pin_val.signal_name = default_signal_name(pin_name)
             elif isinstance(val, Pin) and not val._attr_name:
                 val._attr_name = attr_name
                 val._component_class = cls
                 if not val.signal_name:
-                    val.signal_name = _default_signal_name(attr_name)
+                    val.signal_name = default_signal_name(attr_name)
 
     def __init__(self, label: str | None = None, *, render: bool | None = None, system: str | None = None):
         self.label = label or type(self).__name__

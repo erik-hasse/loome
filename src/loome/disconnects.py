@@ -9,7 +9,9 @@ from __future__ import annotations
 import copy
 from dataclasses import dataclass, field
 
-from .model import Pin, ShieldGroup, SpliceNode, Terminal, WireSegment, _default_signal_name
+from ._internal.endpoints import endpoint_description
+from ._internal.names import default_signal_name
+from .model import Pin, ShieldGroup, SpliceNode, Terminal, WireSegment
 from .ports import RS232, CanBus, Port
 
 # ── disconnect pins ────────────────────────────────────────────────────────
@@ -83,7 +85,7 @@ class Disconnect:
             if isinstance(val, DisconnectPin) and not val._attr_name:
                 val._attr_name = attr_name
                 if not val.signal_name:
-                    val.signal_name = _default_signal_name(attr_name)
+                    val.signal_name = default_signal_name(attr_name)
 
     def __init__(self, id: str, label: str = "", part_number: str = "") -> None:
         self.id = id
@@ -541,15 +543,4 @@ def _describe_disconnect_pin(pin: DisconnectPin) -> str:
 
 
 def _endpoint_repr(ep) -> str:
-    if isinstance(ep, Pin):
-        owner = (
-            ep._component.label
-            if ep._component is not None
-            else (ep._component_class.__name__ if ep._component_class is not None else "?")
-        )
-        conn = ep._connector_class._connector_name if ep._connector_class is not None else ""
-        sig = ep.signal_name or str(ep.number)
-        return f"{owner}{'.' + conn if conn else ''}.{sig}"
-    if isinstance(ep, (Terminal, SpliceNode)):
-        return ep.id
-    return repr(ep)
+    return endpoint_description(ep)

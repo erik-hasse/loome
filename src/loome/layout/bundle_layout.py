@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from .._internal.attachments import describe_attachment_target
+from .._internal.endpoints import other_endpoint
 from ..bundles import Attachment, Breakout, Bundle
 from ..harness import Harness
 from ..model import Component, Connector, Pin, SpliceNode, Terminal
@@ -94,20 +96,7 @@ def _trunk_path(bundle: Bundle) -> list[Breakout]:
 
 
 def _describe_attachment_target(attachment: Attachment) -> str:
-    target = attachment.target
-    if isinstance(target, Connector):
-        comp = getattr(target, "_component", None)
-        conn_name = type(target)._connector_name or ""
-        if comp is not None and isinstance(comp, Component):
-            return f"{comp.label}.{conn_name}" if conn_name else comp.label
-        return conn_name or type(target).__name__
-    if isinstance(target, Component):
-        return target.label
-    if isinstance(target, Terminal):
-        return target.display_name()
-    if isinstance(target, SpliceNode):
-        return target.label or target.id
-    return repr(target)
+    return describe_attachment_target(attachment.target)
 
 
 def _pin_schedule_rows(
@@ -150,7 +139,7 @@ def _pin_schedule_rows(
             length = harness.resolved_length(seg)
             if length is None:
                 continue
-            other = seg.end_b if seg.end_a is pin or seg.end_a is _class_pin_of(pin) else seg.end_a
+            other = other_endpoint(seg, pin, _class_pin_of(pin))
             if _is_local_wire(harness, attachment, other):
                 continue
             rows.append(PinScheduleRow(pin=pin, wire_label=seg.label or "", length=length))
@@ -163,7 +152,7 @@ def _pin_schedule_rows(
             length = harness.resolved_length(seg)
             if length is None:
                 continue
-            other = seg.end_b if seg.end_a is target else seg.end_a
+            other = other_endpoint(seg, target)
             if _is_local_wire(harness, attachment, other):
                 continue
             rows.append(PinScheduleRow(pin=None, wire_label=seg.label or "", length=length))
@@ -189,7 +178,7 @@ def _attachment_for_endpoint(harness: Harness, endpoint) -> Attachment | None:
     return None
 
 
-def _is_local_wire(harness: Harness, attachment: Attachment, other_endpoint) -> bool:
+def _is_local_wire(harness: Harness, attachment: Attachment, remote_endpoint) -> bool:
     """True when the other endpoint shares a breakout with this attachment.
 
     Covers both jumpers/straps within a single connector (same attachment) and
@@ -197,7 +186,7 @@ def _is_local_wire(harness: Harness, attachment: Attachment, other_endpoint) -> 
     both cases the wire doesn't traverse the trunk and doesn't belong in the
     bundle schedule.
     """
-    other_att = _attachment_for_endpoint(harness, other_endpoint)
+    other_att = _attachment_for_endpoint(harness, remote_endpoint)
     if other_att is None:
         return False
     return other_att.breakout is attachment.breakout

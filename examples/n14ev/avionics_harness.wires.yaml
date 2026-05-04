@@ -571,10 +571,6 @@ wires:
     - Engine Indication[J243.4]
   system: EIS
   kind: shield
-- id: EIS22SH13
-  fingerprint: shield:GEA24 - Engine Indication[J243.8] <-> SDSECU[TBD1]
-  system: EIS
-  kind: shield
 - id: EIS22SH14
   fingerprint: shield:GEA24 - Engine Indication[J243.8] <-> SDSECU[TBD1]
   system: EIS
@@ -589,10 +585,6 @@ wires:
   fingerprint: shield:GEA24 - Engine Indication[J243.16] <-> Oil Pressure[BLK]|GEA24
     - Engine Indication[J243.17] <-> Oil Pressure[GRN]|GEA24 - Engine Indication[J243.19]
     <-> Oil Pressure[RED]
-  system: EIS
-  kind: shield
-- id: EIS22SH17
-  fingerprint: shield:GEA24 - Engine Indication[J243.23] <-> SDSECU[TBD2]
   system: EIS
   kind: shield
 - id: EIS22SH18

@@ -16,20 +16,25 @@ from typing import TYPE_CHECKING, Literal
 
 from natsort import natsort_keygen
 
+from ._internal.endpoints import endpoint_label as _endpoint_label
+from ._internal.endpoints import is_local_segment as _is_local_segment
+from ._internal.endpoints import other_endpoint
+from ._internal.endpoints import pin_label as _pin_label
+from ._internal.endpoints import pin_owner_label as _class_owner_label
+from ._internal.endpoints import terminal_load_kind as _terminal_kind
+from ._internal.shields import segment_touches_single_oval_shield, segments_for_shield
+from ._internal.systems import resolve_system as _resolve_system
 from .disconnects import DisconnectPin
 from .model import (
     BusBar,
     CircuitBreaker,
     Fuse,
-    GroundSymbol,
-    OffPageReference,
     Pin,
     ShieldGroup,
     SpliceNode,
     Terminal,
     WireSegment,
 )
-from .wire_ids import _is_local_segment, _resolve_system
 
 if TYPE_CHECKING:
     from .harness import Harness
@@ -131,37 +136,6 @@ class Bom:
 # ── endpoint labels ────────────────────────────────────────────────────────
 
 
-def _pin_label(pin: Pin) -> str:
-    owner = pin._component.label if pin._component is not None else _class_owner_label(pin)
-    conn = pin._connector_class._connector_name if pin._connector_class is not None else ""
-    sig = pin.signal_name or f"pin {pin.number}"
-    return f"{owner}.{conn}.{sig}" if conn else f"{owner}.{sig}"
-
-
-def _class_owner_label(pin: Pin) -> str:
-    return pin._component_class.__name__ if pin._component_class is not None else "?"
-
-
-def _terminal_kind(t: Terminal) -> LoadKind:
-    if isinstance(t, BusBar):
-        return "busbar"
-    if isinstance(t, GroundSymbol):
-        return "ground"
-    if isinstance(t, OffPageReference):
-        return "offpage"
-    return "terminal"
-
-
-def _endpoint_label(ep) -> str:
-    if isinstance(ep, Pin):
-        return _pin_label(ep)
-    if isinstance(ep, SpliceNode):
-        return ep.label or ep.id
-    if isinstance(ep, Terminal):
-        return ep.display_name()
-    return repr(ep)
-
-
 def _disconnect_pin_label(dpin: DisconnectPin) -> str:
     disc = dpin._disconnect
     base = f"{disc.id}:{dpin.number}" if disc is not None else f"DC?:{dpin.number}"
@@ -243,7 +217,7 @@ def trace_loads(
         seg, came_from = stack.pop()
         if first_wire is None:
             first_wire = seg
-        other = seg.end_b if seg.end_a is came_from else seg.end_a
+        other = other_endpoint(seg, came_from)
         if id(other) in visited:
             continue
         visited.add(id(other))
@@ -294,23 +268,7 @@ def _gauge_sort_key(g) -> int:
 
 
 def _segments_for_shield(sg: ShieldGroup, all_segments: list[WireSegment]) -> list[WireSegment]:
-    """Resolve the conductor segments belonging to one ShieldGroup.
-
-    Connection-level shields (`Shield` context manager) populate `sg.segments`
-    directly. Port shields (RS232, GPIO, …) attach `pin.shield_group = sg` to
-    each port pin instead, where each port instance has its own ShieldGroup —
-    the two endpoints of a port-to-port segment thus carry different SGs. Use
-    `end_a.shield_group is sg` only so each cable is reported exactly once
-    (the remote SG sees the segment as end_b and contributes nothing).
-    """
-    if sg.segments:
-        return list(sg.segments)
-    found: list[WireSegment] = []
-    for seg in all_segments:
-        a = seg.end_a
-        if isinstance(a, Pin) and getattr(a, "shield_group", None) is sg:
-            found.append(seg)
-    return found
+    return segments_for_shield(sg, all_segments)
 
 
 def _bucket_by_instance_pair(segments: list[WireSegment]) -> list[list[WireSegment]]:
@@ -403,10 +361,8 @@ def build_bom(harness: "Harness") -> Bom:
     # or not the port appears on a CanBusLine. CAN pins auto-connect to a shared
     # off-page ref; that plumbing isn't a real wire.
     for seg in all_segments:
-        for ep in (seg.end_a, seg.end_b):
-            if isinstance(ep, Pin) and ep.shield_group is not None and ep.shield_group.single_oval:
-                shielded_seg_ids.add(id(seg))
-                break
+        if segment_touches_single_oval_shield(seg):
+            shielded_seg_ids.add(id(seg))
     can_disc_cables: dict[tuple[int, int], list[BomShieldedRow]] = {}
     can_disc_base_ids: dict[tuple[int, int], list[str]] = {}
     for cbl in harness.can_buses:

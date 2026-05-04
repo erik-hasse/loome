@@ -7,7 +7,7 @@ from pathlib import Path
 import drawsvg as draw
 
 from ..harness import Harness
-from ..layout.bundle_layout import BundleLayout, _format_length
+from ..layout.bundle_layout import BundleLayout
 
 
 def render_bundle(
@@ -130,7 +130,7 @@ def render_bundle(
             pin_label = ""
             if row.pin is not None:
                 pin_label = f"{row.pin.number} {row.pin.signal_name or ''}".strip()
-            length_str = _format_length(row.length, harness.length_unit)
+            length_str = harness.format_length(row.length)
             left_txt = pin_label if pin_label else (row.wire_label or "")
             right_txt = length_str
             dwg.append(

@@ -4,6 +4,7 @@ import re
 
 import drawsvg as draw
 
+from .._internal.endpoints import other_endpoint
 from ..harness import Harness
 from ..layout.engine import PIN_NUM_W, PIN_ROW_H, WIRE_AREA_W, PinGroup, PinRowInfo
 from ..model import GroundSymbol, Pin, ShieldDrainTerminal, ShieldGroup, SpliceNode, Terminal, WireSegment
@@ -86,7 +87,7 @@ def _expand_connections(
     """
     result = []
     for seg in connections:
-        remote = seg.end_b if (seg.end_a is pin or seg.end_a is class_pin) else seg.end_a
+        remote = other_endpoint(seg, pin, class_pin)
         if isinstance(remote, SpliceNode):
             outward = [s for s in remote._connections if s is not seg]
             if outward:
@@ -256,9 +257,7 @@ def _draw_remote_box(
         # Per-leg row knows its segment directly. Fall back to first connection.
         seg = row.segment if row.segment is not None else (use_pin._connections[0] if use_pin._connections else None)
         if seg is not None:
-            remote = (
-                seg.end_b if (seg.end_a is use_pin or seg.end_a is row.pin or seg.end_a is row.class_pin) else seg.end_a
-            )
+            remote = other_endpoint(seg, use_pin, row.pin, row.class_pin)
             if isinstance(remote, Pin):
                 rpin = remote
                 if not comp_label:
@@ -444,7 +443,7 @@ def _draw_pin_row(
         # so the bar connecting primary cy → target pin cy can be drawn.
         if row_info.is_continuation and row_info.segment is not None and jumper_stubs is not None:
             seg = row_info.segment
-            remote = seg.end_b if (seg.end_a is class_pin or seg.end_a is pin) else seg.end_a
+            remote = other_endpoint(seg, pin, class_pin)
             if isinstance(remote, Pin) and _is_jumper(pin, remote):
                 bar_x = row_info.wire_start_x + _BULLET_CX
                 primary = row_info.primary_row
@@ -501,7 +500,7 @@ def _draw_pin_row(
     # ── Per-leg row path (multi-direct-connection or single direct) ──────────
     if row_info.segment is not None and not _segment_terminates_at_splice(row_info.segment, class_pin, pin):
         seg = row_info.segment
-        remote = seg.end_b if (seg.end_a is class_pin or seg.end_a is pin) else seg.end_a
+        remote = other_endpoint(seg, pin, class_pin)
 
         is_primary = not row_info.is_continuation
         has_continuations = bool(row_info.continuation_rows)
@@ -650,7 +649,7 @@ def _draw_pin_row(
                     wire_end_x=row_info.wire_end_x,
                 )
             else:
-                remote = seg.end_b if (seg.end_a is class_pin or seg.end_a is pin) else seg.end_a
+                remote = other_endpoint(seg, pin, class_pin)
                 if isinstance(remote, Pin) and _is_jumper(pin, remote):
                     attrs = _wire_attrs(seg, psp, colored)
                     remote_is_multi = len(remote._connections) > 1
@@ -680,7 +679,7 @@ def _draw_pin_row(
 
 def _segment_terminates_at_splice(seg: WireSegment, class_pin: Pin, pin: Pin) -> bool:
     """True when this segment's *remote* end is a SpliceNode."""
-    remote = seg.end_b if (seg.end_a is class_pin or seg.end_a is pin) else seg.end_a
+    remote = other_endpoint(seg, pin, class_pin)
     return isinstance(remote, SpliceNode)
 
 
@@ -710,11 +709,7 @@ def _draw_bullet_and_drop(
             continue  # zero-height jumper row — no drop to draw
         cont_cy = cont.rect.y + cont.rect.h / 2
         if cont.segment is not None:
-            remote = (
-                cont.segment.end_b
-                if (cont.segment.end_a is cont.class_pin or cont.segment.end_a is cont.pin)
-                else cont.segment.end_a
-            )
+            remote = other_endpoint(cont.segment, cont.pin, cont.class_pin)
             if isinstance(remote, Pin) and _is_jumper(cont.pin, remote):
                 prev_y = cont_cy
                 continue

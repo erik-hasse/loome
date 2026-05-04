@@ -48,6 +48,8 @@ Leg rules for multi-direct pins (priority order):
 
 from __future__ import annotations
 
+from .._internal.endpoints import other_endpoint
+from .._internal.shields import segment_shield_for_endpoint
 from ..model import Pin, SpliceNode, Terminal, WireSegment
 
 _INF = 10**9
@@ -74,8 +76,9 @@ def _shield_ids(class_pin: Pin, inst_pin: Pin | None) -> set[int]:
     if use._drain_for is not None:
         ids.add(id(use._drain_for))
     for seg in use._connections:
-        if seg.shield_group is not None:
-            ids.add(id(seg.shield_group))
+        sg = segment_shield_for_endpoint(seg, use, class_pin)
+        if sg is not None:
+            ids.add(id(sg))
     return ids
 
 
@@ -116,7 +119,7 @@ def _shield_order(class_pin: Pin, inst_pin: Pin | None) -> int:
 
 def _is_self_jumper(seg: WireSegment, source_pin: Pin, inst_pin: Pin | None) -> bool:
     """True when this segment connects two pins on the same connector or component."""
-    remote = seg.end_b if seg.end_a is source_pin else seg.end_a
+    remote = other_endpoint(seg, source_pin, inst_pin)
     if not isinstance(remote, Pin):
         return False
     if inst_pin is not None:
@@ -133,7 +136,7 @@ def _is_self_jumper(seg: WireSegment, source_pin: Pin, inst_pin: Pin | None) -> 
 
 
 def _segment_remote_pin(seg: WireSegment, source_pin: Pin) -> Pin | None:
-    remote = seg.end_b if seg.end_a is source_pin else seg.end_a
+    remote = other_endpoint(seg, source_pin)
     return remote if isinstance(remote, Pin) else None
 
 
@@ -146,7 +149,7 @@ def segment_target_key(seg: WireSegment, source_pin: Pin, inst_pin: Pin | None) 
     """
     if _is_self_jumper(seg, source_pin, inst_pin):
         return ("jumper",)
-    remote = seg.end_b if seg.end_a is source_pin else seg.end_a
+    remote = other_endpoint(seg, source_pin, inst_pin)
     if isinstance(remote, Pin):
         comp_key = id(remote._component) if remote._component is not None else id(remote._component_class)
         conn_key = id(remote._connector) if remote._connector is not None else id(remote._connector_class)
@@ -175,7 +178,7 @@ def _self_jumper_pair_key(class_pin: Pin, inst_pin: Pin | None) -> tuple:
     if not use._connections:
         return (self_key, self_key)
     seg = use._connections[0]
-    remote = seg.end_b if seg.end_a is use else seg.end_a
+    remote = other_endpoint(seg, use)
     if not isinstance(remote, Pin):
         return (self_key, self_key)
     remote_key = _pin_number_key(remote)
@@ -224,8 +227,9 @@ def _shield_group_for_pin(class_pin: Pin, inst_pin: Pin | None):
     """
     use = _effective(class_pin, inst_pin)
     for seg in use._connections:
-        if seg.shield_group is not None:
-            return seg.shield_group
+        sg = segment_shield_for_endpoint(seg, use, class_pin)
+        if sg is not None and sg.segments:
+            return sg
     if class_pin.shield_group is not None:
         return class_pin.shield_group
     # Drain pin: associated with its shield via _drain_for.
@@ -329,11 +333,12 @@ def sort_legs(segments: list[WireSegment], source_pin: Pin) -> list[WireSegment]
     """
 
     def key(seg: WireSegment) -> tuple:
-        remote = seg.end_b if seg.end_a is source_pin else seg.end_a
+        remote = other_endpoint(seg, source_pin)
         # Shielded legs sort before unshielded so the primary row (pin label)
         # stays with the shield-mates and the unshielded continuation goes to
         # its own group below.
-        shield_priority = 0 if (seg.shield_group is not None and not seg.shield_group.cable_only) else 1
+        sg = segment_shield_for_endpoint(seg, source_pin)
+        shield_priority = 0 if (sg is not None and not sg.cable_only) else 1
         if isinstance(remote, Terminal):
             return (shield_priority, 0, 0, id(remote))
         if isinstance(remote, SpliceNode):

@@ -23,7 +23,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from .model import DrainSpec, GroundSymbol, OffPageReference, Pin, ShieldGroup, WireColor, WireSegment, _resolve_drain
+from .model import DrainSpec, GroundSymbol, OffPageReference, Pin, ShieldGroup, WireColor, WireSegment, resolve_drain
 
 # Sentinel meaning "caller did not supply this argument" — distinct from None
 # (which means "explicitly set to floating / no drain").
@@ -88,7 +88,7 @@ class PortBuilder:
         return self
 
     def drain(self, value: DrainSpec = "block") -> "PortBuilder":
-        resolved = _resolve_drain(value)
+        resolved = resolve_drain(value)
         if self._conn.local_sg is not None:
             self._conn.local_sg.drain = resolved
         if self._conn.remote_sg is not None:
@@ -96,7 +96,7 @@ class PortBuilder:
         return self
 
     def drain_remote(self, value: DrainSpec = "block") -> "PortBuilder":
-        resolved = _resolve_drain(value)
+        resolved = resolve_drain(value)
         if self._conn.local_sg is not None:
             self._conn.local_sg.drain_remote = resolved
         if self._conn.remote_sg is not None:
@@ -145,35 +145,64 @@ class Port:
                 setattr(owner, f"{name}_{pin_name}", pin)
 
     def __get__(self, obj: object | None, objtype: type | None = None):
+        """Return a copy bound to one component/connector instance.
+
+        Binding is intentionally stateful: each owner instance gets its own
+        shield group, injected inner pins are rebound to it, and any existing
+        segments touching those pins are synced to the endpoint-side shield
+        fields stored on the segment.
+        """
         if obj is None:
             return self
         bound = object.__new__(type(self))
         bound.__dict__.update(self.__dict__)
-        template_sg = getattr(self, "_sg", None)
-        bound_sg = None
-        if isinstance(template_sg, ShieldGroup):
-            sg_attr = f"_{self._attr_name}_shield_group"
-            bound_sg = getattr(obj, sg_attr, None)
-            if bound_sg is None:
-                bound_sg = ShieldGroup(
-                    label=template_sg.label,
-                    pins=[],
-                    drain=template_sg.drain,
-                    drain_remote=template_sg.drain_remote,
-                    single_oval=template_sg.single_oval,
-                    cable_only=template_sg.cable_only,
-                )
-                setattr(obj, sg_attr, bound_sg)
+        bound_sg = self._bound_shield_group(obj)
+        if bound_sg is not None:
             bound._sg = bound_sg
         for pin_name in self._pin_attrs:
-            inst_pin = getattr(obj, f"{self._attr_name}_{pin_name}", None)
-            if inst_pin is not None:
-                setattr(bound, f"_{pin_name}", inst_pin)
-                if bound_sg is not None:
-                    inst_pin.shield_group = bound_sg
-                    if not any(p is inst_pin for p in bound_sg.pins):
-                        bound_sg.pins.append(inst_pin)
+            self._bind_instance_pin(obj, bound, pin_name, bound_sg)
         return bound
+
+    def _bound_shield_group(self, obj: object) -> ShieldGroup | None:
+        """Return or create this owner instance's copy of the template shield."""
+        template_sg = getattr(self, "_sg", None)
+        if not isinstance(template_sg, ShieldGroup):
+            return None
+        sg_attr = f"_{self._attr_name}_shield_group"
+        bound_sg = getattr(obj, sg_attr, None)
+        if bound_sg is None:
+            bound_sg = ShieldGroup(
+                label=template_sg.label,
+                pins=[],
+                drain=template_sg.drain,
+                drain_remote=template_sg.drain_remote,
+                single_oval=template_sg.single_oval,
+                cable_only=template_sg.cable_only,
+            )
+            setattr(obj, sg_attr, bound_sg)
+        return bound_sg
+
+    def _bind_instance_pin(self, obj: object, bound: "Port", pin_name: str, bound_sg: ShieldGroup | None) -> None:
+        """Attach an injected instance pin to the bound port and shield group."""
+        inst_pin = getattr(obj, f"{self._attr_name}_{pin_name}", None)
+        if inst_pin is None:
+            return
+        setattr(bound, f"_{pin_name}", inst_pin)
+        if bound_sg is None:
+            return
+        inst_pin.shield_group = bound_sg
+        if not any(p is inst_pin for p in bound_sg.pins):
+            bound_sg.pins.append(inst_pin)
+        self._sync_pin_segment_shields(inst_pin, bound_sg)
+
+    @staticmethod
+    def _sync_pin_segment_shields(pin: Pin, sg: ShieldGroup) -> None:
+        """Keep segment endpoint shield ownership aligned after port binding."""
+        for seg in pin._connections:
+            if seg.end_a is pin:
+                seg.end_a_shield_group = sg
+            elif seg.end_b is pin:
+                seg.end_b_shield_group = sg
 
 
 class CanBus(Port):
@@ -295,12 +324,12 @@ class RS232(Port):
         seg_tx.port_order = 0
         seg_rx = self._rx.connect(other._tx)
         seg_rx.port_order = 1
-        self._sg.drain_remote = _resolve_drain(drain_remote) if drain_remote is not _UNSET else _RS232_BACKSHELL
-        other._sg.drain_remote = _resolve_drain(drain) if drain is not _UNSET else _RS232_BACKSHELL
+        self._sg.drain_remote = resolve_drain(drain_remote) if drain_remote is not _UNSET else _RS232_BACKSHELL
+        other._sg.drain_remote = resolve_drain(drain) if drain is not _UNSET else _RS232_BACKSHELL
         if drain is not _UNSET:
-            self._sg.drain = _resolve_drain(drain)
+            self._sg.drain = resolve_drain(drain)
         if drain_remote is not _UNSET:
-            other._sg.drain = _resolve_drain(drain_remote)
+            other._sg.drain = resolve_drain(drain_remote)
         gnd_seg = None
         if ground and self._gnd is not None and other._gnd is not None:
             gnd_seg = self._gnd.connect(other._gnd)
@@ -409,14 +438,14 @@ class GPIO(Port):
             seg.notes = notes
         if drain is not _UNSET:
             if self._sg is not None:
-                self._sg.drain = _resolve_drain(drain)
+                self._sg.drain = resolve_drain(drain)
             if other._sg is not None:
-                other._sg.drain_remote = _resolve_drain(drain)
+                other._sg.drain_remote = resolve_drain(drain)
         if drain_remote is not _UNSET:
             if self._sg is not None:
-                self._sg.drain_remote = _resolve_drain(drain_remote)
+                self._sg.drain_remote = resolve_drain(drain_remote)
             if other._sg is not None:
-                other._sg.drain = _resolve_drain(drain_remote)
+                other._sg.drain = resolve_drain(drain_remote)
         return PortConnection(
             primary_segment=seg,
             local_sg=self._sg,
@@ -490,12 +519,12 @@ class ARINC429(Port):
         seg_b = self._b.connect(other._b)
         if notes:
             seg.notes = notes
-        self._sg.drain_remote = _resolve_drain(drain_remote) if drain_remote is not _UNSET else _ARINC_BACKSHELL
-        other._sg.drain_remote = _resolve_drain(drain) if drain is not _UNSET else _ARINC_BACKSHELL
+        self._sg.drain_remote = resolve_drain(drain_remote) if drain_remote is not _UNSET else _ARINC_BACKSHELL
+        other._sg.drain_remote = resolve_drain(drain) if drain is not _UNSET else _ARINC_BACKSHELL
         if drain is not _UNSET:
-            self._sg.drain = _resolve_drain(drain)
+            self._sg.drain = resolve_drain(drain)
         if drain_remote is not _UNSET:
-            other._sg.drain = _resolve_drain(drain_remote)
+            other._sg.drain = resolve_drain(drain_remote)
         return PortConnection(primary_segment=seg, local_sg=self._sg, remote_sg=other._sg, segments=[seg, seg_b])
 
     def __rshift__(self, other: "ARINC429") -> PortBuilder:
@@ -555,12 +584,12 @@ class GarminEthernet(Port):
         seg_b = self._b.connect(other._b)
         if notes:
             seg.notes = notes
-        self._sg.drain_remote = _resolve_drain(drain_remote) if drain_remote is not _UNSET else _ETHERNET_BACKSHELL
-        other._sg.drain_remote = _resolve_drain(drain) if drain is not _UNSET else _ETHERNET_BACKSHELL
+        self._sg.drain_remote = resolve_drain(drain_remote) if drain_remote is not _UNSET else _ETHERNET_BACKSHELL
+        other._sg.drain_remote = resolve_drain(drain) if drain is not _UNSET else _ETHERNET_BACKSHELL
         if drain is not _UNSET:
-            self._sg.drain = _resolve_drain(drain)
+            self._sg.drain = resolve_drain(drain)
         if drain_remote is not _UNSET:
-            other._sg.drain = _resolve_drain(drain_remote)
+            other._sg.drain = resolve_drain(drain_remote)
         return PortConnection(primary_segment=seg, local_sg=self._sg, remote_sg=other._sg, segments=[seg, seg_b])
 
     def __rshift__(self, other: "GarminEthernet") -> PortBuilder:

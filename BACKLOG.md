@@ -15,6 +15,11 @@ Items are roughly in priority order within each section.
 - **PDF export** — `cairosvg` converts SVG → PDF in one call; very low effort once SVG output
   is solid.
 
+- **Read-only CLI mode for generated wire IDs** — `render`, `bundle`, `bom`, and `fuses`
+  currently assign IDs through the same path that writes `<spec>.wires.yaml`. Add a
+  `--no-write-wire-ids` / `--check-wire-ids` mode so CI, examples, and exploratory renders
+  can run without mutating sidecar files.
+
 - **`SDSECU` incomplete pin numbers** — `tach` and `fuel_flow` pins use placeholder numbers
   `"TBD1"` / `"TBD2"`. Look up the actual SDS ECU wiring diagram and replace with real pin
   identifiers.
@@ -52,6 +57,64 @@ Items are roughly in priority order within each section.
   still needs an explicit design for terminal-only wires that are not anchored by a pin row.
   Bus/fuse feed chains should render visibly instead of existing only as metadata.
 
+- **Broader semantic validation** — extend `loome validate` beyond bundle topology. Useful
+  checks include duplicate component labels / terminal IDs, duplicate connector pin numbers,
+  duplicate manual wire IDs, unsupported wire colors, unresolved systems when
+  `default_system=None`, orphan terminals, multiple protective devices feeding one branch,
+  and CAN buses with missing or extra terminations.
+
+- **Machine-readable exports** — add JSON output for BOM, fuse schedules, and a normalized
+  netlist (`components`, `connectors`, `pins`, `segments`, `terminals`, `bundles`). This would
+  make loome easier to integrate with spreadsheets, CAD/electrical tools, custom QA scripts,
+  and downstream label/cut-list tooling.
+
+- **Part metadata and richer BOM rows** — let components, connectors, terminals, pins, and
+  disconnects carry optional manufacturer part numbers, connector housing references, contact
+  part numbers, backshells, seals, and quantities. The BOM can then move from wire inventory
+  toward an orderable build list.
+
+- **Wire cut list / label report** — generate a fabrication-oriented report separate from the
+  BOM: wire ID, from/to endpoint, length, color/gauge, shield/cable membership, disconnect side
+  suffixes, label text, and optional service-loop / strip-length allowances.
+
+- **Configurable length policies** — support bundle- or harness-level allowances such as service
+  loops, branch slack, minimum cut length, and unit conversion/rounding rules so displayed lengths
+  and BOM totals match real shop practices.
+
+## Internal cleanup
+
+- **Split oversized modules** — `bom.py`, `renderers/wires.py`, `renderers/svg.py`,
+  `disconnects.py`, and `ports.py` each carry several responsibilities. Break them into smaller
+  collector, model, layout, and formatting helpers so future changes have narrower blast radius.
+
+- **Separate spec loading from side effects** — CLI commands currently load a spec, autodetect the
+  harness, assign wire IDs, and write the sidecar file through one path. Split these into explicit
+  load, normalize, assign, and persist steps so read-only commands and tests can exercise each stage
+  independently.
+
+- **Extract CLI command bodies** — move `loome` command behavior into testable functions that return
+  structured results/status instead of printing and exiting directly. Keep the argparse layer thin.
+
+- **Untangle shield ownership semantics** — `WireSegment` now stores endpoint-side shield groups and
+  shared helpers resolve canonical shield membership for BOM, wire IDs, layout, and rendering. The
+  remaining cleanup is to simplify the SVG shield-oval pass, which still has separate paths for
+  connection-level and class-body/port shields.
+
+- **Extract validation rules** — move semantic checks into composable validators with focused tests.
+  That keeps `Harness.validate()` small while making future checks such as duplicate IDs, orphan
+  terminals, and CAN termination rules easy to add.
+
+- **Reduce renderer coupling** — endpoint/remote-end resolution and render-time row/shield indexes are
+  now shared instead of built inline in `renderers/svg.py`. SVG geometry decisions, presentation
+  attributes, shield-oval planning, and DOM construction are still interleaved; continue extracting
+  render planning so schematic features can be added without threading state through low-level
+  drawing functions.
+
+- **Tighten typing around endpoints and attachments** — endpoint helper protocols and an
+  `AttachmentTarget` alias now exist under `loome._internal`, but many call sites still accept broad
+  `object`s. Continue by adding small shared types for renderable terminal-like objects and using the
+  helper types more consistently in bundle/layout APIs.
+
 ## Larger features
 
 - **Interactive SVG** — the sticky headers and remote-pin click-to-jump are already in place.
@@ -84,3 +147,7 @@ Items are roughly in priority order within each section.
 - **Multi-page / off-page split** — for large harnesses, split into logical sections
   (e.g. per sub-system) with `OffPageReference` cross-links between sheets. The model already
   has `OffPageReference`; this is mainly a layout and CLI concern.
+
+- **Pinout/component import helpers** — provide a workflow for creating `Component` classes from
+  structured pinout data (CSV/YAML, and eventually extracted PDF tables). This would reduce the
+  cost of adding new avionics boxes and make built-in component definitions easier to audit.

@@ -13,10 +13,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from .disconnects import Disconnect
-from .model import Component, Connector, Pin, SpliceNode, Terminal
-
-AttachmentTarget = Connector | Component | Terminal | SpliceNode | Disconnect
+from ._internal.attachments import AttachmentTarget, describe_attachment_target
+from .model import Pin
 
 
 @dataclass
@@ -112,7 +110,7 @@ class Bundle:
                 if key in self._attachment_by_target:
                     prev = self._attachment_by_target[key]
                     raise ValueError(
-                        f"Target {_describe_target(att.target)!r} attached twice in bundle "
+                        f"Target {describe_attachment_target(att.target)!r} attached twice in bundle "
                         f"{self.name!r}: breakouts {prev.breakout.id!r} and {bk.id!r}"
                     )
                 self._attachment_by_target[key] = att
@@ -175,19 +173,3 @@ class Bundle:
 
     def _children_of(self, node: Breakout) -> list[Breakout]:
         return [bk for bk in self._breakouts if bk.parent is node]
-
-
-def _describe_target(target: AttachmentTarget) -> str:
-    if isinstance(target, Component):
-        return target.label
-    if isinstance(target, Connector):
-        comp = getattr(target, "_component", None)
-        if comp is not None and isinstance(comp, Component):
-            cls = type(target)
-            return f"{comp.label}.{cls._connector_name}" if cls._connector_name else comp.label
-        return type(target).__name__
-    if isinstance(target, (Terminal, SpliceNode)):
-        return target.id
-    if isinstance(target, Disconnect):
-        return target.display_name()
-    return repr(target)

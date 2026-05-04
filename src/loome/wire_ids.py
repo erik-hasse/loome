@@ -27,17 +27,19 @@ from typing import TYPE_CHECKING
 
 import yaml
 
+from ._internal.endpoints import is_local_segment as _is_local_segment
+from ._internal.endpoints import segment_fingerprint
+from ._internal.shields import (
+    is_single_oval_pin,
+    segment_touches_single_oval_shield,
+    segments_for_shield,
+)
+from ._internal.systems import DEFAULT_SYSTEM
+from ._internal.systems import require_system as _require_system
+from ._internal.systems import resolve_system as _resolve_system
 from .model import (
-    BusBar,
-    CircuitBreaker,
-    Fuse,
-    GroundSymbol,
-    OffPageReference,
     Pin,
-    ShieldDrainTerminal,
     ShieldGroup,
-    SpliceNode,
-    Terminal,
     WireSegment,
 )
 
@@ -56,35 +58,8 @@ class _Entry:
 # ── fingerprints ────────────────────────────────────────────────────────────
 
 
-def _endpoint_path(ep) -> str:
-    if isinstance(ep, Pin):
-        comp = ep._component
-        owner = comp.label if comp is not None else (ep._component_class.__name__ if ep._component_class else "?")
-        conn = ep._connector_class._connector_name if ep._connector_class is not None else ""
-        if conn:
-            return f"{owner}[{conn}.{ep.number}]"
-        return f"{owner}[{ep.number}]"
-    if isinstance(ep, SpliceNode):
-        return f"Splice[{ep.label or ep.id}]"
-    if isinstance(ep, GroundSymbol):
-        return f"GroundSymbol[{ep.label or ep.id}]"
-    if isinstance(ep, OffPageReference):
-        return f"OffPage[{ep.label or ep.id}]"
-    if isinstance(ep, Fuse):
-        return f"Fuse[{ep.name or ep.id}]"
-    if isinstance(ep, CircuitBreaker):
-        return f"CircuitBreaker[{ep.name or ep.id}]"
-    if isinstance(ep, BusBar):
-        return f"BusBar[{ep.label or ep.id}]"
-    if isinstance(ep, Terminal):
-        return f"{type(ep).__name__}[{ep.id}]"
-    return repr(ep)
-
-
 def fingerprint_segment(seg: WireSegment) -> str:
-    a = _endpoint_path(seg.end_a)
-    b = _endpoint_path(seg.end_b)
-    return " <-> ".join(sorted([a, b]))
+    return segment_fingerprint(seg)
 
 
 def fingerprint_shield(sg: ShieldGroup, members: list[WireSegment]) -> str:
@@ -97,39 +72,6 @@ def fingerprint_shield(sg: ShieldGroup, members: list[WireSegment]) -> str:
 
 
 # ── system resolution ──────────────────────────────────────────────────────
-
-
-def _component_system(ep) -> str | None:
-    if isinstance(ep, Pin):
-        comp = ep._component
-        if comp is not None:
-            return getattr(comp, "_system", None)
-    return None
-
-
-DEFAULT_SYSTEM = "GEN"  # legacy fallback when neither harness nor caller supply one
-
-
-def _resolve_system(seg: WireSegment, default: str | None) -> str | None:
-    if seg.system:
-        return seg.system
-    a = _component_system(seg.end_a)
-    if a:
-        return a
-    b = _component_system(seg.end_b)
-    if b:
-        return b
-    return default
-
-
-def _require_system(seg: WireSegment, default: str | None) -> str:
-    sys = _resolve_system(seg, default)
-    if sys is None:
-        raise ValueError(
-            f"wire segment {fingerprint_segment(seg)} has no system assigned and harness.default_system is None; "
-            "wrap it in a System(...) block, set the component's system, or set a Harness.default_system."
-        )
-    return sys
 
 
 def _resolve_shield_system(sg: ShieldGroup, members: list[WireSegment], default: str | None) -> str:
@@ -150,30 +92,6 @@ def _resolve_shield_system(sg: ShieldGroup, members: list[WireSegment], default:
             f"Shielded cable {fingerprint_shield(sg, members)} has no system and harness.default_system is None."
         )
     return default
-
-
-def _is_local_segment(seg: WireSegment) -> bool:
-    """True for wires that stay inside one connector — straps, local grounds, shield drain stubs.
-
-    These are layout/visual artifacts, not bill-of-materials wires: they don't
-    get IDs, don't appear in the BOM wires section, and don't need fingerprints.
-    """
-    a, b = seg.end_a, seg.end_b
-    if isinstance(a, ShieldDrainTerminal) or isinstance(b, ShieldDrainTerminal):
-        return True
-    if isinstance(a, GroundSymbol) and a.local:
-        return True
-    if isinstance(b, GroundSymbol) and b.local:
-        return True
-    if isinstance(a, Pin) and isinstance(b, Pin):
-        ca, cb = a._connector, b._connector
-        if ca is not None and ca is cb:
-            return True
-        # Direct component pins (no inner Connector) — straps between e.g.
-        # switch poles. Treat same-component as local too.
-        if ca is None and cb is None and a._component is not None and a._component is b._component:
-            return True
-    return False
 
 
 # ── formatting ─────────────────────────────────────────────────────────────
@@ -236,20 +154,7 @@ def _write_sidecar(path: Path, wires: list[_Entry], orphans: list[_Entry]) -> No
 
 
 def _members_for_shield(sg: ShieldGroup, all_segments: list[WireSegment]) -> list[WireSegment]:
-    """Resolve the conductor segments for a ShieldGroup.
-
-    Mirrors bom._segments_for_shield: connection-level shields populate
-    sg.segments; port shields tag each Pin with shield_group, and we look at
-    end_a only so each port-to-port cable is reported once.
-    """
-    if sg.segments:
-        return list(sg.segments)
-    found: list[WireSegment] = []
-    for seg in all_segments:
-        a = seg.end_a
-        if isinstance(a, Pin) and getattr(a, "shield_group", None) is sg:
-            found.append(seg)
-    return found
+    return segments_for_shield(sg, all_segments)
 
 
 # ── main entry point ───────────────────────────────────────────────────────
@@ -288,7 +193,7 @@ def assign_wire_ids(harness: "Harness", spec_path: Path | None) -> None:
     for sg in harness.shield_groups:
         if sg.single_oval:
             continue  # CAN buses are handled separately by the BOM/renderer; skip.
-        members = _members_for_shield(sg, all_segments)
+        members = segments_for_shield(sg, all_segments)
         if not members:
             continue
         shield_members[id(sg)] = members
@@ -338,13 +243,10 @@ def assign_wire_ids(harness: "Harness", spec_path: Path | None) -> None:
     # their H/L pins to a shared "To CAN Bus" off-page reference; that plumbing
     # shouldn't surface as an individual wire.
     def _is_can_pin(ep) -> bool:
-        if not isinstance(ep, Pin):
-            return False
-        sg = ep.shield_group
-        return sg is not None and sg.single_oval
+        return isinstance(ep, Pin) and is_single_oval_pin(ep)
 
     for seg in all_segments:
-        if _is_can_pin(seg.end_a) or _is_can_pin(seg.end_b):
+        if segment_touches_single_oval_shield(seg) or _is_can_pin(seg.end_a) or _is_can_pin(seg.end_b):
             shielded_seg_ids.add(id(seg))
 
     for cbl in harness.can_buses:

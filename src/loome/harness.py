@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Generator
 
+from ._internal.endpoints import endpoint_description
+from ._internal.shields import segment_shield_groups
 from .bundles import Bundle
 from .buses import CanBusLine
 from .disconnects import Disconnect
@@ -227,10 +229,10 @@ class Harness:
             visited.add(id(item))
 
             for seg in getattr(item, "_connections", []):
-                sg = getattr(seg, "shield_group", None)
-                if sg is not None and id(sg) not in seen:
-                    seen.add(id(sg))
-                    self.shield_groups.append(sg)
+                for sg in segment_shield_groups(seg):
+                    if id(sg) not in seen:
+                        seen.add(id(sg))
+                        self.shield_groups.append(sg)
                 for ep in (seg.end_a, seg.end_b):
                     if id(ep) in seen:
                         if isinstance(ep, Terminal) and _traversable_terminal(ep, root_terminal_ids):
@@ -431,7 +433,8 @@ class Harness:
         def _add_inst(pin: Pin) -> None:
             _add_sg(pin.shield_group)
             for seg in pin._connections:
-                _add_sg(seg.shield_group)
+                for sg in segment_shield_groups(seg):
+                    _add_sg(sg)
 
         for conn in comp._connectors.values():
             for attr_name, pin in _iter_class_pins(type(conn), Connector):
@@ -516,11 +519,4 @@ def _connector_short_label(conn: Connector) -> str:
 
 
 def _describe_endpoint(ep) -> str:
-    if isinstance(ep, Pin):
-        owner = ep._component.label if ep._component is not None else "?"
-        conn = ep._connector_class._connector_name if ep._connector_class is not None else ""
-        pin = ep.signal_name or str(ep.number)
-        return f"{owner}{'.' + conn if conn else ''}.{pin}"
-    if isinstance(ep, (Terminal, SpliceNode)):
-        return ep.id
-    return repr(ep)
+    return endpoint_description(ep)
