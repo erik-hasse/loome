@@ -358,7 +358,6 @@ def test_can_disconnect_requires_adjacent_devices():
 
 
 def test_orphan_can_pins_dont_render():
-
     class _Dev(Component):
         def can_terminate(self):
             pass

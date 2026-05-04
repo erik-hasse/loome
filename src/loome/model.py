@@ -42,9 +42,37 @@ class Terminal:
     """Base class for symbol-rendered wire endpoints."""
 
     id: str
+    _connections: list["WireSegment"] = field(default_factory=list, init=False, repr=False)
 
     def display_name(self) -> str:
         return self.id
+
+    def connect(
+        self,
+        other: "WireEndpoint",
+        wire_id: str = "",
+        gauge: int | str = 22,
+        color: WireColor = "",
+        *,
+        shielded: bool = False,
+        notes: str = "",
+        system: str | None = None,
+        **kwargs,
+    ) -> "WireSegment":
+        return _connect_endpoints(
+            self,
+            other,
+            wire_id=wire_id,
+            gauge=gauge,
+            color=color,
+            shielded=shielded,
+            notes=notes,
+            system=system,
+            **kwargs,
+        )
+
+    def __rshift__(self, other: "WireEndpoint") -> "WireBuilder":
+        return WireBuilder(self.connect(other))
 
 
 @dataclass
@@ -80,7 +108,7 @@ class CircuitBreaker(Terminal):
     amps: int | float = 0
 
     def display_name(self) -> str:
-        return f"{self.name} {self.amps}A"
+        return f"{self.name or self.id} {self.amps}A"
 
 
 @dataclass
@@ -166,6 +194,26 @@ class CircuitBreakerBank:
     bus: "BusBar | None" = None
     positions: dict[int | str, "CircuitBreaker"] = field(default_factory=dict)
 
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        for attr_name, val in vars(cls).items():
+            if isinstance(val, CircuitBreaker) and not val.name:
+                val.name = attr_name
+
+    def __post_init__(self) -> None:
+        self.label = self.label or self.id
+        for cls in reversed(type(self).__mro__):
+            if not (isinstance(cls, type) and issubclass(cls, CircuitBreakerBank)):
+                continue
+            for attr_name, val in vars(cls).items():
+                if isinstance(val, CircuitBreaker):
+                    if attr_name in self.positions:
+                        setattr(self, attr_name, self.positions[attr_name])
+                        continue
+                    breaker = copy.copy(val)
+                    setattr(self, attr_name, breaker)
+                    self.positions[attr_name] = breaker
+
     def place(self, position: int | str, breaker: "CircuitBreaker") -> "CircuitBreaker":
         self.positions[position] = breaker
         return breaker
@@ -190,24 +238,15 @@ class SpliceNode:
         system: str | None = None,
         **kwargs,
     ) -> WireSegment:
-        seg = WireSegment(
+        return _connect_endpoints(
+            self,
+            other,
             wire_id=wire_id,
             gauge=gauge,
             color=color,
-            end_a=self,
-            end_b=other,
-            system=system if system is not None else current_system(),
+            system=system,
             **kwargs,
         )
-        if _active_shield_stack:
-            sg = _active_shield_stack[-1]
-            sg.segments.append(seg)
-            seg.shielded = True
-            seg.shield_group = sg
-        self._connections.append(seg)
-        if isinstance(other, (Pin, SpliceNode)):
-            other._connections.append(seg)
-        return seg
 
     def __rshift__(self, other: WireEndpoint) -> "WireBuilder":
         return WireBuilder(self.connect(other))
@@ -273,7 +312,7 @@ class System:
 
     def __init__(self, code: str) -> None:
         if not code or not code.replace("_", "").isalnum() or len(code) > 4:
-            raise ValueError(f"System code must be 1-3 alphanumeric chars, got {code!r}")
+            raise ValueError(f"System code must be 1-4 alphanumeric chars, got {code!r}")
         self.code = code
 
     def __enter__(self) -> "System":
@@ -286,6 +325,45 @@ class System:
 
 def current_system() -> str | None:
     return _active_system_stack[-1] if _active_system_stack else None
+
+
+def _append_connection(endpoint: object, seg: "WireSegment") -> None:
+    connections = getattr(endpoint, "_connections", None)
+    if connections is not None and not any(existing is seg for existing in connections):
+        connections.append(seg)
+
+
+def _connect_endpoints(
+    end_a: "WireEndpoint",
+    end_b: "WireEndpoint",
+    wire_id: str = "",
+    gauge: int | str = 22,
+    color: WireColor = "",
+    *,
+    shielded: bool = False,
+    notes: str = "",
+    system: str | None = None,
+    **kwargs,
+) -> "WireSegment":
+    seg = WireSegment(
+        wire_id=wire_id,
+        gauge=gauge,
+        color=color,
+        end_a=end_a,
+        end_b=end_b,
+        shielded=shielded,
+        notes=notes,
+        system=system if system is not None else current_system(),
+        **kwargs,
+    )
+    if _active_shield_stack:
+        sg = _active_shield_stack[-1]
+        sg.segments.append(seg)
+        seg.shielded = True
+        seg.shield_group = sg
+    _append_connection(end_a, seg)
+    _append_connection(end_b, seg)
+    return seg
 
 
 def _attach_drain_pin(pin: "Pin", sg: "ShieldGroup") -> None:
@@ -414,25 +492,16 @@ class Pin:
         notes: str = "",
         system: str | None = None,
     ) -> WireSegment:
-        seg = WireSegment(
+        return _connect_endpoints(
+            self,
+            other,
             wire_id=wire_id,
             gauge=gauge,
             color=color,
-            end_a=self,
-            end_b=other,
             shielded=shielded,
             notes=notes,
-            system=system if system is not None else current_system(),
+            system=system,
         )
-        if _active_shield_stack:
-            sg = _active_shield_stack[-1]
-            sg.segments.append(seg)
-            seg.shielded = True
-            seg.shield_group = sg
-        self._connections.append(seg)
-        if isinstance(other, (Pin, SpliceNode)):
-            other._connections.append(seg)
-        return seg
 
     def __rshift__(self, other: "WireEndpoint") -> "WireBuilder":
         return WireBuilder(self.connect(other))

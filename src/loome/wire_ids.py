@@ -3,7 +3,7 @@
 Wire IDs follow the format ``XXXGGCCNN`` (and ``XXXGGCCNNS`` for the two halves
 of a wire crossing a disconnect):
 
-  XXX  1-3 letter system code (from ``System(...)`` context or component default)
+  XXX  1-4 letter system code (from ``System(...)`` context or component default)
   GG   gauge zero-padded to 2 digits
   CC   2-letter color code, padded with ``_`` if the source code is 1 letter,
        or literally ``SH`` for shielded cables

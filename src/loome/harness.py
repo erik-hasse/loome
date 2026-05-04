@@ -17,6 +17,7 @@ from .model import (
     OffPageReference,
     Pin,
     Shield,
+    ShieldDrainTerminal,
     ShieldGroup,
     SpliceNode,
     Terminal,
@@ -34,6 +35,19 @@ def _iter_class_pins(cls: type, base_cls: type) -> Generator[tuple[str, Pin], No
             if isinstance(val, Pin) and attr_name not in seen:
                 seen.add(attr_name)
                 yield attr_name, val
+
+
+def _append_unique(items: list, item) -> bool:
+    if any(existing is item for existing in items):
+        return False
+    items.append(item)
+    return True
+
+
+def _traversable_terminal(terminal: Terminal, root_terminal_ids: set[int]) -> bool:
+    if isinstance(terminal, ShieldDrainTerminal):
+        return False
+    return not isinstance(terminal, OffPageReference) or id(terminal) in root_terminal_ids
 
 
 @dataclass
@@ -110,29 +124,30 @@ class Harness:
                         return bank.label
         return ""
 
-    def add(self, *items) -> None:
+    def add(self, *items) -> "Harness":
         for item in items:
             if isinstance(item, Component):
-                self.components.append(item)
-                self._collect_shield_groups(item)
+                if _append_unique(self.components, item):
+                    self._collect_shield_groups(item)
             elif isinstance(item, SpliceNode):
-                self.splice_nodes.append(item)
+                _append_unique(self.splice_nodes, item)
             elif isinstance(item, Terminal):
-                self.terminals.append(item)
+                _append_unique(self.terminals, item)
             elif isinstance(item, ShieldGroup):
-                self.shield_groups.append(item)
+                _append_unique(self.shield_groups, item)
             elif isinstance(item, Shield):
-                self.shield_groups.append(item.group)
+                _append_unique(self.shield_groups, item.group)
             elif isinstance(item, Bundle):
-                self.bundles.append(item)
+                _append_unique(self.bundles, item)
             elif isinstance(item, CanBusLine):
-                self.can_buses.append(item)
+                _append_unique(self.can_buses, item)
             elif isinstance(item, FuseBlock):
-                self.fuse_blocks.append(item)
+                _append_unique(self.fuse_blocks, item)
             elif isinstance(item, CircuitBreakerBank):
-                self.cb_banks.append(item)
+                _append_unique(self.cb_banks, item)
             elif isinstance(item, Disconnect):
-                self.disconnects.append(item)
+                _append_unique(self.disconnects, item)
+        return self
 
     def autodetect(self, namespace: dict) -> None:
         """Populate the harness from a spec-file namespace.
@@ -141,39 +156,43 @@ class Harness:
         connections to catch any endpoints not directly assigned to variables.
         Skips objects already added (safe to call after manual harness.add()).
         """
-        seen: set[int] = {id(obj) for obj in (*self.components, *self.splice_nodes, *self.terminals)}
-        seen.update(id(sg) for sg in self.shield_groups)
+        seen: set[int] = {
+            id(obj)
+            for obj in (
+                *self.components,
+                *self.splice_nodes,
+                *self.terminals,
+                *self.shield_groups,
+                *self.bundles,
+                *self.can_buses,
+                *self.fuse_blocks,
+                *self.cb_banks,
+                *self.disconnects,
+            )
+        }
+        root_terminal_ids: set[int] = {id(t) for t in self.terminals}
+        root_terminal_ids.update(id(val) for val in namespace.values() if isinstance(val, Terminal))
 
-        def _register(obj) -> None:
+        def _register(obj) -> bool:
             if id(obj) in seen:
-                return
+                return False
             seen.add(id(obj))
             self.add(obj)
+            return True
+
+        def _enqueue_component(comp: Component) -> None:
+            frontier.extend(comp._direct_pins.values())
+            for conn in comp._connectors.values():
+                frontier.extend(p for p in vars(conn).values() if isinstance(p, Pin))
 
         # ── Step 1: namespace scan ──────────────────────────────────────────
         for val in namespace.values():
-            if isinstance(val, Disconnect):
-                if val not in self.disconnects:
-                    self.disconnects.append(val)
-                continue
             if isinstance(val, (Component, SpliceNode, Terminal, ShieldGroup)):
                 _register(val)
             elif isinstance(val, Shield):
-                if id(val.group) not in seen:
-                    seen.add(id(val.group))
-                    self.shield_groups.append(val.group)
-            elif isinstance(val, Bundle):
-                if val not in self.bundles:
-                    self.bundles.append(val)
-            elif isinstance(val, CanBusLine):
-                if val not in self.can_buses:
-                    self.can_buses.append(val)
-            elif isinstance(val, FuseBlock):
-                if val not in self.fuse_blocks:
-                    self.fuse_blocks.append(val)
-            elif isinstance(val, CircuitBreakerBank):
-                if val not in self.cb_banks:
-                    self.cb_banks.append(val)
+                _register(val.group)
+            elif isinstance(val, (Bundle, CanBusLine, FuseBlock, CircuitBreakerBank, Disconnect)):
+                _register(val)
 
         # ── Step 2: connection traversal ────────────────────────────────────
         # Build frontier from all instance pins of known components/splices
@@ -187,6 +206,10 @@ class Harness:
 
         for splice in list(self.splice_nodes):
             frontier.append(splice)
+
+        for terminal in list(self.terminals):
+            if _traversable_terminal(terminal, root_terminal_ids):
+                frontier.append(terminal)
 
         for val in namespace.values():
             if isinstance(val, type) and issubclass(val, Component) and val is not Component:
@@ -210,13 +233,20 @@ class Harness:
                     self.shield_groups.append(sg)
                 for ep in (seg.end_a, seg.end_b):
                     if id(ep) in seen:
+                        if isinstance(ep, Terminal) and _traversable_terminal(ep, root_terminal_ids):
+                            frontier.append(ep)
                         continue
-                    _register(ep)
-                    if isinstance(ep, Component):
-                        frontier.extend(ep._direct_pins.values())
-                        for conn in ep._connectors.values():
-                            frontier.extend(p for p in vars(conn).values() if isinstance(p, Pin))
+                    is_new = _register(ep)
+                    if isinstance(ep, Pin):
+                        comp = ep._component
+                        if comp is not None and _register(comp):
+                            _enqueue_component(comp)
+                    elif isinstance(ep, Component):
+                        if is_new:
+                            _enqueue_component(ep)
                     elif isinstance(ep, SpliceNode):
+                        frontier.append(ep)
+                    elif isinstance(ep, Terminal) and _traversable_terminal(ep, root_terminal_ids):
                         frontier.append(ep)
 
         # ── Step 3: freeze bundles ──────────────────────────────────────────
@@ -399,6 +429,7 @@ class Harness:
             _add_sg(pin.shield_group)
 
         def _add_inst(pin: Pin) -> None:
+            _add_sg(pin.shield_group)
             for seg in pin._connections:
                 _add_sg(seg.shield_group)
 
@@ -451,6 +482,13 @@ class Harness:
 
         for splice in self.splice_nodes:
             _collect(splice)
+
+        for terminal in self.terminals:
+            for seg in terminal._connections:
+                if isinstance(seg.end_a, Terminal) and isinstance(seg.end_b, Terminal):
+                    if id(seg) not in seen:
+                        seen.add(id(seg))
+                        result.append(seg)
 
         return result
 

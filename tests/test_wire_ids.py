@@ -69,6 +69,21 @@ def test_wire_override_beats_context():
     assert seg.wire_id.startswith("PWR")
 
 
+def test_wire_builder_fluent_modifiers_mutate_underlying_segment():
+    a = _Box("A")
+    b = _Box("B")
+
+    (a.J1.pwr >> b.J1.pwr).gauge(18).color("R").wire_id("W-1").notes("route left").system("PWR")
+    h = _harness({"a": a, "b": b})
+
+    [seg] = h.segments()
+    assert seg.gauge == 18
+    assert seg.color == "R"
+    assert seg.wire_id == "W-1"
+    assert seg.notes == "route left"
+    assert seg.system == "PWR"
+
+
 def test_component_default_system():
     a = _Box("A", system="ENG")
     gnd = GroundSymbol("GND")
@@ -91,8 +106,9 @@ def test_active_context_wins_over_component_system():
 
 
 def test_invalid_system_code():
+    System("ABCD")
     with pytest.raises(ValueError):
-        System("toolong!")
+        System("ABCDE")
 
 
 def test_format_helpers():

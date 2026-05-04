@@ -40,13 +40,13 @@ device = LoadDevice("Load Device")
 display = Display("Display")
 
 f1 = Fuse("F1", amps=5)
-f2 = Fuse("F2", amps=3)
 sp1 = SpliceNode("SP1", label="Power Splice")
 gnd = GroundSymbol("GND")
 
 psu.J1.positive >> f1
-device.J1.power >> f1
-display.J1.power >> f1
+f1 >> sp1
+sp1 >> device.J1.power
+sp1 >> display.J1.power
 
 psu.J1.ground >> gnd
 device.J1.ground >> gnd
@@ -108,6 +108,10 @@ Emits a fuse/circuit-breaker schedule listing what each protective device feeds.
 | `-o / --output` | stdout | Output file |
 | `--format` | `md` | `md` or `csv` |
 
+### `loome validate <spec>`
+
+Checks bundle topology and exits non-zero when wire lengths cannot be resolved.
+
 ---
 
 ## Defining components
@@ -158,6 +162,8 @@ class Sensor(Component):
 ```
 
 `RS232` instances cross-wire automatically: `device_a.J1.serial.connect(device_b.J1.serial)`.
+Port connections can use the same fluent modifiers as pin wires:
+`(device_a.J1.serial >> device_b.J1.serial).gauge(22).color("W").system("COM")`.
 
 ### Switches (built-in)
 
@@ -221,19 +227,20 @@ Terminals are the endpoints for wires that don't go to another connector pin.
 from loome import GroundSymbol, OffPageReference, Fuse, CircuitBreaker, BusBar
 
 gnd     = GroundSymbol("GND")                  # chassis ground (filled triangle)
-local   = GroundSymbol("local", filled=False)  # signal/local ground (open triangle)
+local   = GroundSymbol("local", style="open")  # signal/local ground (open triangle)
 ext_ref = OffPageReference("EXT1", label="To Avionics Bus")  # off-page chevron
 fuse    = Fuse("F1", amps=5)
 cb      = CircuitBreaker("CB1", amps=10)
 bus     = BusBar("BATT_BUS", label="Battery Bus")
 ```
 
-Terminals are wire **endpoints** — connect to them from a pin or splice node:
+Terminals are wire **endpoints** — connect to them from a pin, splice node, or another terminal:
 
 ```python
 pin >> gnd
 pin >> fuse
 splice >> pin
+bus >> fuse
 ```
 
 ### Splice nodes
@@ -245,6 +252,7 @@ from loome import SpliceNode
 
 sp = SpliceNode("SP1", label="Power Splice")
 source_pin >> fuse
+fuse >> sp
 sp >> load_a.J1.power
 sp >> load_b.J1.power
 sp >> load_c.J1.power

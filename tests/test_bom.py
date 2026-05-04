@@ -23,8 +23,8 @@ from loome.bom import (
     render_fuse_schedule_md,
     trace_loads,
 )
-from loome.model import Component, Connector, Pin, Shield, ShieldGroup
-from loome.ports import GPIO, CanBus
+from loome.model import Component, Connector, Pin, Shield, ShieldDrainTerminal, ShieldGroup
+from loome.ports import GPIO, CanBus, Thermocouple
 from loome.wire_ids import assign_wire_ids
 
 
@@ -35,7 +35,6 @@ class _Load(Component):
 
 
 def _harness(ns: dict) -> Harness:
-
     h = Harness("test")
     h.autodetect(ns)
     assign_wire_ids(h, None)
@@ -140,6 +139,20 @@ def test_fuse_schedule_includes_location_from_block():
     assert schedule[0].location == "FB1:3"
 
 
+def test_declarative_fuse_block_copies_fuses_per_instance():
+    class _AvionicsBlock(FuseBlock):
+        pfd = Fuse("PFD", amps=5)
+        mfd = Fuse("MFD", amps=5)
+
+    block_a = _AvionicsBlock("A")
+    block_b = _AvionicsBlock("B")
+
+    assert block_a.pfd is not block_b.pfd
+    assert block_a.pfd.name == "pfd"
+    assert block_a.positions["pfd"] is block_a.pfd
+    assert block_a.positions["mfd"] is block_a.mfd
+
+
 def test_cb_bank_location_reported():
     load = _Load("L")
     cb = CircuitBreaker("CB1", name="Landing", amps=15)
@@ -151,6 +164,40 @@ def test_cb_bank_location_reported():
     h = _harness({"load": load, "cb": cb, "bar": bar, "bank": bank})
     schedule = build_fuse_schedule(h)
     assert schedule[0].location == "CBBAR1:2"
+
+
+def test_circuit_breaker_display_name_falls_back_to_id():
+    cb = CircuitBreaker("CB1", amps=10)
+    assert cb.display_name() == "CB1 10A"
+
+
+def test_declarative_cb_bank_copies_breakers_per_instance():
+    class _MainBank(CircuitBreakerBank):
+        landing = CircuitBreaker("LAND", amps=15)
+
+    bank_a = _MainBank("BANK_A")
+    bank_b = _MainBank("BANK_B")
+
+    assert bank_a.label == "BANK_A"
+    assert bank_a.landing is not bank_b.landing
+    assert bank_a.landing.name == "landing"
+    assert bank_a.positions["landing"] is bank_a.landing
+
+
+def test_terminal_to_terminal_connections_are_autodetected_from_one_named_endpoint():
+    load = _Load("L")
+    bus = BusBar("BUS", label="Main Bus")
+    fuse = Fuse("F1", name="L", amps=5)
+
+    bus >> fuse
+    fuse >> load.J1.pwr
+
+    h = _harness({"bus": bus})
+
+    assert load in h.components
+    assert fuse in h.fuses
+    assert len(h.segments()) == 2
+    assert any(seg.end_a is bus and seg.end_b is fuse for seg in h.segments())
 
 
 def test_bom_has_wires_totals_and_terminals():
@@ -227,6 +274,30 @@ def test_shielded_group_collapses_to_one_cable_row():
     assert "22" not in bom.gauge_totals
 
 
+def test_shield_with_pin_drains_registers_drain_stubs():
+    class _Shielded(Component):
+        class J1(Connector):
+            high = Pin(1, "High")
+            low = Pin(2, "Low")
+            drain = Pin(3, "Drain")
+
+    src = _Shielded("SRC")
+    dst = _Shielded("DST")
+    with Shield(drain=src.J1.drain, drain_remote=dst.J1.drain) as shield:
+        src.J1.high.connect(dst.J1.high)
+        src.J1.low.connect(dst.J1.low)
+
+    h = _harness({"src": src, "dst": dst, "shield": shield})
+
+    assert shield.group in h.shield_groups
+    assert shield.group.drain is src.J1.drain
+    assert shield.group.drain_remote is dst.J1.drain
+    assert src.J1.drain._drain_for is shield.group
+    assert dst.J1.drain._drain_for is shield.group
+    assert any(isinstance(seg.end_b, ShieldDrainTerminal) for seg in src.J1.drain._connections)
+    assert any(isinstance(seg.end_b, ShieldDrainTerminal) for seg in dst.J1.drain._connections)
+
+
 def test_shielded_cable_id_auto_generated_when_unlabeled():
     src = _Sig("SRC")
     dst = _Sig("DST")
@@ -261,6 +332,38 @@ def test_single_oval_shield_skipped():
     h.shield_groups.append(sg)
     bom = build_bom(h)
     assert bom.shielded_cables == []
+
+
+def test_class_body_port_shield_group_populates_pins():
+    class Reader(Component):
+        class J1(Connector):
+            gp1 = GPIO(18, 19, 20, name="GP1")
+
+    sg = Reader.J1.gp1._sg
+
+    assert sg is not None
+    assert [p.signal_name for p in sg.pins] == ["GP1 Positive", "GP1", "GP1 Ground"]
+    assert all(p.shield_group is sg for p in sg.pins)
+
+
+def test_thermocouple_cable_only_group_collapses_to_unshielded_cable_row():
+    class Probe(Component):
+        tc = Thermocouple("YEL", "RED", name="EGT")
+
+    src = Probe("SRC")
+    dst = Probe("DST")
+    src.tc >> dst.tc
+
+    h = _harness({"src": src, "dst": dst})
+    bom = build_bom(h)
+
+    assert bom.wires == []
+    assert len(bom.shielded_cables) == 1
+    row = bom.shielded_cables[0]
+    assert row.conductors == 2
+    assert row.has_drain is False
+    assert row.gauge == 20
+    assert row.color == "mixed"
 
 
 def test_class_body_shield_buckets_by_instance_pair():

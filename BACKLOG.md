@@ -5,10 +5,6 @@ Items are roughly in priority order within each section.
 
 ## Low effort
 
-- Straps don't need wire IDs
-
-- Default system should be configurable at the Harness level (or raise an error if not supplied and there are segments without a system)
-
 - Add optional `max_pins` to a disconnect's init
 
 - **Switch schematic symbols** — `SPST`, `SPDT`, `DPST`, `DPDT` all default to
@@ -23,13 +19,14 @@ Items are roughly in priority order within each section.
   `"TBD1"` / `"TBD2"`. Look up the actual SDS ECU wiring diagram and replace with real pin
   identifiers.
 
-- **`PortBuilder` missing `.gauge()` / `.color()` modifiers** — `WireBuilder` (returned by
-  `pin_a >> pin_b`) supports `.gauge()` and `.color()`, but `PortBuilder` (returned by
-  `port_a >> port_b`) does not. Both modifiers should be chainable on port connections too.
-
 - **`BusBar` schematic symbol** — `BusBar` currently renders as a small filled rectangle
   (`primitives.py`). Should instead draw a labeled horizontal bar with tap-point markers,
   matching its role as a shared power rail.
+
+- **`PortBuilder.notes()` semantics** — `PortBuilder.gauge()`, `.color()`, and `.system()`
+  now apply to every conductor created by a port connection, but `.notes()` still annotates
+  only the primary segment. Decide whether notes should apply to all conductors by default,
+  or add an explicit per-conductor note API.
 
 ## Medium effort
 
@@ -50,37 +47,20 @@ Items are roughly in priority order within each section.
   inside it, respecting `positions`. Groups that aren't attached fall back to the current
   per-fuse behavior.
 
-## Test coverage
-
-- **CLI subcommand tests** — `bundle`, `bom`, and `fuses` subcommands have no CLI-level tests.
-  At minimum, confirm each exits 0 and produces non-empty output on the fixture spec.
-  `loome validate` (newly added) also needs both passing and failing cases.
-
-- **Port type tests** — no tests cover `RS232.connect`, `ARINC429.connect`, `GPIO.connect`,
-  `Thermocouple.connect`, or `GarminEthernet.connect`. Should verify pin injection,
-  cross-wiring, and direction validation.
-
-- **Shield / `ShieldGroup` context manager** — no tests for `Shield` as a context manager,
-  for `ShieldGroup.pins` population, or for `cable_only` / `single_oval` flags.
-
-- **`FuseBlock` declarative subclass** — no tests for the class-body fuse-declaration style
-  or `CircuitBreakerBank`.
-
-- **`WireBuilder` fluent API** — `.gauge()`, `.color()`, `.wire_id()`, `.notes()` are
-  untested; verify they mutate the underlying `WireSegment` correctly.
-
-- **Layout ordering rules** — `layout/ordering.py` has no tests; the sort-key functions are
-  load-bearing for schematic readability.
+- **Terminal-to-terminal schematic rendering** — terminal endpoints can now be wired directly
+  (`bus >> fuse`, `fuse >> splice`) and are included in BOM/segments, but schematic rendering
+  still needs an explicit design for terminal-only wires that are not anchored by a pin row.
+  Bus/fuse feed chains should render visibly instead of existing only as metadata.
 
 ## Larger features
 
 - **Interactive SVG** — the sticky headers and remote-pin click-to-jump are already in place.
   Remaining interactivity work, roughly in priority order:
 
-  1. **Cross-component navigation** — a `loome render-all` (or `--all`) command that renders
-     every component to its own SVG plus an `index.html` linking them. Each per-component SVG
-     gets a fixed top bar listing all components as links (back/forward navigation). This is a
-     prerequisite for builder mode to be useful across a real harness.
+  1. **Cross-component navigation** — `loome render <spec> -o <directory>` already renders
+     every component to its own SVG. The remaining work is an `index.html` linking them, plus
+     a fixed top bar in each per-component SVG listing all components as links (back/forward
+     navigation). This is a prerequisite for builder mode to be useful across a real harness.
 
   2. **Builder mode** — a toggleable overlay (e.g. `?builder=1` query param or a button) that
      lets the user mark individual wires as "run". Since each wire appears at both ends of the

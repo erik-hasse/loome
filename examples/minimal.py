@@ -26,14 +26,14 @@ device = LoadDevice("Load Device")
 display = Display("Display")
 
 f1 = Fuse("F1", amps=5)
-f2 = Fuse("F2", amps=3)
 sp1 = SpliceNode("SP1", label="Power Splice")
 gnd = GroundSymbol("GND")
 
 # Power: PSU positive -> fuse, then distribute to loads
 psu.J1.positive >> f1
-device.J1.power >> f1
-display.J1.power >> f1
+f1 >> sp1
+sp1 >> device.J1.power
+sp1 >> display.J1.power
 
 # Grounds
 psu.J1.ground >> gnd
