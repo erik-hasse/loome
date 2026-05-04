@@ -2,8 +2,6 @@ from examples.n14ev.power import gnd
 from loome.components.switches import DPST, SPST, DPOnOnOnSwitch, OnOffOnSwitch, Rheostat
 
 toga = DPST("TO/GA", momentary=True, render=True)
-toga.com1 >> toga.com2
-toga.com1 >> gnd
 
 flaps = OnOffOnSwitch("Flap Switch", momentary_up=True, momentary_down=True)
 flaps.com >> gnd

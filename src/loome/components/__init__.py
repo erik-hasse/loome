@@ -109,7 +109,6 @@ class SingleInputSensor(Component):
 
 
 class SDSECU(Component):
-    system = "ENG"
     tach = Pin("TBD1", "Tachometer")
     fuel_flow = Pin("TBD2", "Fuel Flow")
 
@@ -121,7 +120,6 @@ class AithreShield3(Component):
 
 
 class FlyLedsEssentialsController(Component):
-    system = "LITE"
     ground = Pin(1, "Ground")
     left_shield = Pin(2, "Left Shield (Position -ve)")
     left_strobe_neg = Pin(3, "Left Strobe -ve")
@@ -140,7 +138,6 @@ class FlyLedsEssentialsController(Component):
 
 
 class FlyLedsEssentials(Component):
-    system = "LITE"
     render = True
     position_neg = Pin("P-", "Position Neg")
     position_pos = Pin("P+", "Position Pos")
@@ -149,7 +146,6 @@ class FlyLedsEssentials(Component):
 
 
 class FlyLedsSevenStars(Component):
-    system = "LITE"
     render = False
     ground = Pin("GND", "Ground")
     landing = Pin("LND", "Landing")

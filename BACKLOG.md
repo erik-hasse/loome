@@ -5,6 +5,10 @@ Items are roughly in priority order within each section.
 
 ## Low effort
 
+- Straps don't need wire IDs
+
+- Default system should be configurable at the Harness level (or raise an error if not supplied and there are segments without a system)
+
 - Add optional `max_pins` to a disconnect's init
 
 - **Switch schematic symbols** — `SPST`, `SPDT`, `DPST`, `DPDT` all default to
@@ -90,6 +94,8 @@ Items are roughly in priority order within each section.
        completion at a glance.
      - For per-component SVGs, a shared `localStorage` key lets all open pages reflect the same
        state without a sidecar file.
+     - In builder mode, wires are only persisted to `*.wires.yaml` when marked "done" instead of
+       at render time.
 
   3. **Expand/collapse connectors** — click a connector header (`sh-conn-` ids are already
      present) to collapse all its pin rows. Useful for large harnesses where you want to focus
