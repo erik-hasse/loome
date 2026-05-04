@@ -1,0 +1,400 @@
+"""Stable, auto-generated wire IDs persisted in a sidecar YAML.
+
+Wire IDs follow the format ``XXXGGCCNN`` (and ``XXXGGCCNNS`` for the two halves
+of a wire crossing a disconnect):
+
+  XXX  1-3 letter system code (from ``System(...)`` context or component default)
+  GG   gauge zero-padded to 2 digits
+  CC   2-letter color code, padded with ``_`` if the source code is 1 letter,
+       or literally ``SH`` for shielded cables
+  NN   counter unique within the system, zero-padded to 2 digits
+  S    'A' (end_a side) / 'B' (end_b side) suffix on disconnect-split rows
+
+Identity across edits is by canonicalized endpoint *fingerprint*: a sorted,
+joined description of the wire's two endpoints (or, for a shielded cable, of
+the group's member set). The sidecar (``<spec>.wires.yaml``) records
+``fingerprint -> id``; on load we re-fingerprint each segment, look up its ID,
+and only mint a new one for segments whose fingerprint isn't already on file.
+Entries whose fingerprint no longer matches anything are kept in an ``orphans``
+section so a rename can be recovered by hand.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+import yaml
+
+from .model import (
+    BusBar,
+    CircuitBreaker,
+    Fuse,
+    GroundSymbol,
+    OffPageReference,
+    Pin,
+    ShieldGroup,
+    SpliceNode,
+    Terminal,
+    WireSegment,
+)
+
+if TYPE_CHECKING:
+    from .harness import Harness
+
+
+@dataclass
+class _Entry:
+    id: str
+    fingerprint: str
+    system: str
+    kind: str  # "segment" or "shield"
+
+
+# ── fingerprints ────────────────────────────────────────────────────────────
+
+
+def _endpoint_path(ep) -> str:
+    if isinstance(ep, Pin):
+        comp = ep._component
+        owner = comp.label if comp is not None else (ep._component_class.__name__ if ep._component_class else "?")
+        conn = ep._connector_class._connector_name if ep._connector_class is not None else ""
+        if conn:
+            return f"{owner}[{conn}.{ep.number}]"
+        return f"{owner}[{ep.number}]"
+    if isinstance(ep, SpliceNode):
+        return f"Splice[{ep.label or ep.id}]"
+    if isinstance(ep, GroundSymbol):
+        return f"GroundSymbol[{ep.label or ep.id}]"
+    if isinstance(ep, OffPageReference):
+        return f"OffPage[{ep.label or ep.id}]"
+    if isinstance(ep, Fuse):
+        return f"Fuse[{ep.name or ep.id}]"
+    if isinstance(ep, CircuitBreaker):
+        return f"CircuitBreaker[{ep.name or ep.id}]"
+    if isinstance(ep, BusBar):
+        return f"BusBar[{ep.label or ep.id}]"
+    if isinstance(ep, Terminal):
+        return f"{type(ep).__name__}[{ep.id}]"
+    return repr(ep)
+
+
+def fingerprint_segment(seg: WireSegment) -> str:
+    a = _endpoint_path(seg.end_a)
+    b = _endpoint_path(seg.end_b)
+    return " <-> ".join(sorted([a, b]))
+
+
+def fingerprint_shield(sg: ShieldGroup, members: list[WireSegment]) -> str:
+    label = sg.label.strip() if sg.label else ""
+    member_fps = sorted({fingerprint_segment(s) for s in members})
+    body = "|".join(member_fps)
+    if label:
+        return f"shield:{label}:{body}"
+    return f"shield:{body}"
+
+
+# ── system resolution ──────────────────────────────────────────────────────
+
+
+def _component_system(ep) -> str | None:
+    if isinstance(ep, Pin):
+        comp = ep._component
+        if comp is not None:
+            return getattr(comp, "_system", None)
+    return None
+
+
+DEFAULT_SYSTEM = "GEN"
+
+
+def _resolve_system(seg: WireSegment, fallback: str | None = None) -> str:
+    if seg.system:
+        return seg.system
+    if fallback:
+        return fallback
+    a = _component_system(seg.end_a)
+    if a:
+        return a
+    b = _component_system(seg.end_b)
+    if b:
+        return b
+    return DEFAULT_SYSTEM
+
+
+def _resolve_shield_system(sg: ShieldGroup, members: list[WireSegment]) -> str:
+    explicit: set[str] = {_resolve_system(s) for s in members if _resolve_system(s) != DEFAULT_SYSTEM}
+    if len(explicit) > 1:
+        raise ValueError(
+            f"Shielded cable {fingerprint_shield(sg, members)} spans multiple systems: {sorted(explicit)}. "
+            "Pick one explicitly."
+        )
+    if explicit:
+        return next(iter(explicit))
+    return DEFAULT_SYSTEM
+
+
+# ── formatting ─────────────────────────────────────────────────────────────
+
+
+def _format_gauge(gauge) -> str:
+    try:
+        return f"{int(gauge):02d}"
+    except (TypeError, ValueError):
+        return str(gauge) if gauge else "00"
+
+
+def _format_color(seg: WireSegment) -> str:
+    return (seg.effective_color or "W")[:2]
+
+
+def _format_id(system: str, gauge_str: str, color_str: str, nn: int) -> str:
+    return f"{system}{gauge_str}{color_str}{nn:02d}"
+
+
+# ── sidecar I/O ────────────────────────────────────────────────────────────
+
+
+def _sidecar_path(spec_path: Path) -> Path:
+    return spec_path.with_suffix(".wires.yaml")
+
+
+def _load_sidecar(path: Path) -> tuple[dict[str, _Entry], list[_Entry]]:
+    if not path.exists():
+        return {}, []
+    data = yaml.safe_load(path.read_text()) or {}
+    by_fp: dict[str, _Entry] = {}
+    for raw in data.get("wires", []) or []:
+        e = _Entry(
+            id=raw["id"], fingerprint=raw["fingerprint"], system=raw.get("system", ""), kind=raw.get("kind", "segment")
+        )
+        by_fp[e.fingerprint] = e
+    orphans = [
+        _Entry(
+            id=raw["id"], fingerprint=raw["fingerprint"], system=raw.get("system", ""), kind=raw.get("kind", "segment")
+        )
+        for raw in (data.get("orphans") or [])
+    ]
+    return by_fp, orphans
+
+
+def _write_sidecar(path: Path, wires: list[_Entry], orphans: list[_Entry]) -> None:
+    def _dump(es: list[_Entry]) -> list[dict]:
+        return [{"id": e.id, "fingerprint": e.fingerprint, "system": e.system, "kind": e.kind} for e in es]
+
+    data = {
+        "version": 1,
+        "wires": _dump(sorted(wires, key=lambda e: e.id)),
+        "orphans": _dump(orphans),
+    }
+    path.write_text(yaml.safe_dump(data, sort_keys=False))
+
+
+# ── shield-group → member-segments ─────────────────────────────────────────
+
+
+def _members_for_shield(sg: ShieldGroup, all_segments: list[WireSegment]) -> list[WireSegment]:
+    """Resolve the conductor segments for a ShieldGroup.
+
+    Mirrors bom._segments_for_shield: connection-level shields populate
+    sg.segments; port shields tag each Pin with shield_group, and we look at
+    end_a only so each port-to-port cable is reported once.
+    """
+    if sg.segments:
+        return list(sg.segments)
+    found: list[WireSegment] = []
+    for seg in all_segments:
+        a = seg.end_a
+        if isinstance(a, Pin) and getattr(a, "shield_group", None) is sg:
+            found.append(seg)
+    return found
+
+
+# ── main entry point ───────────────────────────────────────────────────────
+
+
+def assign_wire_ids(harness: "Harness", spec_path: Path | None) -> None:
+    """Assign stable wire IDs to every segment + shield group.
+
+    Loads the sidecar at ``<spec>.wires.yaml`` (if present), preserves any
+    fingerprint→id mappings, mints new IDs for fingerprints not on file (per
+    system, NN continues from max+1), and writes the sidecar back.
+
+    If ``spec_path`` is None, IDs are still assigned in-memory but no sidecar
+    is written or read (useful for tests).
+    """
+    sidecar = _sidecar_path(spec_path) if spec_path else None
+    by_fp, orphans = _load_sidecar(sidecar) if sidecar else ({}, [])
+
+    next_nn: dict[str, int] = {}
+    for entry in list(by_fp.values()) + orphans:
+        nn = _extract_nn(entry.id)
+        if nn is None:
+            continue
+        next_nn[entry.system] = max(next_nn.get(entry.system, 0), nn)
+
+    used_fps: set[str] = set()
+    new_wires: list[_Entry] = []
+
+    all_segments = harness.segments()
+
+    # Pre-compute shield-group memberships and reserve their member segments
+    # so we don't double-assign a per-segment ID to a shielded conductor.
+    shield_members: dict[int, list[WireSegment]] = {}
+    shielded_seg_ids: set[int] = set()
+    for sg in harness.shield_groups:
+        if sg.single_oval:
+            continue  # CAN buses are handled separately by the BOM/renderer; skip.
+        members = _members_for_shield(sg, all_segments)
+        if not members:
+            continue
+        shield_members[id(sg)] = members
+        for s in members:
+            shielded_seg_ids.add(id(s))
+
+    # ── 1) assign / preserve shield-group IDs ─────────────────────────────
+    seen_sg: set[int] = set()
+    for sg in harness.shield_groups:
+        if id(sg) in seen_sg or id(sg) not in shield_members:
+            continue
+        seen_sg.add(id(sg))
+        members = shield_members[id(sg)]
+        fp = fingerprint_shield(sg, members)
+        system = _resolve_shield_system(sg, members)
+        gauge = _dominant_gauge(members)
+        gauge_str = _format_gauge(gauge)
+        existing = by_fp.get(fp)
+        explicit_label = sg.label.strip() if sg.label else ""
+        if explicit_label:
+            wid = explicit_label  # user-provided label acts like an override
+            if existing is not None:
+                used_fps.add(fp)
+        elif existing is not None:
+            wid = existing.id
+            used_fps.add(fp)
+        else:
+            nn = next_nn.get(system, 0) + 1
+            if nn > 99:
+                raise ValueError(f"system {system!r} would exceed 99 wires; split it into multiple systems")
+            next_nn[system] = nn
+            wid = _format_id(system, gauge_str, "SH", nn)
+        sg.wire_id = wid  # type: ignore[attr-defined]
+        for seg in members:
+            seg.wire_id = wid
+        new_wires.append(_Entry(id=wid, fingerprint=fp, system=system, kind="shield"))
+
+    # ── 1b) CAN bus cables: one ID per adjacent device pair ─────────────
+    # CAN segments are shared at the class level (one H / one L segment for
+    # the whole bus regardless of device count), so we don't assign IDs to
+    # underlying segments — we just compute one ID per (bus, adjacent-pair)
+    # for BOM rows and renderer labels.
+    can_pair_ids: dict[tuple[int, int, int], str] = {}  # (cbl_id, dev_a_id, dev_b_id) → wire_id
+    can_pin_ids_all: set[int] = set()
+    for cbl in harness.can_buses:
+        can_pin_ids_all.update(cbl._pin_ids)
+    # Mark all CAN segments shielded so step 2 doesn't assign per-segment IDs.
+    for seg in all_segments:
+        a, b = seg.end_a, seg.end_b
+        if (isinstance(a, Pin) and id(a) in can_pin_ids_all) or (isinstance(b, Pin) and id(b) in can_pin_ids_all):
+            shielded_seg_ids.add(id(seg))
+
+    for cbl in harness.can_buses:
+        # CAN cables always live in their own "CAN" system regardless of the
+        # devices' systems — the bus is the system.
+        system = "CAN"
+
+        # Pick a representative gauge from any segment touching the bus.
+        gauge_seg = next(
+            (
+                s
+                for s in all_segments
+                if (isinstance(s.end_a, Pin) and id(s.end_a) in cbl._pin_ids)
+                or (isinstance(s.end_b, Pin) and id(s.end_b) in cbl._pin_ids)
+            ),
+            None,
+        )
+        gauge_str = _format_gauge(gauge_seg.gauge if gauge_seg is not None else 22)
+
+        for dev_a, dev_b in zip(cbl.devices, cbl.devices[1:]):
+            label_a = getattr(dev_a, "_component", None)
+            label_a = label_a.label if label_a is not None else type(dev_a).__name__
+            label_b = getattr(dev_b, "_component", None)
+            label_b = label_b.label if label_b is not None else type(dev_b).__name__
+            fp = f"canbus:{cbl.name}:{label_a}->{label_b}"
+
+            existing = by_fp.get(fp)
+            if existing is not None:
+                wid = existing.id
+                used_fps.add(fp)
+            else:
+                nn = next_nn.get(system, 0) + 1
+                if nn > 99:
+                    raise ValueError(f"system {system!r} would exceed 99 wires; split it into multiple systems")
+                next_nn[system] = nn
+                wid = _format_id(system, gauge_str, "SH", nn)
+            can_pair_ids[(id(cbl), id(dev_a), id(dev_b))] = wid
+            new_wires.append(_Entry(id=wid, fingerprint=fp, system=system, kind="canbus"))
+
+    # Stash on harness for BOM / renderer consumption.
+    harness._can_pair_ids = can_pair_ids  # type: ignore[attr-defined]
+
+    # ── 2) assign / preserve per-segment IDs ──────────────────────────────
+    for seg in all_segments:
+        if id(seg) in shielded_seg_ids:
+            continue  # already inherits the shield-group ID
+        fp = fingerprint_segment(seg)
+        system = _resolve_system(seg)
+        gauge_str = _format_gauge(seg.gauge)
+        color_str = _format_color(seg)
+        existing = by_fp.get(fp)
+        if seg.wire_id:
+            wid = seg.wire_id  # user override
+            if existing is not None:
+                used_fps.add(fp)
+        elif existing is not None:
+            wid = existing.id
+            used_fps.add(fp)
+        else:
+            nn = next_nn.get(system, 0) + 1
+            if nn > 99:
+                raise ValueError(f"system {system!r} would exceed 99 wires; split it into multiple systems")
+            next_nn[system] = nn
+            wid = _format_id(system, gauge_str, color_str, nn)
+        seg.wire_id = wid
+        new_wires.append(_Entry(id=wid, fingerprint=fp, system=system, kind="segment"))
+
+    # ── 3) anything in by_fp we never matched → orphan ────────────────────
+    new_orphans = list(orphans)
+    new_orphan_ids = {e.id for e in new_orphans}
+    for fp, entry in by_fp.items():
+        if fp in used_fps:
+            continue
+        if entry.id in new_orphan_ids:
+            continue
+        new_orphans.append(entry)
+
+    if sidecar is not None:
+        _write_sidecar(sidecar, new_wires, new_orphans)
+
+
+def _extract_nn(wire_id: str) -> int | None:
+    """Pull the trailing 2-digit NN out of a wire ID like 'AVI22B_07' or 'AVI22SH03A'."""
+    s = wire_id
+    if s and s[-1].isalpha() and not s[-1].isdigit():
+        s = s[:-1]
+    if len(s) < 2 or not s[-2:].isdigit():
+        return None
+    try:
+        return int(s[-2:])
+    except ValueError:
+        return None
+
+
+def _dominant_gauge(segs: list[WireSegment]):
+    counts: dict = {}
+    for s in segs:
+        counts[s.gauge] = counts.get(s.gauge, 0) + 1
+    if not counts:
+        return 22
+    return max(counts.items(), key=lambda kv: kv[1])[0]

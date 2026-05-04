@@ -25,6 +25,7 @@ from loome.bom import (
 )
 from loome.model import Component, Connector, Pin, Shield, ShieldGroup
 from loome.ports import GPIO, CanBus
+from loome.wire_ids import assign_wire_ids
 
 
 class _Load(Component):
@@ -34,8 +35,10 @@ class _Load(Component):
 
 
 def _harness(ns: dict) -> Harness:
+
     h = Harness("test")
     h.autodetect(ns)
+    assign_wire_ids(h, None)
     return h
 
 
@@ -175,7 +178,8 @@ def test_bom_synthesizes_wire_ids_for_empty_ones():
     h = _harness({"load": load, "gnd": gnd})
 
     bom = build_bom(h)
-    assert bom.wires[0].wire_id == "22B-1"
+    # Default-system wire ID format: GEN<gauge:02d><color:2 padded><nn:02d>.
+    assert bom.wires[0].wire_id == "GEN22B01"
 
 
 def test_markdown_renderers_produce_nonempty_tables():
@@ -231,7 +235,7 @@ def test_shielded_cable_id_auto_generated_when_unlabeled():
         src.J1.b.connect(dst.J1.b)
     h = _harness({"src": src, "dst": dst})
     bom = build_bom(h)
-    assert bom.shielded_cables[0].cable_id == "SC-1"
+    assert bom.shielded_cables[0].cable_id == "GEN22SH01"
 
 
 def test_shielded_mixed_gauge_marked_mixed():

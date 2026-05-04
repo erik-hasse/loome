@@ -362,7 +362,6 @@ def _can_pin_gauge(devices, all_segments: list[WireSegment]) -> int | str:
 
 
 def build_bom(harness: "Harness") -> Bom:
-    bucket_counters: dict[tuple[str, str], int] = {}
     wires: list[BomWireRow] = []
     gauge_totals: dict[str, GaugeTotals] = {}
     disconnect_segs: dict[int, list[tuple[WireSegment, str, float | None, float | None]]] = {}
@@ -386,6 +385,7 @@ def build_bom(harness: "Harness") -> Bom:
             if (isinstance(a, Pin) and id(a) in can_pin_ids) or (isinstance(b, Pin) and id(b) in can_pin_ids):
                 shielded_seg_ids.add(id(seg))
     can_disc_cables: dict[tuple[int, int], list[BomShieldedRow]] = {}
+    can_disc_base_ids: dict[tuple[int, int], list[str]] = {}
     for cbl in harness.can_buses:
         gauge = _can_pin_gauge(cbl.devices, all_segments)
         resolved = {(id(a), id(b)): dist for a, b, dist in cbl.segments(harness)}
@@ -411,9 +411,10 @@ def build_bom(harness: "Harness") -> Bom:
             if low_dev is not None and high_dev is not None:
                 pair_disc[(id(low_dev), id(high_dev))] = disc
 
+        can_pair_ids = getattr(harness, "_can_pair_ids", {}) or {}
         for i, (dev_a, dev_b) in enumerate(zip(cbl.devices, cbl.devices[1:]), start=1):
             length = resolved.get((id(dev_a), id(dev_b)))
-            base_id = f"{cbl.name}-{i}"
+            base_id = can_pair_ids.get((id(cbl), id(dev_a), id(dev_b))) or f"{cbl.name}-{i}"
             disc = pair_disc.get((id(dev_a), id(dev_b)))
             from_lbl = _connector_label(dev_a)
             to_lbl = _connector_label(dev_b)
@@ -454,6 +455,7 @@ def build_bom(harness: "Harness") -> Bom:
                 )
                 shielded_cables.extend([row_a, row_b])
                 can_disc_cables.setdefault((id(disc), id(cbl)), []).extend([row_a, row_b])
+                can_disc_base_ids.setdefault((id(disc), id(cbl)), []).append(base_id)
 
     seen_sgs: set[int] = set()
     for sg in harness.shield_groups:
@@ -466,16 +468,18 @@ def build_bom(harness: "Harness") -> Bom:
         if not segs:
             continue
         buckets = _bucket_by_instance_pair(segs)
-        # Pick label / id strategy.
-        base_label = sg.label.strip() if sg.label else ""
         rows_for_sg: list[BomShieldedRow] = []
+        # The wire_id is assigned to the ShieldGroup (and its members) by
+        # wire_ids.assign_wire_ids; fall back to the legacy synthetic id only
+        # if no assignment ran (e.g. tests that bypass the CLI).
+        canonical_id = getattr(sg, "wire_id", "") or (sg.label.strip() if sg.label else "")
         for bucket in buckets:
             for seg in bucket:
                 shielded_seg_ids.add(id(seg))
-            if base_label:
-                cable_id = base_label
+            if canonical_id:
+                cable_id = canonical_id
                 if len(buckets) > 1:
-                    cable_id = f"{base_label}@{_component_label(bucket[0])}"
+                    cable_id = f"{canonical_id}@{_component_label(bucket[0])}"
             else:
                 sc_counter += 1
                 cable_id = f"SC-{sc_counter}"
@@ -498,23 +502,18 @@ def build_bom(harness: "Harness") -> Bom:
     for seg in all_segments:
         if id(seg) in shielded_seg_ids:
             continue
-        wid = seg.wire_id
+        wid = seg.wire_id or f"{seg.gauge}{seg.effective_color or '-'}-?"
         color = seg.effective_color
-        if not wid:
-            key = (str(seg.gauge), color)
-            n = bucket_counters.get(key, 0) + 1
-            bucket_counters[key] = n
-            wid = f"{seg.gauge}{color or '-'}-{n}"
 
         if seg.disconnect_pin is not None and seg.disconnect_pin._can_bus is None:
             sides = harness.resolved_sides(seg) or (None, None)
             len_a, len_b = sides
             disc_label = _disconnect_pin_label(seg.disconnect_pin)
             row_pairs = [
-                (len_a, _endpoint_label(seg.end_a), disc_label),
-                (len_b, disc_label, _endpoint_label(seg.end_b)),
+                (f"{wid}A", len_a, _endpoint_label(seg.end_a), disc_label),
+                (f"{wid}B", len_b, disc_label, _endpoint_label(seg.end_b)),
             ]
-            for length, from_label, to_label in row_pairs:
+            for row_wid, length, from_label, to_label in row_pairs:
                 totals = gauge_totals.setdefault(str(seg.gauge), GaugeTotals(0, 0.0, 0))
                 totals.count += 1
                 if length is None:
@@ -523,7 +522,7 @@ def build_bom(harness: "Harness") -> Bom:
                     totals.total_length += length
                 wires.append(
                     BomWireRow(
-                        wire_id=wid,
+                        wire_id=row_wid,
                         gauge=seg.gauge,
                         color=color,
                         length=length,
@@ -576,8 +575,9 @@ def build_bom(harness: "Harness") -> Bom:
             to_label = ""
             if pin._can_bus is not None:
                 cables = can_disc_cables.get((id(disc), id(pin._can_bus)), [])
+                base_ids = can_disc_base_ids.get((id(disc), id(pin._can_bus)), [])
                 if cables:
-                    wid = ", ".join(r.cable_id for r in cables)
+                    wid = ", ".join(base_ids) if base_ids else ", ".join(r.cable_id for r in cables)
                     from_label = cables[0].from_label
                     to_label = cables[-1].to_label
                 else:
@@ -593,8 +593,9 @@ def build_bom(harness: "Harness") -> Bom:
                     None,
                 )
                 cables = can_disc_cables.get((id(disc), id(bus)), []) if bus is not None else []
+                base_ids = can_disc_base_ids.get((id(disc), id(bus)), []) if bus is not None else []
                 if cables:
-                    wid = ", ".join(r.cable_id for r in cables)
+                    wid = ", ".join(base_ids) if base_ids else ", ".join(r.cable_id for r in cables)
                     from_label = cables[0].from_label
                     to_label = cables[-1].to_label
                     gauge = "drain"
@@ -604,7 +605,10 @@ def build_bom(harness: "Harness") -> Bom:
             elif pin._shield_group is not None:
                 sc_rows = sg_to_rows.get(id(pin._shield_group), [])
                 if sc_rows:
-                    wid = ", ".join(r.cable_id for r in sc_rows)
+                    canonical = getattr(pin._shield_group, "wire_id", "") or (
+                        pin._shield_group.label.strip() if pin._shield_group.label else ""
+                    )
+                    wid = canonical or ", ".join(r.cable_id for r in sc_rows)
                     seen_from: list[str] = []
                     seen_to: list[str] = []
                     for r in sc_rows:
@@ -625,6 +629,12 @@ def build_bom(harness: "Harness") -> Bom:
                         if matched_seg is seg:
                             wid = matched_wid
                             break
+                    if not wid:
+                        # Conductor inside a shielded group: use the group's
+                        # canonical id so the row isn't blank.
+                        wid = seg.wire_id or (
+                            getattr(seg.shield_group, "wire_id", "") if seg.shield_group is not None else ""
+                        )
                     gauge = seg.gauge
                     color = seg.color
                     from_label = _endpoint_label(seg.end_a)

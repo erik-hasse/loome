@@ -533,9 +533,10 @@ def test_can_bus_disconnect_splits_cable_and_disconnect_rows_reference_ids():
     assert can_cables[1].from_label == "DC1"
     assert can_cables[1].to_label == "B.J1"
 
-    # Disconnect rows for CAN H, CAN L and the CAN shield reference both halves.
+    # Disconnect rows for CAN H, CAN L and the CAN shield reference the
+    # canonical (un-suffixed) cable id, not the per-side A/B halves.
     rows = [r for entry in bom.disconnects if entry.id == "DC1" for r in entry.pins]
-    assert any("CAN-1A" in r.wire_id and "CAN-1B" in r.wire_id for r in rows)
+    assert any(r.wire_id == "CAN-1" for r in rows)
 
 
 def test_bom_disconnect_drain_row_references_cable_id():

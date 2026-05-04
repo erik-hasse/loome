@@ -4,6 +4,8 @@ from loome import ARINC429, GPIO, RS232, Component, Connector, GarminEthernet, P
 class GTN650Xi(Component):
     """GPS/NAV/COM (GTN 650Xi)"""
 
+    system = "GPS"
+
     class P1001(Connector):
         """Main Connector – Main Board"""
 

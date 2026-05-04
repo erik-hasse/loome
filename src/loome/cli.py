@@ -17,6 +17,7 @@ from loome.layout.bundle_layout import layout_bundle
 from loome.layout.engine import layout
 from loome.renderers.bundle import render_bundle
 from loome.renderers.svg import render
+from loome.wire_ids import assign_wire_ids
 
 
 def main() -> None:
@@ -78,6 +79,7 @@ def _load_harness(spec_path: Path):
         sys.exit(1)
 
     harness.autodetect(namespace)
+    assign_wire_ids(harness, spec_path)
     return harness
 
 

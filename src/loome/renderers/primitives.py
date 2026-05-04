@@ -112,6 +112,29 @@ def _can_neighbor_label(pin: Pin, harness: Harness) -> str | None:
     return f"To {label}"
 
 
+def _can_pair_id_for(pin: "Pin | None", harness: Harness) -> str | None:
+    """Return the per-pair CAN cable wire-id for *pin*'s row, or None."""
+    if pin is None or pin.shield_group is None or not pin.shield_group.single_oval:
+        return None
+    pair_ids = getattr(harness, "_can_pair_ids", None)
+    if not pair_ids:
+        return None
+    info = _can_neighbor_info(pin, harness)
+    if info is None:
+        return None
+    bus, neighbor = info
+    if neighbor is None:
+        return None
+    dev = bus.connector_for_pin(pin)
+    if dev is None:
+        return None
+    is_high = "high" in (pin.signal_name or "").lower()
+    # H pin → previous neighbor, L pin → next neighbor.
+    if is_high:
+        return pair_ids.get((id(bus), id(neighbor), id(dev)))
+    return pair_ids.get((id(bus), id(dev), id(neighbor)))
+
+
 def _can_neighbor_info(pin: Pin, harness: Harness):
     """Return (bus, neighbor_connector | None) for a CAN pin, or None if not CAN."""
     if pin is None or pin.shield_group is None or not pin.shield_group.single_oval:
@@ -147,11 +170,26 @@ def _draw_wire_label(
     harness: Harness | None = None,
     local_pin: "Pin | None" = None,
 ) -> None:
-    color_code = (
-        color_code_override if color_code_override is not None else _effective_color_code(seg, psp or {}, colored)
-    )
-    parts = [p for p in [seg.wire_id, str(seg.gauge) if seg.gauge else "", color_code] if p]
-    label = "".join(parts)
+    # CAN-bus pins share class-level segments; the canonical wire ID lives
+    # per (bus, adjacent-pair) on harness._can_pair_ids — look it up so each
+    # CAN row shows the correct cable ID for its neighbor.
+    can_id = _can_pair_id_for(local_pin, harness) if harness is not None else None
+    # When seg.wire_id is set (auto-assigned format XXXGGCCNN encodes gauge+color
+    # already), we prefer it as the sole label. Otherwise fall back to the
+    # legacy concat of gauge + color code so unannotated diagrams still work.
+    if can_id:
+        label = can_id
+    elif seg.wire_id:
+        wid = seg.wire_id
+        if seg.disconnect_pin is not None:
+            wid = wid + ("A" if local_pin is seg.end_a else "B")
+        label = wid
+    else:
+        color_code = (
+            color_code_override if color_code_override is not None else _effective_color_code(seg, psp or {}, colored)
+        )
+        parts = [p for p in [str(seg.gauge) if seg.gauge else "", color_code] if p]
+        label = "".join(parts)
     length_str = harness.format_wire_length(seg) if harness is not None else ""
     if length_str:
         label = f"{label} / {length_str}" if label else length_str

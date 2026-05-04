@@ -7,6 +7,8 @@ from loome.constants import Axis
 class GAD27(Component):
     """Flap, Lights, Trim Controller"""
 
+    system = "AFR"
+
     def can_terminate(self) -> None:
         self.J271.can.low >> self.J271.can_term
 
@@ -156,6 +158,8 @@ class GDUMode(StrEnum):
 class GDU460(Component):
     """Display Unit, automatically connects CDU pins based on mode and display number"""
 
+    system = "EFIS"
+
     def can_terminate(self) -> None:
         self.P4602.can.low >> self.P4602.can_bus_term
 
@@ -190,6 +194,8 @@ class GDU460(Component):
 
 class GEA24(Component):
     """EIS Interface"""
+
+    system = "EIS"
 
     def can_terminate(self) -> None:
         self.J241.can.terminate()
@@ -288,6 +294,8 @@ class GEA24(Component):
 class GMC507(Component):
     """Autopilot controller"""
 
+    system = "AP"
+
     def _terminate(self) -> None:
         self.J7001.can_term_1 >> self.J7001.can_term_2
 
@@ -306,6 +314,8 @@ class GMC507(Component):
 
 class GMU11(Component):
     """Magnetometer"""
+
+    system = "AD"
 
     def can_terminate(self):
         self.J441.can.terminate()
@@ -339,6 +349,8 @@ class _BaseJ281(Connector):
 class GSA28(Component):
     """Autopilot Servo (pitch/yaw variant). If axis is provided, strap jumpers will be
     connected automatically."""
+
+    system = "AP"
 
     def can_terminate(self) -> None:
         self.J281.can_term_1 >> self.J281.can_term_2
@@ -381,6 +393,8 @@ class GSA28RollServo(GSA28):
 
 class GSU25(Component):
     """Air Data Unit"""
+
+    system = "AD"
 
     def can_terminate(self) -> None:
         self.J251.can.terminate()
@@ -426,6 +440,8 @@ class _BaseJ292(Connector):
 
 
 class GAD29C(Component):
+    """ARINC Adapter"""
+
     def can_terminate(self) -> None:
         self.J292.can_term_1 >> self.J292.can_term_2
 
@@ -449,6 +465,8 @@ class GTP59(Component):
 
 
 class GTR20(Component):
+    system = "COM"
+
     def can_terminate(self) -> None:
         self.J2001.can_term_a >> self.J2001.can_term_b
 
@@ -488,6 +506,7 @@ class GTR20(Component):
 
 
 class GDL51R(Component):
+    system = "GDL"
     rs232_2 = RS232(5, 6, 11, name="RS 232 2")
     rs232_1 = RS232(7, 8, 12, name="RS 232 1")
     ground = Pin(9, "Ground")
@@ -498,6 +517,8 @@ class GDL51R(Component):
 
 
 class GMA245(Component):
+    system = "AUD"
+
     def can_terminate(self) -> None:
         self.P2401.can.terminate()
 
@@ -618,6 +639,8 @@ class _BaseP3251(Connector):
 class GTX45R(Component):
     """Remote Transponder"""
 
+    system = "ADSB"
+
     class P3251(_BaseP3251):
         time_mark_a = Pin(4, "Time Mark A")
         time_mark_b = Pin(26, "Time Mark B")
@@ -634,6 +657,8 @@ class GTX45R(Component):
 
 
 class G5(Component):
+    system = "EFIS"
+
     def can_terminate(self) -> None:
         self.J51.can.terminate()
 

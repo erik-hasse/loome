@@ -1,0 +1,23 @@
+version: 1
+wires:
+- id: GEN22B02
+  fingerprint: GroundSymbol[GND] <-> Widget[J1.2]
+  system: GEN
+  kind: segment
+- id: GEN22B04
+  fingerprint: Display[P1.2] <-> GroundSymbol[GND]
+  system: GEN
+  kind: segment
+- id: GEN22R05
+  fingerprint: Fuse[Main] <-> Splice[Pwr]
+  system: GEN
+  kind: segment
+- id: GEN22W01
+  fingerprint: Splice[Pwr] <-> Widget[J1.1]
+  system: GEN
+  kind: segment
+- id: GEN22W03
+  fingerprint: Display[P1.1] <-> Splice[Pwr]
+  system: GEN
+  kind: segment
+orphans: []

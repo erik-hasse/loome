@@ -185,9 +185,19 @@ class SpliceNode:
         wire_id: str = "",
         gauge: int | str = 22,
         color: WireColor = "",
+        *,
+        system: str | None = None,
         **kwargs,
     ) -> WireSegment:
-        seg = WireSegment(wire_id=wire_id, gauge=gauge, color=color, end_a=self, end_b=other, **kwargs)
+        seg = WireSegment(
+            wire_id=wire_id,
+            gauge=gauge,
+            color=color,
+            end_a=self,
+            end_b=other,
+            system=system if system is not None else current_system(),
+            **kwargs,
+        )
         if _active_shield_stack:
             sg = _active_shield_stack[-1]
             sg.segments.append(seg)
@@ -239,6 +249,42 @@ class ShieldGroup:
 
 
 _active_shield_stack: list[ShieldGroup] = []
+
+
+# ── system (wire-ID grouping) ──────────────────────────────────────────────
+
+
+_active_system_stack: list[str] = []
+
+
+class System:
+    """Context manager that tags wire segments with a system code.
+
+    Usage::
+
+        with System("AVI"):
+            gsu25.J251.aircraft_power_1 >> avionics_block.GSU25
+
+    System code becomes the ``XXX`` prefix of auto-generated wire IDs. Per-wire
+    overrides via ``.system("PWR")`` on the builder or ``connect(system=...)``
+    take precedence over the active context.
+    """
+
+    def __init__(self, code: str) -> None:
+        if not code or not code.replace("_", "").isalnum() or len(code) > 4:
+            raise ValueError(f"System code must be 1-3 alphanumeric chars, got {code!r}")
+        self.code = code
+
+    def __enter__(self) -> "System":
+        _active_system_stack.append(self.code)
+        return self
+
+    def __exit__(self, *_) -> None:
+        _active_system_stack.pop()
+
+
+def current_system() -> str | None:
+    return _active_system_stack[-1] if _active_system_stack else None
 
 
 def _attach_drain_pin(pin: "Pin", sg: "ShieldGroup") -> None:
@@ -303,6 +349,7 @@ class WireSegment:
     end_b: WireEndpoint
     shielded: bool = False
     notes: str = ""
+    system: str | None = None
     shield_group: "ShieldGroup | None" = field(default=None, repr=False)
     port_order: int | None = field(default=None, repr=False)
     disconnect_pin: "DisconnectPin | None" = field(default=None, repr=False)
@@ -360,6 +407,7 @@ class Pin:
         *,
         shielded: bool = False,
         notes: str = "",
+        system: str | None = None,
     ) -> WireSegment:
         seg = WireSegment(
             wire_id=wire_id,
@@ -369,6 +417,7 @@ class Pin:
             end_b=other,
             shielded=shielded,
             notes=notes,
+            system=system if system is not None else current_system(),
         )
         if _active_shield_stack:
             sg = _active_shield_stack[-1]
@@ -407,6 +456,10 @@ class WireBuilder:
 
     def notes(self, value: str) -> "WireBuilder":
         self._seg.notes = value
+        return self
+
+    def system(self, value: str) -> "WireBuilder":
+        self._seg.system = value
         return self
 
 
@@ -457,6 +510,7 @@ class Connector:
 
 class Component:
     render: bool = True  # set False on a subclass or instance to hide from schematic
+    system: str | None = None  # class-level default system code (overridden by ctor kwarg)
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -484,10 +538,13 @@ class Component:
                 if not val.signal_name:
                     val.signal_name = _default_signal_name(attr_name)
 
-    def __init__(self, label: str | None = None, *, render: bool | None = None):
+    def __init__(self, label: str | None = None, *, render: bool | None = None, system: str | None = None):
         self.label = label or type(self).__name__
         if render is not None:
             self.render = render
+        # Explicit ctor kwarg wins; otherwise fall back to the class-level
+        # ``system`` attribute (e.g. ``class GMU11(Component): system = "AD"``).
+        self._system: str | None = system if system is not None else type(self).system
         self._connectors: dict[str, Connector] = {}
         self._direct_pins: dict[str, Pin] = {}
         for cls in reversed(type(self).__mro__):
