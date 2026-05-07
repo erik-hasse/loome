@@ -95,18 +95,13 @@ Items are roughly in priority order within each section.
 - **Extract CLI command bodies** — move `loome` command behavior into testable functions that return
   structured results/status instead of printing and exiting directly. Keep the argparse layer thin.
 
-- **Untangle shield ownership semantics** — `WireSegment` now stores endpoint-side shield groups and
-  shared helpers resolve canonical shield membership for BOM, wire IDs, layout, and rendering. The
-  remaining cleanup is to simplify the SVG shield-oval pass, which still has separate paths for
-  connection-level and class-body/port shields.
-
 - **Extract validation rules** — move semantic checks into composable validators with focused tests.
   That keeps `Harness.validate()` small while making future checks such as duplicate IDs, orphan
   terminals, and CAN termination rules easy to add.
 
 - **Reduce renderer coupling** — endpoint/remote-end resolution and render-time row/shield indexes are
   now shared instead of built inline in `renderers/svg.py`. SVG geometry decisions, presentation
-  attributes, shield-oval planning, and DOM construction are still interleaved; continue extracting
+  attributes, and DOM construction are still interleaved; continue extracting
   render planning so schematic features can be added without threading state through low-level
   drawing functions.
 

@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import drawsvg as draw
 
 from .._internal.endpoints import component_key_for_pin, connector_key_for_pin, other_endpoint
+from .._internal.shields import segment_shield_for_endpoint
 from ..harness import Harness
 from ..layout.engine import MARGIN, LayoutResult, PinRowInfo
-from ..model import Component, Pin, ShieldDrainTerminal, ShieldGroup, SpliceNode, Terminal
+from ..model import Component, Pin, ShieldDrainTerminal, ShieldGroup, SpliceNode, Terminal, WireEndpoint
 from .colors import _wire_attrs
 from .context import build_render_context
 from .primitives import (
@@ -109,6 +111,259 @@ def _drain_run_index(runs: list[list[PinRowInfo]], drain_endpoint) -> int:
                 if ri.pin is drain_endpoint or ri.class_pin is drain_endpoint:
                     return i
     return len(runs) - 1 if runs else 0
+
+
+@dataclass
+class _ShieldOvalPlan:
+    """Rows normalized by shield view before SVG oval drawing.
+
+    ``near`` rows use the shield's natural orientation: ``drain`` at the left
+    oval and ``drain_remote`` at the right oval. ``far`` rows mirror that view
+    for the other side of a cable.
+    """
+
+    near_rows_by_inst: dict[int, list[PinRowInfo]] = field(default_factory=dict)
+    far_rows_by_inst: dict[int, list[PinRowInfo]] = field(default_factory=dict)
+
+
+def _pin_instance_key(pin: Pin) -> int:
+    return id(pin._component) if pin._component is not None else id(pin)
+
+
+def _add_plan_row(rows_by_inst: dict[int, list[PinRowInfo]], row: PinRowInfo | None, key: int | None = None) -> None:
+    if row is None:
+        return
+    bucket = rows_by_inst.setdefault(key if key is not None else _pin_instance_key(row.pin), [])
+    if row not in bucket:
+        bucket.append(row)
+
+
+def _rows_for_pin_endpoint(ctx, seg, endpoint: Pin) -> list[PinRowInfo]:
+    seg_rows = ctx.rows.rows_for_segment(seg)
+    matched = [ri for ri in seg_rows if ri.pin is endpoint or ri.class_pin is endpoint]
+    if matched:
+        return matched
+    row = ctx.rows.row_for_pin(endpoint)
+    return [row] if row is not None else []
+
+
+def _upstream_rows_for_splice(ctx, splice: SpliceNode, shielded_seg) -> list[PinRowInfo]:
+    rows: list[PinRowInfo] = []
+    for other_seg in splice._connections:
+        if other_seg is shielded_seg:
+            continue
+        other_ep = other_endpoint(other_seg, splice)
+        if not isinstance(other_ep, Pin):
+            continue
+        up_rows = [ri for ri in ctx.rows.rows_for_inst_pin(other_ep) if ri.segment is other_seg]
+        rows.extend(up_rows or ctx.rows.rows_for_inst_pin(other_ep))
+    return rows
+
+
+def _collect_segment_owned_shield_rows(sg: ShieldGroup, ctx, plan: _ShieldOvalPlan) -> None:
+    """Adapt ``with Shield(...)`` segment ownership into a normalized oval plan."""
+
+    for seg in sg.segments:
+        for endpoint, target in ((seg.end_a, plan.near_rows_by_inst), (seg.end_b, plan.far_rows_by_inst)):
+            if isinstance(endpoint, Pin):
+                for row in _rows_for_pin_endpoint(ctx, seg, endpoint):
+                    _add_plan_row(target, row)
+            elif isinstance(endpoint, SpliceNode):
+                for row in _upstream_rows_for_splice(ctx, endpoint, seg):
+                    _add_plan_row(target, row)
+
+
+def _row_connections(row: PinRowInfo, class_pin: Pin) -> list:
+    if row.segment is not None:
+        return [row.segment]
+    return list(row.pin._connections or class_pin._connections)
+
+
+def _row_covered_by_other_segment_shield(row: PinRowInfo, class_pin: Pin, sg: ShieldGroup) -> bool:
+    connections = _row_connections(row, class_pin)
+    return bool(connections) and all(
+        seg.shield_group is not None and seg.shield_group is not sg and seg.shield_group.segments for seg in connections
+    )
+
+
+def _row_endpoint_owns_shield(row: PinRowInfo, class_pin: Pin, sg: ShieldGroup) -> bool:
+    connections = _row_connections(row, class_pin)
+    use_pin = row.pin if row.pin._connections else class_pin
+    return any(segment_shield_for_endpoint(seg, use_pin, row.class_pin) is sg for seg in connections)
+
+
+def _rows_for_shield_pin(pin: Pin, ctx) -> list[PinRowInfo]:
+    rows: list[PinRowInfo] = []
+    for row in [*ctx.rows.rows_for_class_pin(pin), *ctx.rows.rows_for_inst_pin(pin)]:
+        if row not in rows:
+            rows.append(row)
+    return rows
+
+
+def _endpoint_owned_source_rows(sg: ShieldGroup, ctx) -> dict[int, list[PinRowInfo]]:
+    """Rows where pins carry ``sg`` directly, filtered to real multi-pin cables."""
+
+    rows_by_inst: dict[int, list[PinRowInfo]] = {}
+    for pin in sg.pins:
+        for row in _rows_for_shield_pin(pin, ctx):
+            if not row.pin._connections and not pin._connections:
+                continue
+            if not _row_endpoint_owns_shield(row, pin, sg):
+                continue
+            if _row_covered_by_other_segment_shield(row, pin, sg):
+                continue
+            _add_plan_row(rows_by_inst, row)
+
+    return {inst_key: rows for inst_key, rows in rows_by_inst.items() if len({id(row.class_pin) for row in rows}) >= 2}
+
+
+def _collect_endpoint_remote_rows(sg: ShieldGroup, ctx, source_rows_by_inst: dict[int, list[PinRowInfo]], plan) -> None:
+    included_inst_pins: set[int] = {id(row.pin) for rows in source_rows_by_inst.values() for row in rows}
+
+    def _add_remote_for_source(src_pin: Pin, source_key: int) -> None:
+        for seg in src_pin._connections:
+            if seg.shield_group is not None and seg.shield_group is not sg:
+                continue
+            remote = other_endpoint(seg, src_pin)
+            if not isinstance(remote, Pin):
+                continue
+            if remote.shield_group is not None:
+                continue
+            _add_plan_row(plan.far_rows_by_inst, ctx.rows.row_for_pin(remote), source_key)
+
+    for pin in sg.pins:
+        if pin._connections:
+            _add_remote_for_source(pin, id(sg))
+        for row in _rows_for_shield_pin(pin, ctx):
+            if id(row.pin) not in included_inst_pins:
+                continue
+            _add_remote_for_source(row.pin, _pin_instance_key(row.pin))
+
+
+def _collect_endpoint_owned_shield_rows(sg: ShieldGroup, ctx, plan: _ShieldOvalPlan) -> None:
+    """Adapt port/class-body pin ownership into a normalized oval plan."""
+
+    source_rows_by_inst = _endpoint_owned_source_rows(sg, ctx)
+    for inst_key, rows in source_rows_by_inst.items():
+        for row in rows:
+            _add_plan_row(plan.near_rows_by_inst, row, inst_key)
+    _collect_endpoint_remote_rows(sg, ctx, source_rows_by_inst, plan)
+
+
+def _build_shield_oval_plan(sg: ShieldGroup, ctx) -> _ShieldOvalPlan:
+    plan = _ShieldOvalPlan()
+    _collect_segment_owned_shield_rows(sg, ctx, plan)
+    _collect_endpoint_owned_shield_rows(sg, ctx, plan)
+    return plan
+
+
+def _component_keys_for_plan(plan: _ShieldOvalPlan) -> set[int]:
+    return {
+        component_key_for_pin(row.pin)
+        for rows_by_inst in (plan.near_rows_by_inst, plan.far_rows_by_inst)
+        for rows in rows_by_inst.values()
+        for row in rows
+    }
+
+
+def _target_key_for_pin(pin: Pin) -> tuple:
+    return ("component", component_key_for_pin(pin), connector_key_for_pin(pin))
+
+
+def _queue_pin_drain_connection(
+    ctx,
+    rows: list[PinRowInfo],
+    run: list[PinRowInfo],
+    endpoint: WireEndpoint | None,
+    oval_x_offset: float,
+    oval_bottom: float,
+    pending_drain_src: list[tuple[float, float, float]],
+    pending_drain_rem: list[tuple[float, float, tuple, Pin]],
+    *,
+    remote: bool,
+) -> None:
+    if not isinstance(endpoint, Pin):
+        return
+    wx_run = run[0].wire_start_x
+    oval_x = wx_run + oval_x_offset
+    if remote:
+        pending_drain_rem.append((oval_x, oval_bottom, _target_key_for_pin(endpoint), endpoint))
+        return
+    drain_row = ctx.rows.primary_inst_row(endpoint)
+    if drain_row is None:
+        drain_row = next((row for row in rows if row.pin is endpoint or row.class_pin is endpoint), None)
+    if drain_row is None:
+        return
+    pending_drain_src.append((oval_x, oval_bottom, drain_row.rect.y + drain_row.rect.h / 2))
+
+
+def _draw_shield_plan_side(
+    dwg,
+    ctx,
+    sg: ShieldGroup,
+    rows: list[PinRowInfo],
+    pending_drain_src: list[tuple[float, float, float]],
+    pending_drain_rem: list[tuple[float, float, tuple, Pin]],
+    *,
+    mirrored: bool,
+) -> None:
+    runs = _split_contiguous(rows)
+    left_endpoint = sg.drain_remote if mirrored else sg.drain
+    right_endpoint = sg.drain if mirrored else sg.drain_remote
+    left_run = _drain_run_index(runs, left_endpoint)
+    right_run = _drain_run_index(runs, right_endpoint)
+    term_shift = _CAN_TERM_SHIELD_SHIFT if any(row.pin._can_terminated for row in rows) else 0
+
+    for i, run in enumerate(runs):
+        _draw_shield_ovals(
+            dwg,
+            run,
+            sg.label,
+            drain=left_endpoint if i == left_run else None,
+            drain_remote=right_endpoint if i == right_run else None,
+            single_oval=sg.single_oval,
+            x_offset=term_shift,
+        )
+        y_bot_run = max(row.rect.y + row.rect.h for row in run)
+        oval_bottom = y_bot_run + 2
+        if i == left_run:
+            _queue_pin_drain_connection(
+                ctx,
+                rows,
+                run,
+                left_endpoint,
+                _SHIELD_LEFT_CX + term_shift,
+                oval_bottom,
+                pending_drain_src,
+                pending_drain_rem,
+                remote=False,
+            )
+        if i == right_run:
+            _queue_pin_drain_connection(
+                ctx,
+                rows,
+                run,
+                right_endpoint,
+                _SHIELD_RIGHT_CX,
+                oval_bottom,
+                pending_drain_src,
+                pending_drain_rem,
+                remote=True,
+            )
+
+
+def _draw_shield_oval_plan(
+    dwg,
+    ctx,
+    sg: ShieldGroup,
+    plan: _ShieldOvalPlan,
+    pending_drain_src: list[tuple[float, float, float]],
+    pending_drain_rem: list[tuple[float, float, tuple, Pin]],
+) -> None:
+    for rows in plan.near_rows_by_inst.values():
+        _draw_shield_plan_side(dwg, ctx, sg, rows, pending_drain_src, pending_drain_rem, mirrored=False)
+    for rows in plan.far_rows_by_inst.values():
+        _draw_shield_plan_side(dwg, ctx, sg, rows, pending_drain_src, pending_drain_rem, mirrored=True)
 
 
 _STICKY_JS = """\
@@ -269,6 +524,8 @@ def render(
             )
         )
 
+    shield_plans = [(sg, _build_shield_oval_plan(sg, ctx)) for sg in harness.shield_groups if not sg.cable_only]
+
     # ── drain-pin connection setup ──────────────────────────────────────────
     # A drain pin (sg.drain or sg.drain_remote) belongs to one component but
     # should appear as an extra row only in remote-box views drawn FROM the
@@ -276,23 +533,18 @@ def render(
     # alone over-includes (every box pointing to the drain's component would
     # show every drain). So key by (local_comp_key, target_key) instead.
     drains_for_pair: dict[tuple[int, tuple], list[tuple[Pin, ShieldGroup]]] = {}
-    for sg in harness.shield_groups:
-        if not sg.segments:
-            continue
-        # Component instances touched by this shield's segments.
-        touched: set[int] = set()
-        for seg in sg.segments:
-            for ep in (seg.end_a, seg.end_b):
-                if isinstance(ep, Pin):
-                    touched.add(component_key_for_pin(ep))
-        for p in (sg.drain, sg.drain_remote):
-            if not isinstance(p, Pin):
+    for sg, plan in shield_plans:
+        touched = _component_keys_for_plan(plan)
+        for drain_pin in (sg.drain, sg.drain_remote):
+            if not isinstance(drain_pin, Pin):
                 continue
-            ptkey = ("component", component_key_for_pin(p), connector_key_for_pin(p))
+            ptkey = _target_key_for_pin(drain_pin)
             for local_ck in touched:
-                if local_ck == component_key_for_pin(p):
+                if local_ck == component_key_for_pin(drain_pin):
                     continue  # drain pin's own component renders it as a local row
-                drains_for_pair.setdefault((local_ck, ptkey), []).append((p, sg))
+                bucket = drains_for_pair.setdefault((local_ck, ptkey), [])
+                if not any(pin is drain_pin and shield is sg for pin, shield in bucket):
+                    bucket.append((drain_pin, sg))
 
     # Pending vertical connections drawn after remote boxes:
     #   source-side: (oval_x, oval_bottom, drain_pin_cy)
@@ -301,220 +553,8 @@ def render(
     pending_drain_rem: list[tuple[float, float, tuple, Pin]] = []
 
     # ── shield ovals ────────────────────────────────────────────────────────
-    for sg in harness.shield_groups:
-        if sg.cable_only:
-            continue
-        if sg.segments:
-            # Connection-level shield: collect rows per segment so per-leg
-            # shields don't accidentally pull in sibling legs of a multi-
-            # connection pin.
-            src_rows_by_inst: dict[int, list] = {}
-            rem_rows_by_inst: dict[int, list] = {}
-
-            def _add_row(target: dict, ri):
-                if ri is None:
-                    return
-                inst_key = id(ri.pin._component) if ri.pin._component is not None else id(ri.pin)
-                bucket = target.setdefault(inst_key, [])
-                if ri not in bucket:
-                    bucket.append(ri)
-
-            for seg in sg.segments:
-                seg_rows = ctx.rows.rows_for_segment(seg)
-                for ep, target in ((seg.end_a, src_rows_by_inst), (seg.end_b, rem_rows_by_inst)):
-                    if isinstance(ep, Pin):
-                        # Per-leg layout: pick the row whose pin matches this
-                        # endpoint AND whose segment is this seg. Falls back to
-                        # the pin's primary row when no per-leg row exists.
-                        matched = [ri for ri in seg_rows if ri.pin is ep or ri.class_pin is ep]
-                        if matched:
-                            for ri in matched:
-                                _add_row(target, ri)
-                        else:
-                            row = ctx.rows.row_for_pin(ep)
-                            if row is not None:
-                                _add_row(target, row)
-                    elif isinstance(ep, SpliceNode):
-                        # Splice indirection: pull the splice's upstream pin
-                        # row in (the wire visually extends through the splice).
-                        for other_seg in ep._connections:
-                            if other_seg is seg:
-                                continue
-                            other_ep = other_endpoint(other_seg, ep)
-                            if isinstance(other_ep, Pin):
-                                # Prefer the row whose segment is the splice's upstream wire.
-                                up_rows = [ri for ri in ctx.rows.rows_for_inst_pin(other_ep) if ri.segment is other_seg]
-                                if up_rows:
-                                    for ri in up_rows:
-                                        _add_row(target, ri)
-                                else:
-                                    for ri in ctx.rows.rows_for_inst_pin(other_ep):
-                                        _add_row(target, ri)
-            for inst_rows in src_rows_by_inst.values():
-                runs = _split_contiguous(inst_rows)
-                left_run = _drain_run_index(runs, sg.drain)
-                right_run = _drain_run_index(runs, sg.drain_remote)
-                for i, run in enumerate(runs):
-                    _draw_shield_ovals(
-                        dwg,
-                        run,
-                        sg.label,
-                        drain=sg.drain if i == left_run else None,
-                        drain_remote=sg.drain_remote if i == right_run else None,
-                    )
-                    # Collect Pin-drain connections (drawn after remote boxes).
-                    wx_run = run[0].wire_start_x
-                    y_bot_run = max(r.rect.y + r.rect.h for r in run)
-                    oval_bottom = y_bot_run + 2
-                    if isinstance(sg.drain, Pin) and i == left_run:
-                        drain_row = ctx.rows.primary_inst_row(sg.drain)
-                        if drain_row is not None:
-                            pending_drain_src.append(
-                                (wx_run + _SHIELD_LEFT_CX, oval_bottom, drain_row.rect.y + drain_row.rect.h / 2)
-                            )
-                    if isinstance(sg.drain_remote, Pin) and i == right_run:
-                        p = sg.drain_remote
-                        pending_drain_rem.append(
-                            (
-                                wx_run + _SHIELD_RIGHT_CX,
-                                oval_bottom,
-                                ("component", component_key_for_pin(p), connector_key_for_pin(p)),
-                                p,
-                            )
-                        )
-            for inst_rows in rem_rows_by_inst.values():
-                runs = _split_contiguous(inst_rows)
-                # On remote view: LEFT oval is local (near remote pins) so it
-                # shows drain_remote; RIGHT oval is far (toward source) so it
-                # shows drain.
-                left_run = _drain_run_index(runs, sg.drain_remote)
-                right_run = _drain_run_index(runs, sg.drain)
-                for i, run in enumerate(runs):
-                    _draw_shield_ovals(
-                        dwg,
-                        run,
-                        sg.label,
-                        drain=sg.drain_remote if i == left_run else None,
-                        drain_remote=sg.drain if i == right_run else None,
-                    )
-                    # Mirror of src-side: wire drain Pins on this view.
-                    wx_run = run[0].wire_start_x
-                    y_bot_run = max(r.rect.y + r.rect.h for r in run)
-                    oval_bottom = y_bot_run + 2
-                    if isinstance(sg.drain_remote, Pin) and i == left_run:
-                        drain_row = ctx.rows.primary_inst_row(sg.drain_remote)
-                        if drain_row is not None:
-                            pending_drain_src.append(
-                                (wx_run + _SHIELD_LEFT_CX, oval_bottom, drain_row.rect.y + drain_row.rect.h / 2)
-                            )
-                    if isinstance(sg.drain, Pin) and i == right_run:
-                        p = sg.drain
-                        pending_drain_rem.append(
-                            (
-                                wx_run + _SHIELD_RIGHT_CX,
-                                oval_bottom,
-                                ("component", component_key_for_pin(p), connector_key_for_pin(p)),
-                                p,
-                            )
-                        )
-        else:
-            # Class-body shield: group rows from sg.pins by component instance.
-            #
-            # Two filters prevent spurious ovals:
-            # 1. Skip a row if all of its instance-pin connections are already
-            #    covered by a connection-level (with Shield()) shield group.
-            #    This prevents double-drawing when a port pin (e.g. RS-232 TX)
-            #    is wired inside an explicit Shield() block.
-            # 2. After grouping by instance, only draw if ≥2 distinct class-body
-            #    shield members are connected.  A single connected pin indicates
-            #    direct property access (e.g. gpio.signal) rather than a full
-            #    port connect(), which should not render a shield oval.
-            source_by_inst: dict[int, list] = {}
-            for p in sg.pins:
-                for ri in ctx.rows.rows_for_class_pin(p):
-                    if not ri.pin._connections and not p._connections:
-                        continue
-                    # Filter 1: skip if all connections are in a different connection-level shield.
-                    if ri.pin._connections and all(
-                        seg.shield_group is not None
-                        and seg.shield_group is not sg
-                        and seg.shield_group.segments  # non-empty → connection-level
-                        for seg in ri.pin._connections
-                    ):
-                        continue
-                    inst_key = id(ri.pin._component) if ri.pin._component is not None else id(ri.pin)
-                    source_by_inst.setdefault(inst_key, []).append(ri)
-
-            # Collect the inst_keys that actually draw ovals (for remote-oval gating below).
-            drawing_inst_keys: set[int] = set()
-            for inst_key, inst_rows in source_by_inst.items():
-                # Filter 2: require ≥2 shield-member class pins per instance.
-                if len({id(ri.class_pin) for ri in inst_rows}) < 2:
-                    continue
-                drawing_inst_keys.add(inst_key)
-                runs = _split_contiguous(inst_rows)
-                left_run = _drain_run_index(runs, sg.drain)
-                right_run = _drain_run_index(runs, sg.drain_remote)
-                term_shift = _CAN_TERM_SHIELD_SHIFT if any(ri.pin._can_terminated for ri in inst_rows) else 0
-                for i, run in enumerate(runs):
-                    _draw_shield_ovals(
-                        dwg,
-                        run,
-                        sg.label,
-                        drain=sg.drain if i == left_run else None,
-                        drain_remote=sg.drain_remote if i == right_run else None,
-                        single_oval=sg.single_oval,
-                        x_offset=term_shift,
-                    )
-
-            # Restrict remote ovals to instance pins whose source oval was drawn.
-            included_inst_pins: set[int] = {
-                id(ri.pin)
-                for inst_key, inst_rows in source_by_inst.items()
-                if inst_key in drawing_inst_keys
-                for ri in inst_rows
-            }
-
-            # Remote ovals only for pins whose remote endpoint has no ShieldGroup of its own.
-            # When both sides define shielded pins (e.g. RS-232 helpers on both connectors),
-            # each component renders its own ovals; cross-rendering would double-draw and
-            # overwrite drain markers.
-            remote_rows_by_source: dict[int, list] = {}
-
-            def _add_remote_for_source(src_pin: Pin, source_key: int) -> None:
-                for seg in src_pin._connections:
-                    remote = other_endpoint(seg, src_pin)
-                    if not isinstance(remote, Pin):
-                        continue
-                    if remote.shield_group is not None:
-                        continue
-                    row = ctx.rows.row_for_pin(remote)
-                    if row is not None:
-                        remote_rows_by_source.setdefault(source_key, []).append(row)
-
-            for p in sg.pins:
-                _add_remote_for_source(p, id(sg))
-                for ri in ctx.rows.rows_for_class_pin(p):
-                    if id(ri.pin) not in included_inst_pins:
-                        continue
-                    source_key = id(ri.pin._component) if ri.pin._component is not None else id(ri.pin)
-                    _add_remote_for_source(ri.pin, source_key)
-
-            for rows in remote_rows_by_source.values():
-                runs = _split_contiguous(rows)
-                # Remote-side rows: LEFT oval is local (drain_remote),
-                # RIGHT oval points back toward source (drain).
-                left_run = _drain_run_index(runs, sg.drain_remote)
-                right_run = _drain_run_index(runs, sg.drain)
-                for i, run in enumerate(runs):
-                    _draw_shield_ovals(
-                        dwg,
-                        run,
-                        sg.label,
-                        drain=sg.drain_remote if i == left_run else None,
-                        drain_remote=sg.drain if i == right_run else None,
-                        single_oval=sg.single_oval,
-                    )
+    for sg, plan in shield_plans:
+        _draw_shield_oval_plan(dwg, ctx, sg, plan, pending_drain_src, pending_drain_rem)
 
     # ── jumper vertical bars ─────────────────────────────────────────────────
     for entry in jumper_stubs.values():
