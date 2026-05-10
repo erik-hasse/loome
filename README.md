@@ -71,6 +71,9 @@ Rendered output (`examples/minimal.svg`):
 
 Every subcommand takes a spec file as its first positional argument. The spec must assign a `Harness` instance to a module-level variable named `harness`.
 
+Commands read an existing `<spec>.wires.yaml` sidecar when present so wire IDs stay stable, but they do not update that
+file unless `--write-wire-ids` is passed.
+
 ### `loome render <spec>`
 
 Renders a schematic SVG showing all components, connectors, pins, and wire connections.
@@ -80,6 +83,14 @@ Renders a schematic SVG showing all components, connectors, pins, and wire conne
 | `-o / --output` | `out.svg` | Output SVG path |
 | `--no-color` | off | Render wires in monochrome |
 | `--show-unconnected` | off | Include unconnected pins |
+| `--builder` | off | Add builder-mode wire toggles, progress, and YAML export |
+| `--write-wire-ids` | off | Update `<spec>.wires.yaml` with generated wire IDs |
+| `--check-wire-ids` | off | Fail if generated wire IDs would update `<spec>.wires.yaml` |
+
+When `-o` points to a directory, `render` writes one SVG per component. In builder mode it also writes `index.html` with
+component navigation, progress, and export controls around the embedded SVGs. Builder state is stored in browser
+`localStorage`; use `Export YAML` to download a ready sidecar file for wires marked run. The downloaded filename matches
+the expected `<spec>.wires.yaml` sidecar name.
 
 ### `loome bundle <spec>`
 
@@ -89,6 +100,8 @@ Renders the physical bundle topology as SVG — the tree of breakout nodes, trun
 |------|---------|-------------|
 | `-o / --output` | `bundle.svg` | Output SVG path (stem is reused per bundle) |
 | `--name` | all | Render only the named bundle |
+| `--write-wire-ids` | off | Update `<spec>.wires.yaml` with generated wire IDs |
+| `--check-wire-ids` | off | Fail if generated wire IDs would update `<spec>.wires.yaml` |
 
 ### `loome bom <spec>`
 
@@ -98,6 +111,8 @@ Emits a bill of materials: wires (by gauge and color), connectors, and terminals
 |------|---------|-------------|
 | `-o / --output` | stdout | Output file |
 | `--format` | `md` | `md` or `csv` |
+| `--write-wire-ids` | off | Update `<spec>.wires.yaml` with generated wire IDs |
+| `--check-wire-ids` | off | Fail if generated wire IDs would update `<spec>.wires.yaml` |
 
 ### `loome fuses <spec>`
 
@@ -107,10 +122,14 @@ Emits a fuse/circuit-breaker schedule listing what each protective device feeds.
 |------|---------|-------------|
 | `-o / --output` | stdout | Output file |
 | `--format` | `md` | `md` or `csv` |
+| `--write-wire-ids` | off | Update `<spec>.wires.yaml` with generated wire IDs |
+| `--check-wire-ids` | off | Fail if generated wire IDs would update `<spec>.wires.yaml` |
 
 ### `loome validate <spec>`
 
 Checks bundle topology and exits non-zero when wire lengths cannot be resolved.
+
+Supports `--write-wire-ids` and `--check-wire-ids`.
 
 ---
 

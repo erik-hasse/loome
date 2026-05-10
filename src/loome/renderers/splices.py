@@ -5,7 +5,7 @@ import drawsvg as draw
 from .._internal.endpoints import other_endpoint
 from ..harness import Harness
 from ..layout.engine import WIRE_AREA_W
-from ..model import Pin, ShieldGroup, SpliceNode, Terminal, WireSegment
+from ..model import Pin, ShieldGroup, SpliceNode, Terminal, WireEndpoint, WireSegment
 from .colors import _effective_color_code, _incoming_splice_attrs, _splice_color_code, _wire_attrs
 from .primitives import (
     _MONO_CHAR_W,
@@ -54,10 +54,22 @@ def _draw_splice_out_leg(
     pin_label_offset: int = 4,
     wx: float = 0.0,
     shield: ShieldGroup | None = None,
+    local_endpoint: WireEndpoint | None = None,
 ) -> None:
     """Draw one outward leg from a splice: wire + label + remote symbol/label."""
     _draw_wire_around_ovals(dwg, start_x, common_wire_end, cy, wx, shield, attrs)
-    _draw_wire_label(dwg, out_seg, start_x, common_wire_end, cy, psp, colored, color_code, harness=harness)
+    _draw_wire_label(
+        dwg,
+        out_seg,
+        start_x,
+        common_wire_end,
+        cy,
+        psp,
+        colored,
+        color_code,
+        harness=harness,
+        local_pin=local_endpoint,
+    )
 
     if isinstance(out_remote, Terminal):
         label_text = _remote_label(out_remote, class_pin, harness)
@@ -133,6 +145,7 @@ def _draw_splice_connection(
     pin_shield_palette: dict | None = None,
     shield: ShieldGroup | None = None,
     wire_end_x: float | None = None,
+    local_pin: Pin | None = None,
 ) -> None:
     """Draw a pin→splice→single-outward pattern as one horizontal track."""
     psp = pin_shield_palette or {}
@@ -142,7 +155,18 @@ def _draw_splice_connection(
 
     _draw_wire_around_ovals(dwg, wx + _WIRE_PAD, splice_cx - 6, cy, wx, shield, in_attrs)
     label_x1 = wx + _SHIELD_LEFT_CX + _SHIELD_RX if shield is not None else wx + _WIRE_PAD
-    _draw_wire_label(dwg, incoming_seg, label_x1, splice_cx - 6, cy, psp, colored, cc, harness=harness)
+    _draw_wire_label(
+        dwg,
+        incoming_seg,
+        label_x1,
+        splice_cx - 6,
+        cy,
+        psp,
+        colored,
+        cc,
+        harness=harness,
+        local_pin=local_pin or class_pin,
+    )
     _draw_splice_symbol(dwg, splice_cx, cy)
 
     if out_seg is None:
@@ -179,6 +203,7 @@ def _draw_splice_connection(
         pin_label_offset=4,
         wx=wx,
         shield=shield,
+        local_endpoint=splice,
     )
 
 
@@ -194,6 +219,7 @@ def _draw_splice_fan(
     pin_shield_palette: dict | None = None,
     shield: ShieldGroup | None = None,
     wire_end_x: float | None = None,
+    local_pin: Pin | None = None,
 ) -> None:
     """Draw a splice as one incoming wire → X junction → diagonal fan legs."""
     psp = pin_shield_palette or {}
@@ -210,7 +236,18 @@ def _draw_splice_fan(
 
     _draw_wire_around_ovals(dwg, wx + _WIRE_PAD, splice_cx - 6, center_y, wx, shield, splice_attrs)
     label_x1 = wx + _SHIELD_LEFT_CX + _SHIELD_RX if shield is not None else wx + _WIRE_PAD
-    _draw_wire_label(dwg, incoming_seg, label_x1, splice_cx - 6, center_y, psp, colored, cc, harness=harness)
+    _draw_wire_label(
+        dwg,
+        incoming_seg,
+        label_x1,
+        splice_cx - 6,
+        center_y,
+        psp,
+        colored,
+        cc,
+        harness=harness,
+        local_pin=local_pin or class_pin,
+    )
     _draw_splice_symbol(dwg, splice_cx, center_y)
 
     # Pre-compute a common wire_end so all fan legs are the same length.
@@ -260,4 +297,5 @@ def _draw_splice_fan(
             pin_label_offset=8,
             wx=wx,
             shield=shield,
+            local_endpoint=splice,
         )

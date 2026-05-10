@@ -141,8 +141,8 @@ class FlyLedsEssentials(Component):
     render = True
     position_neg = Pin("P-", "Position Neg")
     position_pos = Pin("P+", "Position Pos")
-    strobe_neg = Pin("S-", "Strobe Neg")
     strobe_pos = Pin("S+", "Strobe Pos")
+    strobe_neg = Pin("S-", "Strobe Neg")
 
 
 class FlyLedsSevenStars(Component):

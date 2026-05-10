@@ -10,6 +10,7 @@ from .._internal.shields import segment_shield_for_endpoint
 from ..harness import Harness
 from ..layout.engine import MARGIN, LayoutResult, PinRowInfo
 from ..model import Component, Pin, ShieldDrainTerminal, ShieldGroup, SpliceNode, Terminal, WireEndpoint
+from .assets import asset_text
 from .colors import _wire_attrs
 from .context import build_render_context
 from .primitives import (
@@ -366,70 +367,18 @@ def _draw_shield_oval_plan(
         _draw_shield_plan_side(dwg, ctx, sg, rows, pending_drain_src, pending_drain_rem, mirrored=True)
 
 
-_STICKY_JS = """\
-(function(){
-  var svg=document.querySelector('svg');
-  var CH=28;
-  var ol=document.createElementNS('http://www.w3.org/2000/svg','g');
-  ol.setAttribute('pointer-events','none');
-  svg.appendChild(ol);
-  function mk(el){var y=+el.id.split('-')[2];return{el:el,y:y,p:el.parentNode,ns:el.nextSibling};}
-  var cs=Array.from(document.querySelectorAll('[id^="sh-comp-"]')).map(mk).sort(function(a,b){return a.y-b.y;});
-  var ks=Array.from(document.querySelectorAll('[id^="sh-conn-"]')).map(mk).sort(function(a,b){return a.y-b.y;});
-  function sc(){return+svg.getAttribute('height')/svg.getBoundingClientRect().height;}
-  function find(arr,thr){var r=null;for(var i=0;i<arr.length;i++){if(arr[i].y<=thr)r=arr[i];else break;}return r;}
-  var pc=null,pk=null;
-  function sqr(h){
-    h.el.querySelectorAll('rect').forEach(function(r){
-      var rx=r.getAttribute('rx');
-      if(rx){r._rx=rx;r._ry=r.getAttribute('ry');r.removeAttribute('rx');r.removeAttribute('ry');}
-    });
-  }
-  function unsqr(h){
-    h.el.querySelectorAll('rect').forEach(function(r){
-      if(r._rx){r.setAttribute('rx',r._rx);r.setAttribute('ry',r._ry);delete r._rx;delete r._ry;}
-    });
-  }
-  function stick(h,dy){ol.appendChild(h.el);h.el.setAttribute('transform','translate(0,'+(dy-h.y)+')');sqr(h);}
-  function unstick(h){
-    unsqr(h);
-    var ref=h.ns;
-    if(ref&&ref.parentNode===h.p)h.p.insertBefore(h.el,ref);else h.p.appendChild(h.el);
-    h.el.removeAttribute('transform');
-  }
-  function update(){
-    var s=sc(),vt=window.scrollY*s;
-    var ac=find(cs,vt),ak=find(ks,vt+CH);
-    if(ac&&ak&&ak.y<=ac.y)ak=null;
-    if(ac!==pc){if(pc)unstick(pc);pc=ac;}
-    if(ak!==pk){if(pk)unstick(pk);pk=ak;}
-    if(ac){
-      var nc=cs[cs.indexOf(ac)+1];
-      var cy=nc?Math.min(vt,nc.y-CH):vt;
-      stick(ac,cy);
-    }
-    if(ak){
-      var ki=ks.indexOf(ak),nk=ks[ki+1];
-      var nc2=ac?cs[cs.indexOf(ac)+1]:null;
-      var ny=Infinity;
-      if(nk)ny=Math.min(ny,nk.y);
-      if(nc2)ny=Math.min(ny,nc2.y);
-      var ky=isFinite(ny)?Math.min(vt+CH,ny-CH):vt+CH;
-      stick(ak,ky);
-    }
-  }
-  window.addEventListener('scroll',update,{passive:true});
-  window.addEventListener('resize',update,{passive:true});
-  update();
-})();
-"""
-
-
-def _inject_sticky_script(output_path: str | Path) -> None:
+def _inject_scripts(
+    output_path: str | Path,
+    *,
+    sticky: bool,
+) -> None:
     p = Path(output_path)
     text = p.read_text(encoding="utf-8")
-    tag = '<script type="text/ecmascript"><![CDATA[\n' + _STICKY_JS + "]]></script>"
-    p.write_text(text.replace("</svg>", tag + "</svg>", 1), encoding="utf-8")
+    tags: list[str] = []
+    if sticky:
+        tags.append('<script type="text/ecmascript"><![CDATA[\n' + asset_text("svg_sticky.js") + "]]></script>")
+    if tags:
+        p.write_text(text.replace("</svg>", "".join(tags) + "</svg>", 1), encoding="utf-8")
 
 
 def render(
@@ -438,12 +387,15 @@ def render(
     output_path: str | Path,
     colored: bool = True,
     component: Component | None = None,
+    builder: bool = False,
 ) -> None:
     """Render the harness schematic to an SVG file.
 
     When *component* is provided only that component's section is drawn and the
     SVG canvas is sized to fit it — useful for per-component output.
     """
+    old_builder_enabled = getattr(harness, "_builder_enabled", None)
+    harness._builder_enabled = builder  # type: ignore[attr-defined]
     ctx = build_render_context(harness, layout)
 
     min_term_cx = _compute_min_term_cx(layout, harness)
@@ -460,16 +412,8 @@ def render(
         components_to_render = [c for c in harness.components if c.render]
         bg = draw.Rectangle(0, 0, layout.canvas_width, layout.canvas_height, fill="white")
 
-    dwg.append(
-        draw.Raw(
-            "<style>"
-            "a.pin-link { cursor: pointer; }"
-            " a.pin-link:hover rect { fill: #bfdbfe; fill-opacity: 0.45; }"
-            " [id^='pr-'] { scroll-margin-top: 56px; }"
-            " path { stroke-linecap: square; }"
-            "</style>"
-        )
-    )
+    builder_css = " .wire--done { opacity: 0.22; } .builder-wire:hover { opacity: 0.65; }" if builder else ""
+    dwg.append(draw.Raw(f"<style>{asset_text('schematic.css').strip()}{builder_css}</style>"))
 
     dwg.append(bg)
 
@@ -621,5 +565,11 @@ def render(
 
     dwg.save_svg(str(output_path))
 
-    if component is None:
-        _inject_sticky_script(output_path)
+    _inject_scripts(
+        output_path,
+        sticky=component is None and not builder,
+    )
+    if old_builder_enabled is None:
+        delattr(harness, "_builder_enabled")
+    else:
+        harness._builder_enabled = old_builder_enabled  # type: ignore[attr-defined]

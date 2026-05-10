@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+<style>
+{css}
+</style>
+</head>
+<body>
+<div class="toolbar">
+<span id="loome-builder-progress">0 / 0 wires run</span>
+<span class="progress"><span id="loome-builder-progress-fill"></span></span>
+<button id="loome-builder-export-yaml" type="button">Export YAML</button>
+{component_selector}
+</div>
+<main id="loome-builder-main" class="schematic">{views}</main>
+<script>
+const BUILDER_KEY = {builder_key};
+const BUILDER_ENTRIES = {entries};
+const BUILDER_PIN_INDEX = {pin_index};
+const BUILDER_SIDECAR_NAME = {sidecar_name};
+const BUILDER_SINGLE_PAGE = {single_page};
+{js}
+</script>
+</body>
+</html>

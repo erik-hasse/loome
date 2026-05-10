@@ -1,0 +1,11 @@
+:root{--builder-toolbar-h:48px;--builder-jump-offset:88px}
+body{margin:0;font-family:ui-monospace,monospace;background:#f8fafc;color:#0f172a}
+.toolbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:14px;padding:10px 14px;background:#0f172a;color:white;box-shadow:0 1px 5px rgba(15,23,42,.28)}
+.progress{width:220px;height:8px;background:#334155;border-radius:999px;overflow:hidden}
+#loome-builder-progress-fill{display:block;height:100%;width:0;background:#22c55e}
+button,select{font:inherit;border:0;border-radius:4px;background:#e2e8f0;color:#0f172a;padding:4px 9px;cursor:pointer}
+select{min-width:220px;max-width:min(420px,40vw)}
+main{height:calc(100vh - var(--builder-toolbar-h));overflow:auto;background:white}
+.component-view{padding-bottom:calc(100vh - var(--builder-toolbar-h) - var(--builder-jump-offset))}
+.component-view[hidden]{display:none}
+.schematic svg{display:block;width:100%;height:auto;overflow:hidden;background:white}

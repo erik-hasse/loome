@@ -15,11 +15,6 @@ Items are roughly in priority order within each section.
 - **PDF export** — `cairosvg` converts SVG → PDF in one call; very low effort once SVG output
   is solid.
 
-- **Read-only CLI mode for generated wire IDs** — `render`, `bundle`, `bom`, and `fuses`
-  currently assign IDs through the same path that writes `<spec>.wires.yaml`. Add a
-  `--no-write-wire-ids` / `--check-wire-ids` mode so CI, examples, and exploratory renders
-  can run without mutating sidecar files.
-
 - **`SDSECU` incomplete pin numbers** — `tach` and `fuel_flow` pins use placeholder numbers
   `"TBD1"` / `"TBD2"`. Look up the actual SDS ECU wiring diagram and replace with real pin
   identifiers.
@@ -115,27 +110,7 @@ Items are roughly in priority order within each section.
 - **Interactive SVG** — the sticky headers and remote-pin click-to-jump are already in place.
   Remaining interactivity work, roughly in priority order:
 
-  1. **Cross-component navigation** — `loome render <spec> -o <directory>` already renders
-     every component to its own SVG. The remaining work is an `index.html` linking them, plus
-     a fixed top bar in each per-component SVG listing all components as links (back/forward
-     navigation). This is a prerequisite for builder mode to be useful across a real harness.
-
-  2. **Builder mode** — a toggleable overlay (e.g. `?builder=1` query param or a button) that
-     lets the user mark individual wires as "run". Since each wire appears at both ends of the
-     schematic, both occurrences need to dim together. Implementation sketch:
-     - Emit a `data-seg-id` attribute on both the source pin row and the corresponding remote
-       box entry so the JS can find both sides with one query.
-     - A click on either end toggles a `wire--done` CSS class on both, visually dimming them.
-     - State persists in `localStorage` keyed by a harness fingerprint (e.g. hash of component
-       labels) so it survives a page reload.
-     - A progress counter in the sticky component header ("14 / 47 wires run") gives per-connector
-       completion at a glance.
-     - For per-component SVGs, a shared `localStorage` key lets all open pages reflect the same
-       state without a sidecar file.
-     - In builder mode, wires are only persisted to `*.wires.yaml` when marked "done" instead of
-       at render time.
-
-  3. **Expand/collapse connectors** — click a connector header (`sh-conn-` ids are already
+  1. **Expand/collapse connectors** — click a connector header (`sh-conn-` ids are already
      present) to collapse all its pin rows. Useful for large harnesses where you want to focus
      on one connector at a time.
 

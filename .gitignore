@@ -16,6 +16,7 @@ wheels/
 # Generated outputs
 out.png
 *.svg
+index.html
 
 manuals/
 .claude/

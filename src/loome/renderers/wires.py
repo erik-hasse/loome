@@ -8,6 +8,7 @@ from .._internal.endpoints import other_endpoint
 from ..harness import Harness
 from ..layout.engine import PIN_NUM_W, PIN_ROW_H, WIRE_AREA_W, PinGroup, PinRowInfo
 from ..model import GroundSymbol, Pin, ShieldDrainTerminal, ShieldGroup, SpliceNode, Terminal, WireSegment
+from .builder import run_key_for_segment
 from .colors import _wire_attrs
 from .primitives import (
     _BULLET_CX,
@@ -334,6 +335,11 @@ def _draw_remote_box(
             )
             if rendered_pin_ids is None or id(rpin) in rendered_pin_ids:
                 target_id = _pin_row_id(rpin)
+                seg = row.segment
+                if seg is None:
+                    use_pin = row.pin if row.pin._connections else row.class_pin
+                    seg = use_pin._connections[0] if use_pin._connections else None
+                run_key = run_key_for_segment(harness, seg, row.pin) if seg is not None else None
                 link = _AnchorLink(
                     href=f"#{target_id}",
                     target="_self",
@@ -346,6 +352,7 @@ def _draw_remote_box(
                         box_w,
                         row.rect.h,
                         fill="none",
+                        **({"data-seg-id": run_key, "class": "builder-wire"} if run_key is not None else {}),
                         **{"pointer-events": "all"},
                     )
                 )
@@ -453,6 +460,7 @@ def _draw_pin_row(
         return
 
     row_id = _pin_row_id(pin) if not row_info.is_continuation else None
+    run_key = run_key_for_segment(harness, row_info.segment, pin) if row_info.segment is not None else None
     dwg.append(
         draw.Rectangle(
             rect.x,
@@ -463,6 +471,7 @@ def _draw_pin_row(
             stroke="#e2e8f0",
             stroke_width=0.5,
             **({"id": row_id} if row_id is not None else {}),
+            **({"data-seg-id": run_key, "class": "builder-wire"} if run_key is not None else {}),
         )
     )
 
@@ -627,6 +636,7 @@ def _draw_pin_row(
             psp,
             shield=shield,
             wire_end_x=row_info.wire_end_x,
+            local_pin=pin,
         )
     else:
         row_h = rect.h / max(len(expanded), 1)
@@ -647,6 +657,7 @@ def _draw_pin_row(
                     psp,
                     shield=shield,
                     wire_end_x=row_info.wire_end_x,
+                    local_pin=pin,
                 )
             else:
                 remote = other_endpoint(seg, pin, class_pin)

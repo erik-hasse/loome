@@ -308,8 +308,8 @@ with System("LGHT"):
         c.ground >> gnd
         with Shield(drain=c.left_shield, drain_remote=left_pos_strobe.position_neg):
             c.left_strobe_neg >> left_pos_strobe.strobe_neg
-            c.left_position_pos >> left_pos_strobe.position_pos
             c.left_strobe_pos >> left_pos_strobe.strobe_pos
+            c.left_position_pos >> left_pos_strobe.position_pos
 
         with Shield(drain=c.tail_shield):
             c.tail_pos >> tail_light.power
@@ -317,8 +317,8 @@ with System("LGHT"):
 
         with Shield(drain=c.right_shield, drain_remote=right_pos_strobe.position_neg):
             c.right_strobe_neg >> right_pos_strobe.strobe_neg
-            c.right_position_pos >> right_pos_strobe.position_pos
             c.right_strobe_pos >> right_pos_strobe.strobe_pos
+            c.right_position_pos >> right_pos_strobe.position_pos
 
         c.strobe_12v_in >> nav_strobe_switch.no1
         c.position_12v_in >> nav_strobe_switch.no2

@@ -21,6 +21,7 @@ section so a rename can be recovered by hand.
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -53,6 +54,27 @@ class _Entry:
     fingerprint: str
     system: str
     kind: str  # "segment" or "shield"
+
+
+@dataclass(frozen=True)
+class WireIdEntry:
+    id: str
+    fingerprint: str
+    system: str
+    kind: str
+    run_key: str
+
+
+@dataclass
+class WireIdAssignment:
+    entries: list[WireIdEntry]
+    orphans: list[WireIdEntry]
+    sidecar_path: Path | None
+    changed: bool = False
+
+
+class WireIdCheckError(RuntimeError):
+    """Raised when ``check=True`` detects that the sidecar would change."""
 
 
 # ── fingerprints ────────────────────────────────────────────────────────────
@@ -139,6 +161,10 @@ def _load_sidecar(path: Path) -> tuple[dict[str, _Entry], list[_Entry]]:
 
 
 def _write_sidecar(path: Path, wires: list[_Entry], orphans: list[_Entry]) -> None:
+    path.write_text(_dump_sidecar_text(wires, orphans))
+
+
+def _dump_sidecar_text(wires: list[_Entry], orphans: list[_Entry]) -> str:
     def _dump(es: list[_Entry]) -> list[dict]:
         return [{"id": e.id, "fingerprint": e.fingerprint, "system": e.system, "kind": e.kind} for e in es]
 
@@ -147,7 +173,33 @@ def _write_sidecar(path: Path, wires: list[_Entry], orphans: list[_Entry]) -> No
         "wires": _dump(sorted(wires, key=lambda e: e.id)),
         "orphans": _dump(orphans),
     }
-    path.write_text(yaml.safe_dump(data, sort_keys=False))
+    return yaml.safe_dump(data, sort_keys=False)
+
+
+def _sidecar_would_change(path: Path, wires: list[_Entry], orphans: list[_Entry]) -> bool:
+    current = path.read_text() if path.exists() else ""
+    return current != _dump_sidecar_text(wires, orphans)
+
+
+def _run_key(kind: str, fingerprint: str) -> str:
+    return hashlib.sha256(f"{kind}:{fingerprint}".encode("utf-8")).hexdigest()[:16]
+
+
+def _public_entry(entry: _Entry) -> WireIdEntry:
+    return WireIdEntry(
+        id=entry.id,
+        fingerprint=entry.fingerprint,
+        system=entry.system,
+        kind=entry.kind,
+        run_key=_run_key(entry.kind, entry.fingerprint),
+    )
+
+
+def harness_builder_key(harness: "Harness", entries: list[WireIdEntry]) -> str:
+    """Return a stable key for localStorage/exported builder state."""
+    labels = [getattr(component, "label", type(component).__name__) for component in harness.components]
+    body = "\n".join([harness.name, *sorted(labels), *sorted(entry.run_key for entry in entries)])
+    return hashlib.sha256(body.encode("utf-8")).hexdigest()[:16]
 
 
 # ── shield-group → member-segments ─────────────────────────────────────────
@@ -160,17 +212,27 @@ def _members_for_shield(sg: ShieldGroup, all_segments: list[WireSegment]) -> lis
 # ── main entry point ───────────────────────────────────────────────────────
 
 
-def assign_wire_ids(harness: "Harness", spec_path: Path | None) -> None:
+def assign_wire_ids(
+    harness: "Harness",
+    spec_path: Path | None,
+    *,
+    persist: bool | None = None,
+    check: bool = False,
+) -> WireIdAssignment:
     """Assign stable wire IDs to every segment + shield group.
 
     Loads the sidecar at ``<spec>.wires.yaml`` (if present), preserves any
-    fingerprint→id mappings, mints new IDs for fingerprints not on file (per
-    system, NN continues from max+1), and writes the sidecar back.
+    fingerprint→id mappings, and mints new IDs for fingerprints not on file
+    (per system, NN continues from max+1). Pass ``persist=True`` to write the
+    resulting sidecar back.
 
     If ``spec_path`` is None, IDs are still assigned in-memory but no sidecar
-    is written or read (useful for tests).
+    is written or read (useful for tests). Set ``persist=False`` to read an
+    existing sidecar and assign preview IDs without writing it.
     """
     sidecar = _sidecar_path(spec_path) if spec_path else None
+    if persist is None:
+        persist = sidecar is not None
     by_fp, orphans = _load_sidecar(sidecar) if sidecar else ({}, [])
     default_system = getattr(harness, "default_system", DEFAULT_SYSTEM)
 
@@ -326,8 +388,19 @@ def assign_wire_ids(harness: "Harness", spec_path: Path | None) -> None:
             continue
         new_orphans.append(entry)
 
+    changed = False
     if sidecar is not None:
-        _write_sidecar(sidecar, new_wires, new_orphans)
+        changed = _sidecar_would_change(sidecar, new_wires, new_orphans)
+        if check and changed:
+            raise WireIdCheckError(f"wire ID sidecar would change: {sidecar}")
+        if persist and changed:
+            _write_sidecar(sidecar, new_wires, new_orphans)
+    return WireIdAssignment(
+        entries=[_public_entry(e) for e in new_wires],
+        orphans=[_public_entry(e) for e in new_orphans],
+        sidecar_path=sidecar,
+        changed=changed,
+    )
 
 
 def _extract_nn(wire_id: str) -> int | None:

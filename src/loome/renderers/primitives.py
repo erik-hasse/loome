@@ -17,6 +17,7 @@ from ..model import (
     WireEndpoint,
     WireSegment,
 )
+from .builder import run_key_for_segment
 from .colors import _GROUND_STROKE, _effective_color_code
 
 # X offsets within the wire column (relative to wire_start_x)
@@ -169,12 +170,12 @@ def _draw_wire_label(
     colored: bool = True,
     color_code_override: str | None = None,
     harness: Harness | None = None,
-    local_pin: "Pin | None" = None,
+    local_pin: WireEndpoint | None = None,
 ) -> None:
     # CAN-bus pins share class-level segments; the canonical wire ID lives
     # per (bus, adjacent-pair) on harness._can_pair_ids — look it up so each
     # CAN row shows the correct cable ID for its neighbor.
-    can_id = _can_pair_id_for(local_pin, harness) if harness is not None else None
+    can_id = _can_pair_id_for(local_pin, harness) if isinstance(local_pin, Pin) and harness is not None else None
     # When seg.wire_id is set (auto-assigned format XXXGGCCNN encodes gauge+color
     # already), we prefer it as the sole label. Otherwise fall back to the
     # legacy concat of gauge + color code so unannotated diagrams still work.
@@ -197,6 +198,7 @@ def _draw_wire_label(
     # Place label just inside the left edge of the segment. For shielded wires
     # x1 is already lo_right (just past the left oval), so this stays clear of the ovals.
     label_x = x1 + 4
+    run_key = run_key_for_segment(harness, seg, local_pin) if harness is not None else None
     if label:
         dwg.append(
             draw.Text(
@@ -206,6 +208,7 @@ def _draw_wire_label(
                 cy - 3,
                 fill="#94a3b8",
                 font_family="ui-monospace, monospace",
+                **({"data-seg-id": run_key, "class": "builder-wire"} if run_key is not None else {}),
             )
         )
     # Disconnect annotations — collect from the instance pin (per-instance,
@@ -214,7 +217,7 @@ def _draw_wire_label(
     # CAN disconnects list both H and L pins together since both physical
     # rails pass through the same crimp.
     disc_pins: list = []
-    if local_pin is not None and local_pin.disconnect_pins:
+    if isinstance(local_pin, Pin) and local_pin.disconnect_pins:
         disc_pins.extend(local_pin.disconnect_pins)
     if seg.disconnect_pin is not None and seg.disconnect_pin not in disc_pins:
         disc_pins.append(seg.disconnect_pin)
