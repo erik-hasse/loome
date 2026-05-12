@@ -87,8 +87,9 @@ with System("AD"):
         c.ground >> gnd
 
     (pitot_heat_switch.com >> main_block.pitot_heat).gauge(14)
-    (pitot_heat_switch.no >> gap26.power).gauge(14)
+    (pitot_heat_switch.no >> gap26.power).gauge(14).color("R")
     (gap26.ground >> gnd).gauge(14)
+    gea24.J244.discrete_in_4 >> gap26.signal
 
 with System("AP"):
     with gsa28_roll.J281 as c:
@@ -288,16 +289,16 @@ with System("LGHT"):
     with gad27.J271 as c:
         landing_light_switch.com2 >> gnd
         landing_light_switch.com1 >> main_block.taxi_lights
-        (landing_light_switch.no1 >> left_7_stars.taxi).gauge(20)
-        (landing_light_switch.no1 >> right_7_stars.taxi).gauge(20)
+        (landing_light_switch.no1 >> left_7_stars.taxi).gauge(20).color("R")
+        (landing_light_switch.no1 >> right_7_stars.taxi).gauge(20).color("R")
 
         c.light_1_switch >> landing_light_switch.no2
         c.light_2_switch >> landing_light_switch.no2
         c.alternating_flash_on >> wig_wag.no
 
     with gad27.TB273 as c:
-        (c.light_1_output >> left_7_stars.landing).gauge(14)
-        (c.light_2_output >> right_7_stars.landing).gauge(14)
+        (c.light_1_output >> left_7_stars.landing).gauge(14).color("R")
+        (c.light_2_output >> right_7_stars.landing).gauge(14).color("R")
         (c.light_1_power >> main_block.landing_lights).gauge(18)
         (c.light_2_power >> main_block.landing_lights).gauge(18)
 
@@ -323,8 +324,8 @@ with System("LGHT"):
         c.strobe_12v_in >> nav_strobe_switch.no1
         c.position_12v_in >> nav_strobe_switch.no2
 
-    left_7_stars.ground >> gnd
-    right_7_stars.ground >> gnd
+    (left_7_stars.ground >> gnd).gauge(14)
+    (right_7_stars.ground >> gnd).gauge(14)
     wig_wag.com >> gnd
 
 with System("CAB"):
@@ -472,7 +473,6 @@ with System("EIS"):
         c.volts_1 >> Fuse("Main Bus", amps=1)
         c.volts_2 >> Fuse("Engine Bus", amps=1)
 
-        c.discrete_in_4 >> gap26.signal
         c.discrete_out_1 >> master_warning.power
         c.discrete_out_2 >> master_caution.power
 

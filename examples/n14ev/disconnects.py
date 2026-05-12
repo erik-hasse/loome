@@ -1,5 +1,17 @@
 from examples.n14ev.lights import left_7_stars, left_pos_strobe, right_7_stars, right_pos_strobe
-from examples.n14ev.lrus import flyleds_controller, gad27, gap26, gea24, gmu11, gsa28_roll, gsa28_yaw, mfd, roll_trim
+from examples.n14ev.lrus import (
+    flyleds_controller,
+    gad27,
+    gap26,
+    gea24,
+    gmu11,
+    gsa28_roll,
+    gsa28_yaw,
+    gsu25,
+    gtp59,
+    mfd,
+    roll_trim,
+)
 from examples.n14ev.power import avionics_block_1, avionics_block_2, avionics_block_3, gnd
 from examples.n14ev.switches import landing_light_switch, pitot_heat_switch
 from loome import Disconnect
@@ -53,6 +65,10 @@ left_wing_root_items = [
     (landing_light_switch.no1, left_7_stars.taxi),
     # Pitot signal
     (gea24.J244.discrete_in_4, gap26.signal),
+    # OAT Probe
+    (gsu25.J252.oat_probe_power, gtp59.oat_probe_power),
+    (gsu25.J252.oat_probe_high, gtp59.oat_probe_sense),
+    (gsu25.J252.oat_probe_low, gtp59.oat_probe_low),
 ]
 for left, right in left_wing_root_items:
     left_wing_root.between(left, right)
