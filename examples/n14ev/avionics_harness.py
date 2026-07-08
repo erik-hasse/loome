@@ -2,8 +2,8 @@ from examples.n14ev.disconnects import (
     left_wing_handshake,
     left_wing_root,
     right_wing_handshake,
-    right_wing_root_8_pin,
-    right_wing_root_12_pin,
+    right_wing_root_a,
+    right_wing_root_b,
 )
 from examples.n14ev.lights import (
     cabin_lights,
@@ -53,7 +53,15 @@ from examples.n14ev.lrus import (
     roll_trim,
     sds_ecu,
 )
-from examples.n14ev.power import avionics_block_1, avionics_block_2, avionics_block_3, gnd, main_block
+from examples.n14ev.power import (
+    avionics_block_1,
+    avionics_block_2,
+    avionics_block_3,
+    gnd,
+    left_wing_gnd,
+    main_block,
+    right_wing_gnd,
+)
 from examples.n14ev.sensors import fuel_pressure, left_fuel, manifold_pressure, oil_pressure, oil_temp, right_fuel
 from examples.n14ev.switches import (
     backlight_rheo,
@@ -324,8 +332,8 @@ with System("LGHT"):
         c.strobe_12v_in >> nav_strobe_switch.no1
         c.position_12v_in >> nav_strobe_switch.no2
 
-    (left_7_stars.ground >> gnd).gauge(14)
-    (right_7_stars.ground >> gnd).gauge(14)
+    (left_7_stars.ground >> left_wing_gnd).gauge(14)
+    (right_7_stars.ground >> right_wing_gnd).gauge(14)
     wig_wag.com >> gnd
 
 with System("CAB"):
@@ -551,8 +559,8 @@ harness = Harness(
         left_wing_root,
         left_wing_handshake,
         right_wing_handshake,
-        right_wing_root_12_pin,
-        right_wing_root_8_pin,
+        right_wing_root_a,
+        right_wing_root_b,
     ],
     can_buses=[can_bus],
 )

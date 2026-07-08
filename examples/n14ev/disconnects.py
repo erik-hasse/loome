@@ -13,15 +13,16 @@ from examples.n14ev.lrus import (
     roll_trim,
 )
 from examples.n14ev.power import avionics_block_1, avionics_block_2, avionics_block_3, gnd
+from examples.n14ev.sensors import left_fuel, right_fuel
 from examples.n14ev.switches import landing_light_switch, pitot_heat_switch
 from loome import Disconnect
 
-right_wing_root_12_pin = Disconnect("Right Wing Root 12 pin")
-right_wing_root_8_pin = Disconnect("Right Wing Root 8 pin")
+right_wing_root_a = Disconnect("Right Wing Root A")
+right_wing_root_b = Disconnect("Right Wing Root B")
 right_wing_handshake = Disconnect("Right Wing Handshake")
 (right_wing_handshake.between(gad27.TB273.light_2_output, right_7_stars.landing),)
 
-right_wing_12_items = [
+right_wing_a_items = [
     # Trim
     (gsa28_roll.J281.trim_in_1, gad27.J272.roll_trim_out_1),
     (gsa28_roll.J281.trim_in_2, gad27.J272.roll_trim_out_2),
@@ -37,18 +38,21 @@ right_wing_12_items = [
     (flyleds_controller.right_strobe_pos, right_pos_strobe.strobe_pos),
     (landing_light_switch.no1, right_7_stars.taxi),
 ]
-right_wing_8_items = [
+right_wing_b_items = [
     # Signal
     (gsa28_roll.J281.disconnect, gsa28_yaw.J281.disconnect),
     # Shielded
     (gea24.J244.gp2, roll_trim.position),
     (gsa28_roll.J281.can, mfd.P4602.can),
+    # Fuel Sender
+    (gea24.J244.fuel_quantity_2.signal, right_fuel.power),
 ]
-for left, right in right_wing_8_items:
-    right_wing_root_8_pin.between(left, right)
 
-for left, right in right_wing_12_items:
-    right_wing_root_12_pin.between(left, right)
+
+for left, right in right_wing_a_items:
+    right_wing_root_a.between(left, right)
+for left, right in right_wing_b_items:
+    right_wing_root_b.between(left, right)
 
 
 left_wing_root = Disconnect("Left Wing Root")
@@ -69,6 +73,8 @@ left_wing_root_items = [
     (gsu25.J252.oat_probe_power, gtp59.oat_probe_power),
     (gsu25.J252.oat_probe_high, gtp59.oat_probe_sense),
     (gsu25.J252.oat_probe_low, gtp59.oat_probe_low),
+    # fuel
+    (gea24.J244.fuel_quantity_1.signal, left_fuel.power),
 ]
 for left, right in left_wing_root_items:
     left_wing_root.between(left, right)
