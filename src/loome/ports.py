@@ -21,7 +21,7 @@ the descriptor plumbing is inherited.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Literal
 
 from .model import DrainSpec, GroundSymbol, OffPageReference, Pin, ShieldGroup, WireColor, WireSegment, resolve_drain
 
@@ -112,7 +112,8 @@ class PortBuilder:
 _CAN_DRAIN = GroundSymbol("_can_shield_drain_", "GND", style="open")
 _RS232_BACKSHELL = GroundSymbol("_rs232_backshell_", "GND", style="open")
 _ARINC_BACKSHELL = GroundSymbol("_arinc_backshell_", "GND", style="open")
-_ETHERNET_BACKSHELL = GroundSymbol("_ethernet_backshell_", "GND", style="open")
+_DIFFERENTIAL_PAIR_BACKSHELL = GroundSymbol("_differential_pair_backshell_", "GND", style="open")
+_HSDB_BACKSHELL = GroundSymbol("_hsdb_backshell_", "GND", style="open")
 
 
 class Port:
@@ -488,7 +489,7 @@ class ARINC429(Port):
         self,
         a_pin: int | str,
         b_pin: int | str,
-        direction: str,
+        direction: Literal["in", "out"],
         name: str = "ARINC 429",
     ) -> None:
         super().__init__()
@@ -531,18 +532,20 @@ class ARINC429(Port):
         return PortBuilder(self.connect(other))
 
 
-class GarminEthernet(Port):
-    """Shielded unidirectional Garmin Ethernet differential pair (A and B wires).
+class DifferentialPair(Port):
+    """Shielded two-wire differential pair.
 
-    Identical semantics to :class:`ARINC429` — unidirectional, shielded,
-    direction-checked on connect — but labelled as Ethernet.
+    This models interfaces where the same physical pair may be configured as
+    RS-485, RS-422, or another balanced A/B signal. ``connect()`` wires A↔A and
+    B↔B and puts both conductors in one shield group.
 
     Usage::
 
-        class GTX45R(Component):
-            class P3252(Connector):
-                ethernet_out = GarminEthernet(6, 1, "out", name="Ethernet Out 1")
-                ethernet_in  = GarminEthernet(7, 2, "in",  name="Ethernet In 1")
+        class MyLRU(Component):
+            class J1(Connector):
+                serial_1 = DifferentialPair(10, 11, name="RS-485/422 1")
+
+        MyLRU.J1.serial_1 >> OtherLRU.J2.serial_1
     """
 
     _pin_attrs = ("a", "b")
@@ -551,15 +554,11 @@ class GarminEthernet(Port):
         self,
         a_pin: int | str,
         b_pin: int | str,
-        direction: str,
-        name: str = "Ethernet",
+        name: str = "Differential Pair",
     ) -> None:
         super().__init__()
-        if direction not in ("in", "out"):
-            raise ValueError(f"direction must be 'in' or 'out', got {direction!r}")
-        self._direction = direction
         self._name = name
-        sg = ShieldGroup(label="", pins=[], drain=_ETHERNET_BACKSHELL)
+        sg = ShieldGroup(label="", pins=[], drain=_DIFFERENTIAL_PAIR_BACKSHELL)
         self._sg = sg
         self._a = Pin(a_pin, f"{name} A")
         self._b = Pin(b_pin, f"{name} B")
@@ -569,31 +568,125 @@ class GarminEthernet(Port):
 
     def connect(
         self,
-        other: "GarminEthernet",
+        other: "DifferentialPair",
         *,
         notes: str = "",
         drain: DrainSpec | object = _UNSET,
         drain_remote: DrainSpec | object = _UNSET,
         **_,
     ) -> PortConnection:
-        if self._direction == other._direction:
-            raise ValueError(
-                f"Ethernet connection requires one 'in' and one 'out' port, but both are {self._direction!r}"
-            )
-        seg = self._a.connect(other._a)
-        seg_b = self._b.connect(other._b)
+        segments = [self._a.connect(other._a), self._b.connect(other._b)]
+        for order, seg in enumerate(segments):
+            seg.port_order = order
         if notes:
-            seg.notes = notes
-        self._sg.drain_remote = resolve_drain(drain_remote) if drain_remote is not _UNSET else _ETHERNET_BACKSHELL
-        other._sg.drain_remote = resolve_drain(drain) if drain is not _UNSET else _ETHERNET_BACKSHELL
+            segments[0].notes = notes
+        self._sg.drain_remote = (
+            resolve_drain(drain_remote) if drain_remote is not _UNSET else _DIFFERENTIAL_PAIR_BACKSHELL
+        )
+        other._sg.drain_remote = resolve_drain(drain) if drain is not _UNSET else _DIFFERENTIAL_PAIR_BACKSHELL
         if drain is not _UNSET:
             self._sg.drain = resolve_drain(drain)
         if drain_remote is not _UNSET:
             other._sg.drain = resolve_drain(drain_remote)
-        return PortConnection(primary_segment=seg, local_sg=self._sg, remote_sg=other._sg, segments=[seg, seg_b])
+        return PortConnection(primary_segment=segments[0], local_sg=self._sg, remote_sg=other._sg, segments=segments)
 
-    def __rshift__(self, other: "GarminEthernet") -> PortBuilder:
+    def __rshift__(self, other: "DifferentialPair") -> PortBuilder:
         return PortBuilder(self.connect(other))
+
+    @property
+    def a(self) -> Pin:
+        return self._a
+
+    @property
+    def b(self) -> Pin:
+        return self._b
+
+
+class HSDB(Port):
+    """Shielded bidirectional Garmin High-Speed Data Bus.
+
+    Each port contains TX and RX differential pairs in one shield group.
+    ``connect()`` cross-connects TX to RX in both directions.
+
+    Usage::
+
+        class GTX45R(Component):
+            class P3252(Connector):
+                hsdb_1 = HSDB(6, 1, 7, 2, name="HSDB 1")
+    """
+
+    _pin_attrs = ("tx_a", "tx_b", "rx_a", "rx_b")
+
+    def __init__(
+        self,
+        tx_a: int | str,
+        tx_b: int | str,
+        rx_a: int | str,
+        rx_b: int | str,
+        name: str = "HSDB",
+    ) -> None:
+        super().__init__()
+        self._name = name
+        sg = ShieldGroup(label="", pins=[], drain=_HSDB_BACKSHELL)
+        self._sg = sg
+        self._tx_a = Pin(tx_a, f"{name} TX A")
+        self._tx_b = Pin(tx_b, f"{name} TX B")
+        self._rx_a = Pin(rx_a, f"{name} RX A")
+        self._rx_b = Pin(rx_b, f"{name} RX B")
+        for p in (self._tx_a, self._tx_b, self._rx_a, self._rx_b):
+            p.shield_group = sg
+            sg.pins.append(p)
+
+    def connect(
+        self,
+        other: HSDB,
+        *,
+        notes: str = "",
+        drain: DrainSpec | object = _UNSET,
+        drain_remote: DrainSpec | object = _UNSET,
+        **_,
+    ) -> PortConnection:
+        segments = [
+            self._tx_a.connect(other._rx_a),
+            self._tx_b.connect(other._rx_b),
+            self._rx_a.connect(other._tx_a),
+            self._rx_b.connect(other._tx_b),
+        ]
+        for order, seg in enumerate(segments):
+            seg.port_order = order
+        if notes:
+            segments[-1].notes = notes
+        self._sg.drain_remote = resolve_drain(drain_remote) if drain_remote is not _UNSET else _HSDB_BACKSHELL
+        other._sg.drain_remote = resolve_drain(drain) if drain is not _UNSET else _HSDB_BACKSHELL
+        if drain is not _UNSET:
+            self._sg.drain = resolve_drain(drain)
+        if drain_remote is not _UNSET:
+            other._sg.drain = resolve_drain(drain_remote)
+        return PortConnection(
+            primary_segment=segments[-1],
+            local_sg=self._sg,
+            remote_sg=other._sg,
+            segments=segments,
+        )
+
+    def __rshift__(self, other: HSDB) -> PortBuilder:
+        return PortBuilder(self.connect(other))
+
+    @property
+    def tx_a(self) -> Pin:
+        return self._tx_a
+
+    @property
+    def tx_b(self) -> Pin:
+        return self._tx_b
+
+    @property
+    def rx_a(self) -> Pin:
+        return self._rx_a
+
+    @property
+    def rx_b(self) -> Pin:
+        return self._rx_b
 
 
 class Thermocouple(Port):

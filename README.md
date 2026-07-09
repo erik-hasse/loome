@@ -171,16 +171,19 @@ probe = OATProbe("OAT Probe")
 Pre-built port descriptors handle common multi-wire interfaces and auto-wire shared bus lines:
 
 ```python
-from loome import Component, Connector, Pin, CanBus, RS232, GPIO
+from loome import Component, Connector, Pin, CanBus, RS232, GPIO, DifferentialPair, HSDB
 
 class Sensor(Component):
     class J1(Connector):
         can    = CanBus(1, 2)                        # CAN High pin 1, Low pin 2
         serial = RS232(5, 4, 6, name="RS-232 1")     # TX, RX, GND
         pos    = GPIO(7, 8, 9, name="Position")      # +, signal, GND (shielded)
+        diff   = DifferentialPair(10, 11, name="RS-485/422 1") # A/B in one shield
+        hsdb   = HSDB(12, 13, 14, 15)                # TX A/B, RX A/B (one shield)
 ```
 
-`RS232` instances cross-wire automatically: `device_a.J1.serial.connect(device_b.J1.serial)`.
+`DifferentialPair` connects A↔A and B↔B. `RS232` and `HSDB` instances cross-wire TX to RX automatically:
+`device_a.J1.serial.connect(device_b.J1.serial)`.
 Port connections can use the same fluent modifiers as pin wires:
 `(device_a.J1.serial >> device_b.J1.serial).gauge(22).color("W").system("COM")`.
 
@@ -370,7 +373,7 @@ from loome import (
     GroundSymbol, OffPageReference, Fuse, FuseBlock,
     CircuitBreaker, CircuitBreakerBank, BusBar, SpliceNode, Terminal,
     # Composite ports
-    CanBus, RS232, GPIO,
+    CanBus, RS232, GPIO, ARINC429, DifferentialPair, HSDB, Thermocouple,
     # Shields
     Shield, ShieldGroup,
     # Topology

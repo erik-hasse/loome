@@ -23,7 +23,7 @@ from .model import (
     WireColor,
     WireSegment,
 )
-from .ports import ARINC429, GPIO, RS232, CanBus, GarminEthernet, Port, Thermocouple
+from .ports import ARINC429, GPIO, HSDB, RS232, CanBus, DifferentialPair, Port, Thermocouple
 
 __all__ = [
     "ARINC429",
@@ -37,11 +37,11 @@ __all__ = [
     "BusBar",
     "CanBus",
     "CanBusLine",
-    "GarminEthernet",
     "CircuitBreaker",
     "CircuitBreakerBank",
     "Component",
     "Connector",
+    "DifferentialPair",
     "Disconnect",
     "DisconnectPin",
     "Fuse",
@@ -49,6 +49,7 @@ __all__ = [
     "GPIO",
     "GroundSymbol",
     "Harness",
+    "HSDB",
     "OffPageReference",
     "Pin",
     "Port",

@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from loome import ARINC429, GPIO, RS232, CanBus, Component, Connector, GarminEthernet, Pin, Thermocouple
+from loome import ARINC429, GPIO, HSDB, RS232, CanBus, Component, Connector, DifferentialPair, Pin, Thermocouple
 from loome.constants import Axis
 
 
@@ -405,8 +405,7 @@ class GSU25(Component):
 
         rs232_3 = RS232(9, 10, 11, name="RS-232 3")  # tx, rx, gnd
 
-        rs485_rx_a = Pin(12, "RS-485 RX A")
-        rs485_rx_b = Pin(13, "RS-485 RX B")
+        rs485_rx = DifferentialPair(12, 13, name="RS-485 RX")
 
         ground = Pin(14, "Ground")
         rs232_2_tx = Pin(15, "RS-232 2 TX")
@@ -626,13 +625,10 @@ class GTX45R(Component):
         gps_keep_alive = Pin(60, "GPS Keep Alive")
 
     class P3252(Connector):
-        ethernet_out_1 = GarminEthernet(6, 1, "out", name="Ethernet Out 1")
-        ethernet_in_1 = GarminEthernet(7, 2, "in", name="Ethernet In 1")
-        ethernet_out_2 = GarminEthernet(8, 3, "out", name="Ethernet Out 2")
-        ethernet_in_2 = GarminEthernet(9, 4, "in", name="Ethernet In 2")
+        hsdb_1 = HSDB(6, 1, 7, 2, name="HSDB 1")
+        hsdb_2 = HSDB(8, 3, 9, 4, name="HSDB 2")
         rs232 = RS232(5, 10, 15)
-        rs422_a = Pin(11, "RS 422 A")
-        rs422_b = Pin(12, "RS 422 B")
+        rs422 = DifferentialPair(11, 12, name="RS 422")
 
 
 class G5(Component):

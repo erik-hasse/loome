@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from loome.model import Component, Connector, GroundSymbol, Pin
-from loome.ports import ARINC429, GPIO, RS232, GarminEthernet, Thermocouple
+from loome.ports import ARINC429, GPIO, HSDB, RS232, DifferentialPair, Thermocouple
 
 
 class _ARINCDevice(Component):
@@ -12,10 +12,14 @@ class _ARINCDevice(Component):
         rx = ARINC429(3, 4, "in", name="RX")
 
 
-class _EthernetDevice(Component):
+class _HSDBDevice(Component):
     class J1(Connector):
-        tx = GarminEthernet(1, 2, "out", name="TX")
-        rx = GarminEthernet(3, 4, "in", name="RX")
+        hsdb = HSDB(1, 2, 3, 4, name="HSDB")
+
+
+class _DifferentialPairDevice(Component):
+    class J1(Connector):
+        pair = DifferentialPair(1, 2, name="RS-485/422 1")
 
 
 class _SerialDevice(Component):
@@ -57,17 +61,58 @@ def test_arinc429_valid_connection_succeeds():
     a.J1.tx >> b.J1.rx  # should not raise
 
 
-def test_garmin_ethernet_direction_mismatch_raises_immediately():
-    a = _EthernetDevice()
-    b = _EthernetDevice()
-    with pytest.raises(ValueError, match="both are 'out'"):
-        a.J1.tx >> b.J1.tx
+def test_differential_pair_connects_a_to_a_and_b_to_b():
+    a = _DifferentialPairDevice("A")
+    b = _DifferentialPairDevice("B")
+
+    a.J1.pair >> b.J1.pair
+
+    assert a.J1.pair.a._connections[0].end_b is b.J1.pair.a
+    assert a.J1.pair.b._connections[0].end_b is b.J1.pair.b
+    assert [pin._connections[0].port_order for pin in a.J1.pair._inner_pins()] == [0, 1]
 
 
-def test_garmin_ethernet_valid_connection_succeeds():
-    a = _EthernetDevice()
-    b = _EthernetDevice()
-    a.J1.tx >> b.J1.rx  # should not raise
+def test_differential_pair_uses_one_shield_group_for_both_wires():
+    a = _DifferentialPairDevice("A")
+    b = _DifferentialPairDevice("B")
+
+    a.J1.pair >> b.J1.pair
+
+    local_group = a.J1.pair._sg
+    remote_group = b.J1.pair._sg
+    assert local_group.pins == a.J1.pair._inner_pins()
+    assert remote_group.pins == b.J1.pair._inner_pins()
+    assert all(pin.shield_group is local_group for pin in a.J1.pair._inner_pins())
+    assert all(pin.shield_group is remote_group for pin in b.J1.pair._inner_pins())
+    assert all(seg.end_a_shield_group is local_group for pin in local_group.pins for seg in pin._connections)
+
+
+def test_hsdb_cross_connects_both_differential_pairs():
+    a = _HSDBDevice("A")
+    b = _HSDBDevice("B")
+
+    a.J1.hsdb >> b.J1.hsdb
+
+    assert a.J1.hsdb.tx_a._connections[0].end_b is b.J1.hsdb.rx_a
+    assert a.J1.hsdb.tx_b._connections[0].end_b is b.J1.hsdb.rx_b
+    assert a.J1.hsdb.rx_a._connections[0].end_b is b.J1.hsdb.tx_a
+    assert a.J1.hsdb.rx_b._connections[0].end_b is b.J1.hsdb.tx_b
+    assert [pin._connections[0].port_order for pin in a.J1.hsdb._inner_pins()] == [0, 1, 2, 3]
+
+
+def test_hsdb_uses_one_shield_group_for_all_four_wires():
+    a = _HSDBDevice("A")
+    b = _HSDBDevice("B")
+
+    a.J1.hsdb >> b.J1.hsdb
+
+    local_group = a.J1.hsdb._sg
+    remote_group = b.J1.hsdb._sg
+    assert local_group.pins == a.J1.hsdb._inner_pins()
+    assert remote_group.pins == b.J1.hsdb._inner_pins()
+    assert all(pin.shield_group is local_group for pin in a.J1.hsdb._inner_pins())
+    assert all(pin.shield_group is remote_group for pin in b.J1.hsdb._inner_pins())
+    assert all(seg.end_a_shield_group is local_group for pin in local_group.pins for seg in pin._connections)
 
 
 def test_port_builder_modifiers_apply_to_every_created_segment():

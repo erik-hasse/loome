@@ -4,12 +4,14 @@ import pytest
 
 from loome import (
     GPIO,
+    HSDB,
     RS232,
     Bundle,
     CanBus,
     CanBusLine,
     Component,
     Connector,
+    DifferentialPair,
     Disconnect,
     DisconnectPin,
     Fuse,
@@ -452,6 +454,56 @@ def test_rs232_port_disconnect_allocates_shield_drain_pin():
 
     shield_pins = [p for p in mate._pins.values() if p._shield_group is not None]
     assert len(shield_pins) == 1
+
+
+def test_differential_pair_port_disconnect_tracks_two_wires_and_one_shield():
+    class A(Component):
+        class J1(Connector):
+            pair = DifferentialPair(1, 2)
+
+    class B(Component):
+        class J1(Connector):
+            pair = DifferentialPair(3, 4)
+
+    a = A("A")
+    b = B("B")
+    a.J1.pair.connect(b.J1.pair)
+    mate = Disconnect("DC1")
+    signal_pins = mate.between(a.J1.pair, b.J1.pair)
+    h = Harness("t")
+    h.add(a, b, mate)
+    h.segments()
+
+    assert len(signal_pins) == 2
+    assert all(len(pin._segments) == 1 for pin in signal_pins)
+    shield_pins = [p for p in mate._pins.values() if p._shield_group is not None]
+    assert len(shield_pins) == 1
+    assert shield_pins[0]._shield_group is a.J1.pair._sg
+
+
+def test_hsdb_port_disconnect_tracks_four_cross_connected_wires_and_one_shield():
+    class A(Component):
+        class J1(Connector):
+            hsdb = HSDB(1, 2, 3, 4)
+
+    class B(Component):
+        class J1(Connector):
+            hsdb = HSDB(5, 6, 7, 8)
+
+    a = A("A")
+    b = B("B")
+    a.J1.hsdb.connect(b.J1.hsdb)
+    mate = Disconnect("DC1")
+    signal_pins = mate.between(a.J1.hsdb, b.J1.hsdb)
+    h = Harness("t")
+    h.add(a, b, mate)
+    h.segments()
+
+    assert len(signal_pins) == 4
+    assert all(len(pin._segments) == 1 for pin in signal_pins)
+    shield_pins = [p for p in mate._pins.values() if p._shield_group is not None]
+    assert len(shield_pins) == 1
+    assert shield_pins[0]._shield_group is a.J1.hsdb._sg
 
 
 def test_standalone_shield_full_coverage_allocates_drain():

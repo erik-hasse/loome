@@ -393,8 +393,7 @@ with System("GPS"):
     (gtx45r.P3251.rs232_3 >> gtn650xi.P1001.rs232_4).notes("ADS-B+ GPS")
 
     with gtx45r.P3252 as c:
-        c.ethernet_out_1 >> gtn650xi.P1002.ethernet_in_1
-        c.ethernet_in_1 >> gtn650xi.P1002.ethernet_out_1
+        c.hsdb_1 >> gtn650xi.P1002.hsdb_1
 
     with gtn650xi.P1001 as c:
         c.config_module_power >> gtn650_config.power

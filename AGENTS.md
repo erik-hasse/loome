@@ -53,7 +53,8 @@ semantic validation is backlog work.
 
 - `model.py`: user DSL core: `Component`, `Connector`, `Pin`, `WireSegment`, `Terminal` subclasses, fuse/CB containers,
   `SpliceNode`, `Shield`, `ShieldGroup`, `System`.
-- `ports.py`: composite port descriptors (`CanBus`, `RS232`, `GPIO`, `ARINC429`, `GarminEthernet`, `Thermocouple`) and
+- `ports.py`: composite port descriptors (`CanBus`, `RS232`, `GPIO`, `ARINC429`, `DifferentialPair`, `HSDB`,
+  `Thermocouple`) and
   `PortBuilder`.
 - `harness.py`: object registration, namespace autodetection, segment collection, bundle length resolution, bundle
   validation.
@@ -146,7 +147,9 @@ Port-specific behavior to preserve:
   component's `can_terminate()` method.
 - `RS232` cross-wires TX to RX and RX to TX, with optional ground. `PortBuilder.ground(False)` removes the ground
   segment. `PortBuilder.notes()` currently annotates only the primary segment; this is a documented backlog concern.
-- `ARINC429` and `GarminEthernet` require one `"out"` and one `"in"` port.
+- `ARINC429` requires one `"out"` and one `"in"` port. `DifferentialPair` connects A to A and B to B in one shield
+  group for configurable balanced interfaces such as RS-485/422. `HSDB` combines TX and RX differential pairs in one
+  shield group and cross-connects TX to RX.
 - `Thermocouple` creates a `cable_only` shield group, defaults to 20 AWG, and wires high yellow / low red. It appears as
   a cable row without shield ovals.
 

@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from ._internal.endpoints import endpoint_description
 from ._internal.names import default_signal_name
 from .model import Pin, ShieldGroup, SpliceNode, Terminal, WireSegment
-from .ports import RS232, CanBus, Port
+from .ports import HSDB, RS232, CanBus, Port
 
 # ── disconnect pins ────────────────────────────────────────────────────────
 
@@ -316,8 +316,9 @@ def _attach_disconnect_pin_to_segment(pin: DisconnectPin, seg: WireSegment) -> N
 def _port_pin_pairs(a, b) -> list[tuple[Pin, Pin, str]]:
     """Discover the (pin_a, pin_b, signal_hint) tuples for a Port↔Port disconnect.
 
-    Handles per-port crossover semantics: RS232 pairs TX↔RX. ``CanBus`` is
-    handled separately by the caller because its segments are not direct.
+    Handles per-port crossover semantics: RS232 and HSDB pair TX↔RX.
+    ``CanBus`` is handled separately by the caller because its segments are
+    not direct.
     """
     if isinstance(a, RS232):
         ordered: list[tuple[Pin, Pin, str]] = []
@@ -328,6 +329,14 @@ def _port_pin_pairs(a, b) -> list[tuple[Pin, Pin, str]]:
         if a._gnd is not None and b._gnd is not None:
             ordered.append((a._gnd, b._gnd, f"{a._name} GND"))
         return ordered
+
+    if isinstance(a, HSDB):
+        return [
+            (a._tx_a, b._rx_a, f"{a._name} TX A↔RX A"),
+            (a._tx_b, b._rx_b, f"{a._name} TX B↔RX B"),
+            (a._rx_a, b._tx_a, f"{a._name} RX A↔TX A"),
+            (a._rx_b, b._tx_b, f"{a._name} RX B↔TX B"),
+        ]
 
     pairs: list[tuple[Pin, Pin, str]] = []
     for attr in a._pin_attrs:

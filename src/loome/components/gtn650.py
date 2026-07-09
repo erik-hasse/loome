@@ -1,4 +1,4 @@
-from loome import ARINC429, GPIO, RS232, Component, Connector, GarminEthernet, Pin
+from loome import ARINC429, GPIO, HSDB, RS232, Component, Connector, Pin
 
 
 class GTN650Xi(Component):
@@ -85,17 +85,13 @@ class GTN650Xi(Component):
 
         demo_mode_select = Pin(1, "Demo Mode Select*")
         suspend_annunciate = Pin(3, "Suspend Annunciate*")
-        ethernet_out_4 = GarminEthernet(4, 5, "out", name="Ethernet Out 4")
-        ethernet_in_1 = GarminEthernet(6, 7, "in", name="Ethernet In 1")
-        ethernet_out_1 = GarminEthernet(8, 9, "out", name="Ethernet Out 1")
+        hsdb_4 = HSDB(4, 5, 13, 14, name="HSDB 4")
+        hsdb_1 = HSDB(8, 9, 6, 7, name="HSDB 1")
         spare_input = Pin(10, "Spare Input*")
         gsr_status_in = Pin(11, "GSR Status In*")
         gsr_remote_power_out = Pin(12, "GSR Remote Power Out*")
-        ethernet_in_4 = GarminEthernet(13, 14, "in", name="Ethernet In 4")
-        ethernet_in_2 = GarminEthernet(15, 16, "in", name="Ethernet In 2")
-        ethernet_out_2 = GarminEthernet(17, 18, "out", name="Ethernet Out 2")
-        ethernet_in_3 = GarminEthernet(23, 24, "in", name="Ethernet In 3")
-        ethernet_out_3 = GarminEthernet(25, 26, "out", name="Ethernet Out 3")
+        hsdb_2 = HSDB(17, 18, 15, 16, name="HSDB 2")
+        hsdb_3 = HSDB(25, 26, 23, 24, name="HSDB 3")
 
     class P1003(Connector):
         """COM Connector"""
