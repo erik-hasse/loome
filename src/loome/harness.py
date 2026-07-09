@@ -25,6 +25,7 @@ from .model import (
     Terminal,
     WireSegment,
 )
+from .validators import Issue, run_checks
 
 
 def _iter_class_pins(cls: type, base_cls: type) -> Generator[tuple[str, Pin], None, None]:
@@ -354,6 +355,15 @@ class Harness:
             return ep_att.leg_length + bundle.distance(ep_att.breakout, disc_att.breakout) + disc_att.leg_length
 
         return (_side(seg.end_a), _side(seg.end_b))
+
+    def validate(self) -> list["Issue"]:
+        """Run semantic checks (required pins, duplicate labels, CAN buses).
+
+        Returns a list of :class:`loome.validators.Issue`, most-severe first.
+        Distinct from :meth:`validate_bundles`, which checks physical-length
+        topology. ``loome validate`` runs both.
+        """
+        return run_checks(self)
 
     def validate_bundles(self) -> list[str]:
         """Return warnings about bundle coverage; empty list if everything resolves."""

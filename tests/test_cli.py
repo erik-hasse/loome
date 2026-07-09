@@ -196,13 +196,36 @@ def test_cli_validate_exits_zero_for_resolved_bundle(tmp_path: Path):
     assert result.stdout.strip() == "OK"
 
 
-def test_cli_validate_exits_nonzero_for_unresolved_bundle(tmp_path: Path):
+def test_cli_validate_reports_unresolved_bundle_warning(tmp_path: Path):
     spec = _write_invalid_bundle_spec(tmp_path)
 
+    # An unresolved bundle is a warning: reported, but not fatal by default...
     result = _run_cli("validate", str(spec))
-
-    assert result.returncode == 1
+    assert result.returncode == 0, result.stderr
     assert "one end unattached" in result.stderr
+
+    # ...and fatal under --strict.
+    strict = _run_cli("validate", str(spec), "--strict")
+    assert strict.returncode == 1
+    assert "one end unattached" in strict.stderr
+
+
+def test_cli_validate_exits_nonzero_on_required_pin_error(tmp_path: Path):
+    spec = tmp_path / "req.py"
+    spec.write_text(
+        "from loome import Harness, GroundSymbol, Component, Connector, Pin\n"
+        "class Box(Component):\n"
+        "    class J1(Connector):\n"
+        "        power = Pin(1, 'Power', required=True)\n"
+        "box = Box('Box')\n"
+        "gnd = GroundSymbol('G')\n"  # power left unwired -> required error
+        "harness = Harness('Req')\n"
+    )
+
+    # Errors are fatal without --strict, unlike warnings.
+    result = _run_cli("validate", str(spec))
+    assert result.returncode == 1
+    assert "required but not connected" in result.stderr
 
 
 def test_cli_render_directory_outputs_one_svg_per_component(tmp_path: Path):
