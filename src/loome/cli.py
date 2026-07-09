@@ -22,6 +22,7 @@ from loome.renderers.builder import builder_entries_for_script
 from loome.renderers.bundle import render_bundle
 from loome.renderers.svg import render
 from loome.renderers.wires import _pin_row_id
+from loome.validators import unconnected_report as _unconnected_report
 from loome.wire_ids import (
     WireIdCheckError,
     assign_wire_ids,
@@ -66,8 +67,18 @@ def main() -> None:
     fuses_cmd.add_argument("--format", choices=("md", "csv"), default="md", help="Output format")
     _add_wire_id_args(fuses_cmd)
 
-    validate_cmd = sub.add_parser("validate", help="Validate bundle topology; exit non-zero on warnings")
+    validate_cmd = sub.add_parser("validate", help="Validate wiring (required pins, CAN, labels) and bundle topology")
     validate_cmd.add_argument("spec", help="Python harness spec file")
+    validate_cmd.add_argument(
+        "--unconnected",
+        action="store_true",
+        help="Also print a per-component checklist of still-unconnected pins",
+    )
+    validate_cmd.add_argument(
+        "--strict",
+        action="store_true",
+        help="Exit non-zero on warnings too, not just errors",
+    )
     _add_wire_id_args(validate_cmd)
 
     args = parser.parse_args()
@@ -269,11 +280,39 @@ def _cmd_validate(args) -> None:
         persist_wire_ids=args.write_wire_ids,
         check_wire_ids=args.check_wire_ids,
     )
-    warnings = harness.validate_bundles()
-    for w in warnings:
+
+    issues = harness.validate()
+    for issue in issues:
+        print(issue.format(), file=sys.stderr)
+
+    bundle_warnings = harness.validate_bundles()
+    for w in bundle_warnings:
         print(f"warning: {w}", file=sys.stderr)
-    if warnings:
+
+    if args.unconnected:
+        report = _unconnected_report(harness)
+        if report:
+            print("\nUnconnected pins:")
+            for label, pins in report.items():
+                print(f"  {label}:")
+                for number, signal in pins:
+                    print(f"    - {number}: {signal}" if signal else f"    - {number}")
+
+    n_errors = sum(1 for i in issues if i.severity == "error")
+    n_warnings = sum(1 for i in issues if i.severity == "warning") + len(bundle_warnings)
+
+    # Errors always fail. Warnings are informational (unresolved lengths,
+    # secondary CAN ports, …) and only fail the build under --strict, so
+    # `validate` stays usable as a gate while a harness is still being wired.
+    if n_errors:
+        print(f"\nFAILED: {n_errors} error(s), {n_warnings} warning(s)", file=sys.stderr)
         sys.exit(1)
+    if n_warnings:
+        if args.strict:
+            print(f"\nFAILED (--strict): {n_warnings} warning(s)", file=sys.stderr)
+            sys.exit(1)
+        print(f"OK — no errors ({n_warnings} warning(s); use --strict to fail on these)")
+        return
     print("OK")
 
 

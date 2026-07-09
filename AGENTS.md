@@ -46,8 +46,12 @@ inspect sidecar diffs before keeping them. For tests or scratch code that should
 `render -o <directory>` creates one SVG per rendered component using sanitized component labels. `render -o <file>`
 creates a whole-harness SVG. Full schematic SVGs get the sticky-header JavaScript injected; per-component SVGs do not.
 
-`validate` currently reports bundle-topology warnings only and exits non-zero if any warning is produced. Broader
-semantic validation is backlog work.
+`validate` runs semantic checks (`Harness.validate()` → `validators.py`: required pins, duplicate labels, minimum
+CAN-bus device count) *and* bundle-topology warnings (`validate_bundles()`). Findings are errors or warnings: **errors
+exit non-zero; warnings are reported but non-fatal unless `--strict`** — so `validate` works as a build gate on a
+partially-wired harness. `--unconnected` also prints a per-component checklist of floating pins. Required pins are declared with
+`Pin(required=...)` / port `required=` / the `require()` helper; a `required` value may be a `bool` or a predicate
+`fn(ctx) -> bool` evaluated at validation time, so requiredness can depend on other components/wiring.
 
 ## Architecture Map
 
@@ -66,6 +70,11 @@ semantic validation is backlog work.
   `renderers/colors.py`: schematic rendering. `renderers/bundle.py` renders bundle trees.
 - `bom.py`: pure-data collectors and markdown/CSV renderers for BOM and fuse schedules. It should not import SVG
   rendering.
+- `validators.py`: semantic validation (`Harness.validate()`). `Issue` records, per-pin required checks with the
+  `ValidationContext` predicate API, the spec-level `require()` helper, and the `unconnected_report()` builder checklist.
+  Also the requirement-authoring vocabulary: predicates (`present`, `absent`, `wired`), combinators (`all_of`, `any_of`,
+  `not_`), and group helpers (`require_all`, `require_any`). The group helpers are pure sugar over `require()` — they set
+  the same per-pin `required` predicate, so there is no separate requirement-object machinery to collect or persist.
 - `_internal/endpoints.py`, `_internal/shields.py`, `_internal/systems.py`, `_internal/attachments.py`,
   `_internal/names.py`: shared helper layer for labels, fingerprints, shield ownership, system resolution, attachment
   target typing, and default signal naming.

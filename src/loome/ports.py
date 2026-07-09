@@ -293,6 +293,7 @@ class RS232(Port):
         rx_pin: int | str,
         gnd_pin: int | str | None = None,
         name: str = "RS-232",
+        required: "bool | object" = False,
     ) -> None:
         super().__init__()
         self._name = name
@@ -300,7 +301,9 @@ class RS232(Port):
         # independent of whether the cable carries a separate signal-ground wire.
         sg = ShieldGroup(label="", pins=[], drain=_RS232_BACKSHELL)
         self._sg = sg
-        self._tx = Pin(tx_pin, f"{name} Out")
+        # Requiredness rides on the primary (TX) conductor so validation reports
+        # one issue per unwired port, not one per conductor.
+        self._tx = Pin(tx_pin, f"{name} Out", required=required)
         self._rx = Pin(rx_pin, f"{name} In")
         self._gnd: Pin | None = None
         pins: list[Pin] = [self._tx, self._rx]
@@ -400,11 +403,12 @@ class GPIO(Port):
         ground_pin: int | str,
         name: str = "GPIO",
         shielded: bool = True,
+        required: "bool | object" = False,
     ) -> None:
         super().__init__()
         self._name = name
         self._positive = Pin(positive_pin, f"{name} Positive")
-        self._signal = Pin(signal_pin, name)
+        self._signal = Pin(signal_pin, name, required=required)
         self._ground = Pin(ground_pin, f"{name} Ground")
         self._sg: ShieldGroup | None = None
         if shielded:
@@ -491,6 +495,7 @@ class ARINC429(Port):
         b_pin: int | str,
         direction: Literal["in", "out"],
         name: str = "ARINC 429",
+        required: "bool | object" = False,
     ) -> None:
         super().__init__()
         if direction not in ("in", "out"):
@@ -499,7 +504,7 @@ class ARINC429(Port):
         self._name = name
         sg = ShieldGroup(label="", pins=[], drain=_ARINC_BACKSHELL)
         self._sg = sg
-        self._a = Pin(a_pin, f"{name} A")
+        self._a = Pin(a_pin, f"{name} A", required=required)
         self._b = Pin(b_pin, f"{name} B")
         for p in (self._a, self._b):
             p.shield_group = sg
@@ -555,12 +560,13 @@ class DifferentialPair(Port):
         a_pin: int | str,
         b_pin: int | str,
         name: str = "Differential Pair",
+        required: "bool | object" = False,
     ) -> None:
         super().__init__()
         self._name = name
         sg = ShieldGroup(label="", pins=[], drain=_DIFFERENTIAL_PAIR_BACKSHELL)
         self._sg = sg
-        self._a = Pin(a_pin, f"{name} A")
+        self._a = Pin(a_pin, f"{name} A", required=required)
         self._b = Pin(b_pin, f"{name} B")
         for p in (self._a, self._b):
             p.shield_group = sg
@@ -624,12 +630,13 @@ class HSDB(Port):
         rx_a: int | str,
         rx_b: int | str,
         name: str = "HSDB",
+        required: "bool | object" = False,
     ) -> None:
         super().__init__()
         self._name = name
         sg = ShieldGroup(label="", pins=[], drain=_HSDB_BACKSHELL)
         self._sg = sg
-        self._tx_a = Pin(tx_a, f"{name} TX A")
+        self._tx_a = Pin(tx_a, f"{name} TX A", required=required)
         self._tx_b = Pin(tx_b, f"{name} TX B")
         self._rx_a = Pin(rx_a, f"{name} RX A")
         self._rx_b = Pin(rx_b, f"{name} RX B")
