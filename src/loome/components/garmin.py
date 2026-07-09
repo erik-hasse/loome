@@ -627,7 +627,7 @@ class GTX45R(Component):
     class P3252(Connector):
         hsdb_1 = HSDB(6, 1, 7, 2, name="HSDB 1")
         hsdb_2 = HSDB(8, 3, 9, 4, name="HSDB 2")
-        rs232 = RS232(5, 10, 15)
+        rs232_4 = RS232(5, 10, 15, name="RS232 4")
         rs422 = DifferentialPair(11, 12, name="RS 422")
 
 

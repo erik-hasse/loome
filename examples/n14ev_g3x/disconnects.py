@@ -1,5 +1,5 @@
-from examples.n14ev.lights import left_7_stars, left_pos_strobe, right_7_stars, right_pos_strobe
-from examples.n14ev.lrus import (
+from examples.n14ev_g3x.lights import left_7_stars, left_pos_strobe, right_7_stars, right_pos_strobe
+from examples.n14ev_g3x.lrus import (
     flyleds_controller,
     gad27,
     gap26,
@@ -12,9 +12,9 @@ from examples.n14ev.lrus import (
     mfd,
     roll_trim,
 )
-from examples.n14ev.power import avionics_block_1, avionics_block_2, avionics_block_3, gnd
-from examples.n14ev.sensors import left_fuel, right_fuel
-from examples.n14ev.switches import landing_light_switch, pitot_heat_switch
+from examples.n14ev_g3x.power import avionics_block_1, avionics_block_2, avionics_block_3, gnd
+from examples.n14ev_g3x.sensors import left_fuel, right_fuel
+from examples.n14ev_g3x.switches import landing_light_switch, pitot_heat_switch
 from loome import Disconnect
 
 right_wing_root_a = Disconnect("Right Wing Root A")

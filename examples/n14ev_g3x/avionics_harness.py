@@ -1,11 +1,11 @@
-from examples.n14ev.disconnects import (
+from examples.n14ev_g3x.disconnects import (
     left_wing_handshake,
     left_wing_root,
     right_wing_handshake,
     right_wing_root_a,
     right_wing_root_b,
 )
-from examples.n14ev.lights import (
+from examples.n14ev_g3x.lights import (
     cabin_lights,
     left_7_stars,
     left_pos_strobe,
@@ -15,7 +15,7 @@ from examples.n14ev.lights import (
     right_pos_strobe,
     tail_light,
 )
-from examples.n14ev.lrus import (
+from examples.n14ev_g3x.lrus import (
     co2_sensor,
     copilot_lemo,
     copilot_stick,
@@ -53,7 +53,7 @@ from examples.n14ev.lrus import (
     roll_trim,
     sds_ecu,
 )
-from examples.n14ev.power import (
+from examples.n14ev_g3x.power import (
     avionics_block_1,
     avionics_block_2,
     avionics_block_3,
@@ -62,8 +62,8 @@ from examples.n14ev.power import (
     main_block,
     right_wing_gnd,
 )
-from examples.n14ev.sensors import fuel_pressure, left_fuel, manifold_pressure, oil_pressure, oil_temp, right_fuel
-from examples.n14ev.switches import (
+from examples.n14ev_g3x.sensors import fuel_pressure, left_fuel, manifold_pressure, oil_pressure, oil_temp, right_fuel
+from examples.n14ev_g3x.switches import (
     backlight_rheo,
     cabin_light_rheo,
     flaps,
@@ -387,7 +387,7 @@ with System("ADSB"):
 
         (c.rs232_2 >> pfd.P4602.rs232_3).notes("Connext Format 4, 115200 baud")
 
-    (gtx45r.P3252.rs232 >> mfd.P4602.rs232_2).notes("Connext Format 4, 115200 baud")
+    (gtx45r.P3252.rs232_4 >> mfd.P4602.rs232_2).notes("Connext Format 4, 115200 baud")
 
 with System("GPS"):
     (gtx45r.P3251.rs232_3 >> gtn650xi.P1001.rs232_4).notes("ADS-B+ GPS")

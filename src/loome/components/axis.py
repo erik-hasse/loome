@@ -46,6 +46,9 @@ class GDU116B(Component):
         can_bus_term = Pin(28, "CAN Bus Term")
         demo_mode = Pin(42, "Demo Mode")
 
+    def can_terminate(self) -> None:
+        self.J1012.can.low >> self.J1012.can_bus_term
+
 
 class GDU116C(GDU116B):
     class J1013(Connector):

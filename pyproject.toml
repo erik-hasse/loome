@@ -1,6 +1,6 @@
 [project]
 name = "loome"
-version = "0.3.0"
+version = "0.4.0"
 description = "Python framework for describing and visualizing wiring harnesses"
 readme = "README.md"
 authors = [
