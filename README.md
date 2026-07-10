@@ -127,9 +127,98 @@ Emits a fuse/circuit-breaker schedule listing what each protective device feeds.
 
 ### `loome validate <spec>`
 
-Checks bundle topology and exits non-zero when wire lengths cannot be resolved.
+Runs two kinds of checks:
+
+- **Semantic** — required pins that aren't connected (see below), duplicate
+  component labels, and CAN buses with too few devices.
+- **Bundle topology** — wire lengths that cannot be resolved, CAN devices not
+  attached to a bundle, and CAN-capable connectors missing from a `CanBusLine`.
+
+Findings are either **errors** or **warnings**. Errors (e.g. an unconnected
+required pin) always exit non-zero. Warnings (unresolved lengths, secondary CAN
+ports, …) are reported but **not** fatal by default — so `validate` stays usable
+as a build gate while a harness is still being wired. Pass `--strict` to fail on
+warnings too.
+
+Add `--unconnected` to also print a per-component checklist of pins that are
+still floating — a build to-do list you work down as you crimp.
 
 Supports `--write-wire-ids` and `--check-wire-ids`.
+
+### Required pins and conditional requirements
+
+A pin can declare that it *must* be wired. `loome validate` reports an error for
+any required pin left unconnected.
+
+```python
+from loome import Component, Connector, Pin
+
+class Display(Component):
+    class J1(Connector):
+        power  = Pin(1, "Power", required=True)   # always required
+        ground = Pin(2, "Ground", required=True)
+```
+
+`required` also takes a **predicate** `fn(ctx) -> bool`, evaluated at validation
+time against the whole harness — so one component's presence or wiring can make
+another component's pin required:
+
+```python
+# required only when a second display is in the panel:
+reversion = Pin(25, "Reversion", required=lambda ctx: len(ctx.components(Display)) > 1)
+
+# all-or-nothing group: wiring any config pin makes the rest required:
+cfg_data  = Pin(50, "Config Data",  required=lambda ctx: ctx.any_connected("cfg_*"))
+cfg_clock = Pin(33, "Config Clock", required=lambda ctx: ctx.any_connected("cfg_*"))
+```
+
+`ctx` (a `ValidationContext`) exposes `has_component(type_or_name)`,
+`components(cls)`, and `any_connected(*attr_globs)` (matches sibling pins on the
+same connector).
+
+Composite ports take `required=` too (it rides on the primary conductor, so you
+get one issue per unwired port, not one per pin):
+
+```python
+rs232 = RS232(5, 4, 6, required=lambda ctx: ctx.has_component("GEA24"))
+```
+
+For requirements that belong to a *specific panel* rather than the box itself —
+"on this build the EIS serial link is the required backup for the CAN data path"
+— use `require()` in the spec:
+
+```python
+from loome import require
+
+eis.J241.rs232 >> mfd.J1012.rs232_1
+require(eis.J241.rs232, when=lambda ctx: ctx.has_component("MFD"))
+```
+
+#### Composing requirements
+
+Instead of raw lambdas, a small vocabulary makes rules read like sentences.
+Predicates (`present`, `absent`, `wired`) and combinators (`all_of`, `any_of`,
+`not_`) compose into the `when=` argument:
+
+```python
+from loome import require, require_all, require_any, present, any_of
+
+# readable single rule
+require(eis.J241.rs232, when=present("MFD"))
+
+# a GPS position source is required for the transponder — from a navigator or a standalone GPS
+require(xpdr.P3251.rs232_3, when=any_of(present("GTN650Xi"), present("GPS20A")))
+
+# all-together: with an AP controller, every servo disconnect must be wired
+require_all(pitch_servo.J281.disconnect, roll_servo.J281.disconnect, when=present(GMC507))
+
+# at-least-one: wiring any one of these satisfies the group
+require_any(gsu25_1.J252.oat_probe_high, gsu25_2.J252.oat_probe_high)
+```
+
+`require_all` / `require_any` accept `Pin`s or composite ports, and `when`
+is optional (defaults to always). These are thin sugar over `require()`, so
+they honour the same predicate model.
 
 ---
 
@@ -382,5 +471,9 @@ from loome import (
     Harness,
     # Switches
     SPST, SPDT, DPST, DPDT,
+    # Validation
+    require, require_all, require_any,
+    present, absent, wired, all_of, any_of, not_,
+    Issue, ValidationContext,
 )
 ```

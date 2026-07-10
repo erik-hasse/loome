@@ -24,6 +24,19 @@ from .model import (
     WireSegment,
 )
 from .ports import ARINC429, GPIO, HSDB, RS232, CanBus, DifferentialPair, Port, Thermocouple
+from .validators import (
+    Issue,
+    ValidationContext,
+    absent,
+    all_of,
+    any_of,
+    not_,
+    present,
+    require,
+    require_all,
+    require_any,
+    wired,
+)
 
 __all__ = [
     "ARINC429",
@@ -50,6 +63,7 @@ __all__ = [
     "GroundSymbol",
     "Harness",
     "HSDB",
+    "Issue",
     "OffPageReference",
     "Pin",
     "Port",
@@ -60,6 +74,17 @@ __all__ = [
     "System",
     "Terminal",
     "Thermocouple",
+    "ValidationContext",
     "WireColor",
     "WireSegment",
+    # requirement vocabulary
+    "require",
+    "require_all",
+    "require_any",
+    "present",
+    "absent",
+    "wired",
+    "all_of",
+    "any_of",
+    "not_",
 ]

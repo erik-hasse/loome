@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import itertools
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Literal, Self
 
@@ -475,6 +476,11 @@ class WireSegment:
 class Pin:
     number: int | str
     signal_name: str = ""
+    # Whether this pin *must* be wired for the harness to be valid. Either a
+    # static ``bool`` or a predicate ``fn(ctx) -> bool`` evaluated at validation
+    # time against the whole harness, so one component's presence/wiring can make
+    # another component's pin required (see loome.validators.ValidationContext).
+    required: "bool | Callable[..., bool]" = field(default=False, repr=False)
     _attr_name: str = field(default="", repr=False)
     _connector_class: type | None = field(default=None, repr=False)
     _component_class: type | None = field(default=None, repr=False)

@@ -52,11 +52,15 @@ Items are roughly in priority order within each section.
   still needs an explicit design for terminal-only wires that are not anchored by a pin row.
   Bus/fuse feed chains should render visibly instead of existing only as metadata.
 
-- **Broader semantic validation** — extend `loome validate` beyond bundle topology. Useful
-  checks include duplicate component labels / terminal IDs, duplicate connector pin numbers,
-  duplicate manual wire IDs, unsupported wire colors, unresolved systems when
-  `default_system=None`, orphan terminals, multiple protective devices feeding one branch,
-  and CAN buses with missing or extra terminations.
+- **Broader semantic validation** — `loome validate` now also runs semantic checks
+  (`src/loome/validators.py`, `Harness.validate()`): required-pin enforcement with
+  conditional predicates (`Pin(required=...)`, the `require()` helper, `ValidationContext`),
+  duplicate component labels, minimum CAN-bus device count, and a `--unconnected` build
+  checklist. Still open: duplicate manual wire IDs, unsupported wire colors, unresolved
+  systems when `default_system=None`, orphan terminals, multiple protective devices feeding
+  one branch, and CAN termination count (exactly two terminators per bus). Note connector
+  pin-number duplicates are *intentional* in several components (alternate signal names on one
+  physical pin), so that is not a useful check.
 
 - **Machine-readable exports** — add JSON output for BOM, fuse schedules, and a normalized
   netlist (`components`, `connectors`, `pins`, `segments`, `terminals`, `bundles`). This would
