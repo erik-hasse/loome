@@ -1,0 +1,32 @@
+name: CI
+
+# Runs only on pull requests, so direct pushes to `main` (the maintainer's
+# workflow) are never gated — that is the intentional bypass. External
+# contributions come in as PRs and get the test suite + lint run and reported.
+# No branch protection is configured, so even a red PR can still be merged; the
+# checks are informational unless/until required-status-checks are turned on.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install Python and dependencies
+        run: uv sync
+
+      - name: Lint (pre-commit hooks)
+        run: uvx pre-commit run --all-files --show-diff-on-failure
+
+      - name: Run tests
+        run: uv run pytest -q
