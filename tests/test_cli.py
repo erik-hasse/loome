@@ -6,6 +6,7 @@ import sys
 import textwrap
 from pathlib import Path
 
+import pytest
 import yaml
 
 from loome.bom import build_bom
@@ -367,8 +368,25 @@ def test_cli_builder_uses_split_can_disconnect_keys(tmp_path: Path):
     assert svg_keys.isdisjoint(base_keys)
 
 
-def test_builder_entry_count_matches_bom_rows_for_n14ev_example(repo_root: Path):
-    spec = (repo_root / "examples/n14ev/avionics_harness.py").resolve()
+def test_cli_minimal_example_smoke(repo_root: Path, tmp_path: Path):
+    spec = (repo_root / "examples/minimal.py").resolve()
+    output = tmp_path / "minimal.svg"
+
+    validate_result = _run_cli("validate", str(spec))
+    bom_result = _run_cli("bom", str(spec))
+    render_result = _run_cli("render", str(spec), "-o", str(output))
+
+    assert validate_result.returncode == 0, validate_result.stderr
+    assert validate_result.stdout.strip() == "OK"
+    assert bom_result.returncode == 0, bom_result.stderr
+    assert "## Wires & cables" in bom_result.stdout
+    assert render_result.returncode == 0, render_result.stderr
+    assert output.exists()
+
+
+@pytest.mark.parametrize("example", ["n14ev_axis", "n14ev_g3x"])
+def test_builder_entry_count_matches_bom_rows_for_n14ev_examples(repo_root: Path, tmp_path: Path, example: str):
+    spec = (repo_root / "examples" / example / "avionics_harness.py").resolve()
     harness = _load_harness(spec, persist_wire_ids=False)
 
     bom = build_bom(harness)
@@ -376,3 +394,13 @@ def test_builder_entry_count_matches_bom_rows_for_n14ev_example(repo_root: Path)
 
     assert len(entries) == len(bom.wires) + len(bom.shielded_cables)
     assert len({entry["run_key"] for entry in entries}) == len(entries)
+
+    output_dir = tmp_path / example
+    result = _run_cli("render", str(spec), "-o", str(output_dir), "--builder")
+    assert result.returncode == 0, result.stderr
+
+    entry_keys = {entry["run_key"] for entry in entries}
+    svg_keys: set[str] = set()
+    for svg_path in output_dir.glob("*.svg"):
+        svg_keys.update(re.findall(r'data-seg-id="([^"]+)"', svg_path.read_text()))
+    assert svg_keys <= entry_keys

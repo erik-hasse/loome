@@ -91,29 +91,29 @@
 <text x="38.0" y="329" font-size="10" text-anchor="middle" fill="#1e3a5f" font-family="ui-monospace, monospace">#</text>
 <text x="62" y="329" font-size="10" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">J252</text>
 </g>
-<rect x="20" y="348" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GSU_25_-_Air_Data-J252-1" data-seg-id="8bf142ca71841abf-a" class="builder-wire" />
+<rect x="20" y="348" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GSU_25_-_Air_Data-J252-1" data-seg-id="8bf142ca71841abf" class="builder-wire" />
 <path d="M56,348 L56,370" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,348 L305,370" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="363.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">1</text>
 <text x="62" y="363.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">OAT Probe Power</text>
 <path d="M311,359.0 L641,359.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="356" y="356.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="8bf142ca71841abf-a" class="builder-wire">AD22SH20A / — | —</text>
+<text x="356" y="356.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="8bf142ca71841abf" class="builder-wire">AD22SH20A / — | —</text>
 <text x="462.79999999999995" y="356.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Left Wing Root:6 (Shield 11)</text>
-<rect x="20" y="370" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GSU_25_-_Air_Data-J252-2" data-seg-id="8bf142ca71841abf-a" class="builder-wire" />
+<rect x="20" y="370" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GSU_25_-_Air_Data-J252-2" data-seg-id="8bf142ca71841abf" class="builder-wire" />
 <path d="M56,370 L56,392" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,370 L305,392" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="385.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
 <text x="62" y="385.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">OAT Probe High</text>
 <path d="M311,381.0 L641,381.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="378.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="8bf142ca71841abf-a" class="builder-wire">AD22SH20A / — | —</text>
+<text x="356" y="378.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="8bf142ca71841abf" class="builder-wire">AD22SH20A / — | —</text>
 <text x="527.6" y="378.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Left Wing Root:7</text>
-<rect x="20" y="392" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GSU_25_-_Air_Data-J252-3" data-seg-id="8bf142ca71841abf-a" class="builder-wire" />
+<rect x="20" y="392" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GSU_25_-_Air_Data-J252-3" data-seg-id="8bf142ca71841abf" class="builder-wire" />
 <path d="M56,392 L56,414" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,392 L305,414" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="407.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">3</text>
 <text x="62" y="407.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">OAT Probe Low</text>
 <path d="M311,403.0 L641,403.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="400.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="8bf142ca71841abf-a" class="builder-wire">AD22SH20A / — | —</text>
+<text x="356" y="400.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="8bf142ca71841abf" class="builder-wire">AD22SH20A / — | —</text>
 <text x="527.6" y="400.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Left Wing Root:8</text>
 <rect x="20" y="470" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GSU_25_-_Air_Data-J252-9" data-seg-id="1bbb000627fbfcbe" class="builder-wire" />
 <path d="M56,470 L56,492" stroke="#cbd5e1" stroke-width="0.5" />
@@ -143,29 +143,29 @@
 <rect x="20" y="572" width="893" height="6" fill="#334155" />
 <text x="32" y="570" font-size="13" fill="white" font-weight="bold" font-family="ui-monospace, monospace">GTP 59 - OAT Probe</text>
 </g>
-<rect x="20" y="590" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GTP_59_-_OAT_Probe-WHT" data-seg-id="8bf142ca71841abf-b" class="builder-wire" />
+<rect x="20" y="590" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GTP_59_-_OAT_Probe-WHT" data-seg-id="8bf142ca71841abf" class="builder-wire" />
 <path d="M56,590 L56,612" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,590 L305,612" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="605.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">WHT</text>
 <text x="62" y="605.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">OAT Probe Power</text>
 <path d="M311,601.0 L641,601.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="356" y="598.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="8bf142ca71841abf-b" class="builder-wire">AD22SH20B / — | —</text>
+<text x="356" y="598.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="8bf142ca71841abf" class="builder-wire">AD22SH20B / — | —</text>
 <text x="462.79999999999995" y="598.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Left Wing Root:6 (Shield 11)</text>
-<rect x="20" y="612" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GTP_59_-_OAT_Probe-BLU" data-seg-id="8bf142ca71841abf-b" class="builder-wire" />
+<rect x="20" y="612" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GTP_59_-_OAT_Probe-BLU" data-seg-id="8bf142ca71841abf" class="builder-wire" />
 <path d="M56,612 L56,634" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,612 L305,634" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="627.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">BLU</text>
 <text x="62" y="627.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">OAT Probe Sense</text>
 <path d="M311,623.0 L641,623.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="620.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="8bf142ca71841abf-b" class="builder-wire">AD22SH20B / — | —</text>
+<text x="356" y="620.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="8bf142ca71841abf" class="builder-wire">AD22SH20B / — | —</text>
 <text x="527.6" y="620.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Left Wing Root:7</text>
-<rect x="20" y="634" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GTP_59_-_OAT_Probe-ORN" data-seg-id="8bf142ca71841abf-b" class="builder-wire" />
+<rect x="20" y="634" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GTP_59_-_OAT_Probe-ORN" data-seg-id="8bf142ca71841abf" class="builder-wire" />
 <path d="M56,634 L56,656" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,634 L305,656" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="649.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">ORN</text>
 <text x="62" y="649.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">OAT Probe Low</text>
 <path d="M311,645.0 L641,645.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="642.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="8bf142ca71841abf-b" class="builder-wire">AD22SH20B / — | —</text>
+<text x="356" y="642.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="8bf142ca71841abf" class="builder-wire">AD22SH20B / — | —</text>
 <text x="527.6" y="642.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Left Wing Root:8</text>
 <rect x="20" y="550" width="893" height="128" rx="6" fill="none" stroke="#334155" stroke-width="2" />
 <rect x="20" y="692" width="893" height="234" rx="6" fill="#f8fafc" stroke="none" />
@@ -781,20 +781,20 @@
 <text x="62" y="3183.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Audio Right</text>
 <path d="M311,3179.0 L641,3179.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
 <text x="356" y="3176.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="407b97298e17dfcf" class="builder-wire">AUD22SH04</text>
-<rect x="20" y="3234" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Lemo-5" data-seg-id="e535bca3fd5c3310" class="builder-wire" />
+<rect x="20" y="3234" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Lemo-5" data-seg-id="e535bca3fd5c3310-c1" class="builder-wire" />
 <path d="M56,3234 L56,3256" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,3234 L305,3256" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="3249.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">5</text>
 <text x="62" y="3249.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Mic High</text>
 <path d="M311,3245.0 L641,3245.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="356" y="3242.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="e535bca3fd5c3310" class="builder-wire">AUD22SH05</text>
-<rect x="20" y="3256" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Lemo-6" data-seg-id="e535bca3fd5c3310" class="builder-wire" />
+<text x="356" y="3242.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="e535bca3fd5c3310-c1" class="builder-wire">AUD22SH05</text>
+<rect x="20" y="3256" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Lemo-6" data-seg-id="e535bca3fd5c3310-c1" class="builder-wire" />
 <path d="M56,3256 L56,3278" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,3256 L305,3278" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="3271.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
 <text x="62" y="3271.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Mic Low</text>
 <path d="M311,3267.0 L641,3267.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="3264.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="e535bca3fd5c3310" class="builder-wire">AUD22SH05</text>
+<text x="356" y="3264.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="e535bca3fd5c3310-c1" class="builder-wire">AUD22SH05</text>
 <rect x="20" y="3106" width="893" height="194" rx="6" fill="none" stroke="#334155" stroke-width="2" />
 <rect x="20" y="3314" width="893" height="194" rx="6" fill="#f8fafc" stroke="none" />
 <g id="sh-comp-3314">
@@ -823,20 +823,20 @@
 <text x="62" y="3391.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Audio Right</text>
 <path d="M311,3387.0 L641,3387.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
 <text x="356" y="3384.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="ee8b7b6a371f7652" class="builder-wire">AUD22SH06</text>
-<rect x="20" y="3442" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Lemo-5" data-seg-id="1e8b728deabc1c1c" class="builder-wire" />
+<rect x="20" y="3442" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Lemo-5" data-seg-id="1e8b728deabc1c1c-c1" class="builder-wire" />
 <path d="M56,3442 L56,3464" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,3442 L305,3464" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="3457.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">5</text>
 <text x="62" y="3457.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Mic High</text>
 <path d="M311,3453.0 L641,3453.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="356" y="3450.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="1e8b728deabc1c1c" class="builder-wire">AUD22SH07</text>
-<rect x="20" y="3464" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Lemo-6" data-seg-id="1e8b728deabc1c1c" class="builder-wire" />
+<text x="356" y="3450.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="1e8b728deabc1c1c-c1" class="builder-wire">AUD22SH07</text>
+<rect x="20" y="3464" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Lemo-6" data-seg-id="1e8b728deabc1c1c-c1" class="builder-wire" />
 <path d="M56,3464 L56,3486" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,3464 L305,3486" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="3479.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
 <text x="62" y="3479.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Mic Low</text>
 <path d="M311,3475.0 L641,3475.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="3472.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="1e8b728deabc1c1c" class="builder-wire">AUD22SH07</text>
+<text x="356" y="3472.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="1e8b728deabc1c1c-c1" class="builder-wire">AUD22SH07</text>
 <rect x="20" y="3314" width="893" height="194" rx="6" fill="none" stroke="#334155" stroke-width="2" />
 <rect x="20" y="3522" width="893" height="514" rx="6" fill="#f8fafc" stroke="none" />
 <g id="sh-comp-3522">
@@ -1496,29 +1496,29 @@
 <text x="62" y="6385.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Trim 2</text>
 <path d="M311,6381.0 L641,6381.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
 <text x="356" y="6378.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="a38a861630b41c33" class="builder-wire">FCTL22SH01</text>
-<rect x="20" y="6248" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Roll_Trim-Or" data-seg-id="c85a6c07a26e33e0-b" class="builder-wire" />
+<rect x="20" y="6248" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Roll_Trim-Or" data-seg-id="c85a6c07a26e33e0" class="builder-wire" />
 <path d="M56,6248 L56,6270" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,6248 L305,6270" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="6263.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">Or</text>
 <text x="62" y="6263.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Position Positive</text>
 <path d="M311,6259.0 L641,6259.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="356" y="6256.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="c85a6c07a26e33e0-b" class="builder-wire">FCTL22SH10B / — | —</text>
+<text x="356" y="6256.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="c85a6c07a26e33e0" class="builder-wire">FCTL22SH10B / — | —</text>
 <text x="511.4" y="6256.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Right Wing Root B:2</text>
-<rect x="20" y="6270" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Roll_Trim-Gr" data-seg-id="c85a6c07a26e33e0-b" class="builder-wire" />
+<rect x="20" y="6270" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Roll_Trim-Gr" data-seg-id="c85a6c07a26e33e0" class="builder-wire" />
 <path d="M56,6270 L56,6292" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,6270 L305,6292" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="6285.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">Gr</text>
 <text x="62" y="6285.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Position</text>
 <path d="M311,6281.0 L641,6281.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="6278.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="c85a6c07a26e33e0-b" class="builder-wire">FCTL22SH10B / — | —</text>
+<text x="356" y="6278.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="c85a6c07a26e33e0" class="builder-wire">FCTL22SH10B / — | —</text>
 <text x="511.4" y="6278.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Right Wing Root B:3</text>
-<rect x="20" y="6292" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Roll_Trim-Bl" data-seg-id="c85a6c07a26e33e0-b" class="builder-wire" />
+<rect x="20" y="6292" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Roll_Trim-Bl" data-seg-id="c85a6c07a26e33e0" class="builder-wire" />
 <path d="M56,6292 L56,6314" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,6292 L305,6314" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="6307.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">Bl</text>
 <text x="62" y="6307.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Position Ground</text>
 <path d="M311,6303.0 L641,6303.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="6300.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="c85a6c07a26e33e0-b" class="builder-wire">FCTL22SH10B / — | —</text>
+<text x="356" y="6300.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="c85a6c07a26e33e0" class="builder-wire">FCTL22SH10B / — | —</text>
 <text x="511.4" y="6300.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Right Wing Root B:4</text>
 <rect x="20" y="6208" width="893" height="206" rx="6" fill="none" stroke="#334155" stroke-width="2" />
 <rect x="20" y="6428" width="893" height="206" rx="6" fill="#f8fafc" stroke="none" />
@@ -1951,13 +1951,13 @@
 <text x="62" y="8403.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">RS232 1 In</text>
 <path d="M311,8399.0 L641,8399.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
 <text x="356" y="8396.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="8005053c5bd26bf2" class="builder-wire">EIS22SH01</text>
-<rect x="20" y="7974" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GDU_116NC_-_PFD__Nav_Com-J1012-30" data-seg-id="dc15fe4af5c69d89" class="builder-wire" />
+<rect x="20" y="7974" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GDU_116NC_-_PFD__Nav_Com-J1012-30" data-seg-id="dc15fe4af5c69d89-c2" class="builder-wire" />
 <path d="M56,7974 L56,7996" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,7974 L305,7996" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="7989.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">30</text>
 <text x="62" y="7989.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">RS232 2 Out</text>
 <path d="M311,7985.0 L641,7985.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="7982.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="dc15fe4af5c69d89" class="builder-wire">EMR22SH01</text>
+<text x="356" y="7982.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="dc15fe4af5c69d89-c2" class="builder-wire">EMR22SH01</text>
 <rect x="20" y="7918" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GDU_116NC_-_PFD__Nav_Com-J1012-13" data-seg-id="00b37dd6554073ee" class="builder-wire" />
 <path d="M56,7918 L56,7940" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,7918 L305,7940" stroke="#cbd5e1" stroke-width="0.5" />
@@ -2163,48 +2163,48 @@
 <text x="62" y="9101.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Headset 2 (Copilot) Ground</text>
 <path d="M311,9097.0 L641,9097.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
 <text x="356" y="9094.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="ee8b7b6a371f7652" class="builder-wire">AUD22SH06</text>
-<rect x="20" y="9142" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GDU_116NC_-_PFD__Nav_Com-J1015-6" data-seg-id="e535bca3fd5c3310" class="builder-wire" />
+<rect x="20" y="9142" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GDU_116NC_-_PFD__Nav_Com-J1015-6" data-seg-id="e535bca3fd5c3310-c1" class="builder-wire" />
 <path d="M56,9142 L56,9164" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,9142 L305,9164" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="9157.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
 <text x="62" y="9157.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Mic 1 In</text>
 <path d="M311,9153.0 L641,9153.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="356" y="9150.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="e535bca3fd5c3310" class="builder-wire">AUD22SH05</text>
-<rect x="20" y="9164" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GDU_116NC_-_PFD__Nav_Com-J1015-23" data-seg-id="e535bca3fd5c3310" class="builder-wire" />
+<text x="356" y="9150.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="e535bca3fd5c3310-c1" class="builder-wire">AUD22SH05</text>
+<rect x="20" y="9164" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GDU_116NC_-_PFD__Nav_Com-J1015-23" data-seg-id="e535bca3fd5c3310-c1" class="builder-wire" />
 <path d="M56,9164 L56,9186" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,9164 L305,9186" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="9179.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">23</text>
 <text x="62" y="9179.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Mic 1 Low</text>
 <path d="M311,9175.0 L641,9175.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="9172.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="e535bca3fd5c3310" class="builder-wire">AUD22SH05</text>
-<rect x="20" y="9262" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GDU_116NC_-_PFD__Nav_Com-J1015-7" data-seg-id="1e8b728deabc1c1c" class="builder-wire" />
+<text x="356" y="9172.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="e535bca3fd5c3310-c1" class="builder-wire">AUD22SH05</text>
+<rect x="20" y="9262" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GDU_116NC_-_PFD__Nav_Com-J1015-7" data-seg-id="1e8b728deabc1c1c-c1" class="builder-wire" />
 <path d="M56,9262 L56,9284" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,9262 L305,9284" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="9277.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">7</text>
 <text x="62" y="9277.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Mic 2 In</text>
 <path d="M311,9273.0 L641,9273.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="356" y="9270.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="1e8b728deabc1c1c" class="builder-wire">AUD22SH07</text>
-<rect x="20" y="9284" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GDU_116NC_-_PFD__Nav_Com-J1015-24" data-seg-id="1e8b728deabc1c1c" class="builder-wire" />
+<text x="356" y="9270.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="1e8b728deabc1c1c-c1" class="builder-wire">AUD22SH07</text>
+<rect x="20" y="9284" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GDU_116NC_-_PFD__Nav_Com-J1015-24" data-seg-id="1e8b728deabc1c1c-c1" class="builder-wire" />
 <path d="M56,9284 L56,9306" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,9284 L305,9306" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="9299.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">24</text>
 <text x="62" y="9299.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Mic 2 Low</text>
 <path d="M311,9295.0 L641,9295.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="9292.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="1e8b728deabc1c1c" class="builder-wire">AUD22SH07</text>
-<rect x="20" y="9206" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GDU_116NC_-_PFD__Nav_Com-J1015-40" data-seg-id="e535bca3fd5c3310" class="builder-wire" />
+<text x="356" y="9292.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="1e8b728deabc1c1c-c1" class="builder-wire">AUD22SH07</text>
+<rect x="20" y="9206" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GDU_116NC_-_PFD__Nav_Com-J1015-40" data-seg-id="e535bca3fd5c3310-c2" class="builder-wire" />
 <path d="M56,9206 L56,9228" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,9206 L305,9228" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="9221.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">40</text>
 <text x="62" y="9221.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Mic 1 PTT (Pilot, Audio Panel)/Com PTT</text>
 <path d="M311,9217.0 L641,9217.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="9214.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="e535bca3fd5c3310" class="builder-wire">AUD22SH05</text>
-<rect x="20" y="9326" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GDU_116NC_-_PFD__Nav_Com-J1015-41" data-seg-id="1e8b728deabc1c1c" class="builder-wire" />
+<text x="356" y="9214.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="e535bca3fd5c3310-c2" class="builder-wire">AUD22SH05</text>
+<rect x="20" y="9326" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GDU_116NC_-_PFD__Nav_Com-J1015-41" data-seg-id="1e8b728deabc1c1c-c2" class="builder-wire" />
 <path d="M56,9326 L56,9348" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,9326 L305,9348" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="9341.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">41</text>
 <text x="62" y="9341.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Mic 2 PTT (Copilot)</text>
 <path d="M311,9337.0 L641,9337.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="9334.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="1e8b728deabc1c1c" class="builder-wire">AUD22SH07</text>
+<text x="356" y="9334.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="1e8b728deabc1c1c-c2" class="builder-wire">AUD22SH07</text>
 <rect x="20" y="9492" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GDU_116NC_-_PFD__Nav_Com-J1015-45" data-seg-id="be7bfa61b23fe68b" class="builder-wire" />
 <path d="M56,9492 L56,9514" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,9492 L305,9514" stroke="#cbd5e1" stroke-width="0.5" />
@@ -2890,21 +2890,21 @@
 <text x="62" y="12565.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Discrete Out 2, Master Caution</text>
 <path d="M311,12561.0 L641,12561.0" stroke="#9ca3af" stroke-width="1.5" />
 <text x="315" y="12558.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="7391722a737c30b0" class="builder-wire">EIS22W27</text>
-<rect x="20" y="11998" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GEA24_-_Engine_Indication-J244-6" data-seg-id="2579e29036d6a863-a" class="builder-wire" />
+<rect x="20" y="11998" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GEA24_-_Engine_Indication-J244-6" data-seg-id="2579e29036d6a863" class="builder-wire" />
 <path d="M56,11998 L56,12020" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,11998 L305,12020" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="12013.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
 <text x="62" y="12013.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Fuel Quantity 1</text>
 <path d="M311,12009.0 L641,12009.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="12006.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="2579e29036d6a863-a" class="builder-wire">EIS22SH17A / — | —</text>
+<text x="356" y="12006.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="2579e29036d6a863" class="builder-wire">EIS22SH17A / — | —</text>
 <text x="527.6" y="12006.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Left Wing Root:9</text>
-<rect x="20" y="12046" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GEA24_-_Engine_Indication-J244-9" data-seg-id="74336276b63ca13c-a" class="builder-wire" />
+<rect x="20" y="12046" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GEA24_-_Engine_Indication-J244-9" data-seg-id="74336276b63ca13c" class="builder-wire" />
 <path d="M56,12046 L56,12068" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,12046 L305,12068" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="12061.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">9</text>
 <text x="62" y="12061.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Fuel Quantity 2</text>
 <path d="M311,12057.0 L641,12057.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="12054.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="74336276b63ca13c-a" class="builder-wire">EIS22SH18A / — | —</text>
+<text x="356" y="12054.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="74336276b63ca13c" class="builder-wire">EIS22SH18A / — | —</text>
 <text x="511.4" y="12054.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Right Wing Root B:8</text>
 <rect x="20" y="12194" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GEA24_-_Engine_Indication-J244-18" data-seg-id="672975bfd68986b2" class="builder-wire" />
 <path d="M56,12194 L56,12216" stroke="#cbd5e1" stroke-width="0.5" />
@@ -2927,29 +2927,29 @@
 <text x="62" y="12253.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">GP1 Ground</text>
 <path d="M311,12249.0 L641,12249.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
 <text x="356" y="12246.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="672975bfd68986b2" class="builder-wire">FCTL22SH11</text>
-<rect x="20" y="12294" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GEA24_-_Engine_Indication-J244-21" data-seg-id="c85a6c07a26e33e0-a" class="builder-wire" />
+<rect x="20" y="12294" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GEA24_-_Engine_Indication-J244-21" data-seg-id="c85a6c07a26e33e0" class="builder-wire" />
 <path d="M56,12294 L56,12316" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,12294 L305,12316" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="12309.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">21</text>
 <text x="62" y="12309.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">GP2 Positive</text>
 <path d="M311,12305.0 L641,12305.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="356" y="12302.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="c85a6c07a26e33e0-a" class="builder-wire">FCTL22SH10A / — | —</text>
+<text x="356" y="12302.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="c85a6c07a26e33e0" class="builder-wire">FCTL22SH10A / — | —</text>
 <text x="452.0" y="12302.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Right Wing Root B:2 (Shield 5)</text>
-<rect x="20" y="12316" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GEA24_-_Engine_Indication-J244-22" data-seg-id="c85a6c07a26e33e0-a" class="builder-wire" />
+<rect x="20" y="12316" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GEA24_-_Engine_Indication-J244-22" data-seg-id="c85a6c07a26e33e0" class="builder-wire" />
 <path d="M56,12316 L56,12338" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,12316 L305,12338" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="12331.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">22</text>
 <text x="62" y="12331.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">GP2</text>
 <path d="M311,12327.0 L641,12327.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="12324.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="c85a6c07a26e33e0-a" class="builder-wire">FCTL22SH10A / — | —</text>
+<text x="356" y="12324.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="c85a6c07a26e33e0" class="builder-wire">FCTL22SH10A / — | —</text>
 <text x="511.4" y="12324.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Right Wing Root B:3</text>
-<rect x="20" y="12338" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GEA24_-_Engine_Indication-J244-23" data-seg-id="c85a6c07a26e33e0-a" class="builder-wire" />
+<rect x="20" y="12338" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GEA24_-_Engine_Indication-J244-23" data-seg-id="c85a6c07a26e33e0" class="builder-wire" />
 <path d="M56,12338 L56,12360" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,12338 L305,12360" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="12353.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">23</text>
 <text x="62" y="12353.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">GP2 Ground</text>
 <path d="M311,12349.0 L641,12349.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="12346.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="c85a6c07a26e33e0-a" class="builder-wire">FCTL22SH10A / — | —</text>
+<text x="356" y="12346.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="c85a6c07a26e33e0" class="builder-wire">FCTL22SH10A / — | —</text>
 <text x="511.4" y="12346.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Right Wing Root B:4</text>
 <rect x="20" y="12094" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-GEA24_-_Engine_Indication-J244-11" data-seg-id="dfdb303af431a9e8" class="builder-wire" />
 <path d="M56,12094 L56,12116" stroke="#cbd5e1" stroke-width="0.5" />
@@ -2984,35 +2984,35 @@
 <text x="38.0" y="12641" font-size="10" text-anchor="middle" fill="#1e3a5f" font-family="ui-monospace, monospace">#</text>
 <text x="62" y="12641" font-size="10" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">DIN</text>
 </g>
-<rect x="20" y="12648" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-ACK_E-04_ELT-DIN-1" data-seg-id="dc15fe4af5c69d89" class="builder-wire" />
+<rect x="20" y="12648" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-ACK_E-04_ELT-DIN-1" data-seg-id="dc15fe4af5c69d89-c1" class="builder-wire" />
 <path d="M56,12648 L56,12670" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,12648 L305,12670" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="12663.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">1</text>
 <text x="62" y="12663.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Remote Switch</text>
 <path d="M311,12659.0 L686.0,12659.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="356" y="12656.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="dc15fe4af5c69d89" class="builder-wire">EMR22SH01</text>
+<text x="356" y="12656.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="dc15fe4af5c69d89-c1" class="builder-wire">EMR22SH01</text>
 <rect x="689.0" y="12654.0" width="18" height="10" rx="2" fill="#fef9c3" stroke="#a16207" stroke-width="1.5" />
 <path d="M693.0,12659.0 L703.0,12659.0" stroke="#a16207" stroke-width="1.5" />
 <text x="710.0" y="12663.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">SingleFeedBlock · elt 1A</text>
-<rect x="20" y="12670" width="893" height="34" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-ACK_E-04_ELT-DIN-3" data-seg-id="dc15fe4af5c69d89" class="builder-wire" />
+<rect x="20" y="12670" width="893" height="34" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-ACK_E-04_ELT-DIN-3" data-seg-id="dc15fe4af5c69d89-c1" class="builder-wire" />
 <path d="M56,12670 L56,12704" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,12670 L305,12704" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="12691.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">3</text>
 <text x="62" y="12691.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Ground</text>
 <path d="M311,12687.0 L698.0,12687.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="12684.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="dc15fe4af5c69d89" class="builder-wire">EMR22SH01</text>
+<text x="356" y="12684.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="dc15fe4af5c69d89-c1" class="builder-wire">EMR22SH01</text>
 <path d="M698.0,12687.0 L698.0,12691.0" stroke="#111111" stroke-width="1.5" />
 <path d="M692.0,12691.0 L704.0,12691.0" stroke="#111111" stroke-width="1.5" />
 <path d="M694.0,12695.0 L702.0,12695.0" stroke="#111111" stroke-width="1.5" />
 <path d="M696.0,12699.0 L700.0,12699.0" stroke="#111111" stroke-width="1.5" />
 <text x="710.0" y="12691.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">GND</text>
-<rect x="20" y="12724" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-ACK_E-04_ELT-DIN-4" data-seg-id="dc15fe4af5c69d89" class="builder-wire" />
+<rect x="20" y="12724" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-ACK_E-04_ELT-DIN-4" data-seg-id="dc15fe4af5c69d89-c2" class="builder-wire" />
 <path d="M56,12724 L56,12746" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,12724 L305,12746" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="12739.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">4</text>
 <text x="62" y="12739.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Elt RX</text>
 <path d="M311,12735.0 L641,12735.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="12732.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="dc15fe4af5c69d89" class="builder-wire">EMR22SH01</text>
+<text x="356" y="12732.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="dc15fe4af5c69d89-c2" class="builder-wire">EMR22SH01</text>
 <rect x="20" y="12598" width="893" height="170" rx="6" fill="none" stroke="#334155" stroke-width="2" />
 <rect x="20" y="12782" width="893" height="422" rx="6" fill="#f8fafc" stroke="none" />
 <g id="sh-comp-12782">
@@ -3038,21 +3038,21 @@
 <text x="38.0" y="12939.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
 <text x="62" y="12939.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Left Shield (Position -ve)</text>
 <path d="M311,12935.0 L345,12935.0" stroke="#475569" stroke-width="1.5" />
-<rect x="20" y="12858" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-3" data-seg-id="35a6605732372faf-a" class="builder-wire" />
+<rect x="20" y="12858" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-3" data-seg-id="35a6605732372faf" class="builder-wire" />
 <path d="M56,12858 L56,12880" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,12858 L305,12880" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="12873.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">3</text>
 <text x="62" y="12873.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Left Strobe -ve</text>
 <path d="M311,12869.0 L641,12869.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="356" y="12866.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="35a6605732372faf-a" class="builder-wire">LGHT22SH01A / — | —</text>
+<text x="356" y="12866.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="35a6605732372faf" class="builder-wire">LGHT22SH01A / — | —</text>
 <text x="462.79999999999995" y="12866.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Left Wing Root:2 (Shield 10)</text>
-<rect x="20" y="12902" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-4" data-seg-id="35a6605732372faf-a" class="builder-wire" />
+<rect x="20" y="12902" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-4" data-seg-id="35a6605732372faf" class="builder-wire" />
 <path d="M56,12902 L56,12924" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,12902 L305,12924" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="12917.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">4</text>
 <text x="62" y="12917.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Left Position +ve</text>
 <path d="M311,12913.0 L641,12913.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="12910.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="35a6605732372faf-a" class="builder-wire">LGHT22SH01A / — | —</text>
+<text x="356" y="12910.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="35a6605732372faf" class="builder-wire">LGHT22SH01A / — | —</text>
 <text x="527.6" y="12910.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Left Wing Root:1</text>
 <rect x="20" y="12960" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-5" data-seg-id="96a6e43284c7ad09" class="builder-wire" />
 <path d="M56,12960 L56,12982" stroke="#cbd5e1" stroke-width="0.5" />
@@ -3061,13 +3061,13 @@
 <text x="62" y="12975.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Position 12V In</text>
 <path d="M311,12971.0 L641,12971.0" stroke="#9ca3af" stroke-width="1.5" />
 <text x="315" y="12968.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="96a6e43284c7ad09" class="builder-wire">LGHT22W29</text>
-<rect x="20" y="13030" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-6" data-seg-id="f1c0cab984c839df-a" class="builder-wire" />
+<rect x="20" y="13030" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-6" data-seg-id="f1c0cab984c839df" class="builder-wire" />
 <path d="M56,13030 L56,13052" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,13030 L305,13052" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="13045.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
 <text x="62" y="13045.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Right Strobe -ve</text>
 <path d="M311,13041.0 L641,13041.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="356" y="13038.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="f1c0cab984c839df-a" class="builder-wire">LGHT22SH02A / — | —</text>
+<text x="356" y="13038.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="f1c0cab984c839df" class="builder-wire">LGHT22SH02A / — | —</text>
 <text x="446.6" y="13038.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Right Wing Root A:9 (Shield 12)</text>
 <rect x="20" y="13176" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-7" />
 <path d="M56,13176 L56,13198" stroke="#cbd5e1" stroke-width="0.5" />
@@ -3089,29 +3089,29 @@
 <text x="62" y="12997.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Strobe 12V In</text>
 <path d="M311,12993.0 L641,12993.0" stroke="#9ca3af" stroke-width="1.5" />
 <text x="315" y="12990.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="a15e70736fc85975" class="builder-wire">LGHT22W30</text>
-<rect x="20" y="12880" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-11" data-seg-id="35a6605732372faf-a" class="builder-wire" />
+<rect x="20" y="12880" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-11" data-seg-id="35a6605732372faf" class="builder-wire" />
 <path d="M56,12880 L56,12902" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,12880 L305,12902" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="12895.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">11</text>
 <text x="62" y="12895.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Left Strobe +ve</text>
 <path d="M311,12891.0 L641,12891.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="12888.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="35a6605732372faf-a" class="builder-wire">LGHT22SH01A / — | —</text>
+<text x="356" y="12888.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="35a6605732372faf" class="builder-wire">LGHT22SH01A / — | —</text>
 <text x="527.6" y="12888.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Left Wing Root:3</text>
-<rect x="20" y="13052" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-12" data-seg-id="f1c0cab984c839df-a" class="builder-wire" />
+<rect x="20" y="13052" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-12" data-seg-id="f1c0cab984c839df" class="builder-wire" />
 <path d="M56,13052 L56,13074" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,13052 L305,13074" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="13067.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">12</text>
 <text x="62" y="13067.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Right Strobe +ve</text>
 <path d="M311,13063.0 L641,13063.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="13060.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="f1c0cab984c839df-a" class="builder-wire">LGHT22SH02A / — | —</text>
+<text x="356" y="13060.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="f1c0cab984c839df" class="builder-wire">LGHT22SH02A / — | —</text>
 <text x="506.0" y="13060.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Right Wing Root A:10</text>
-<rect x="20" y="13074" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-13" data-seg-id="f1c0cab984c839df-a" class="builder-wire" />
+<rect x="20" y="13074" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-13" data-seg-id="f1c0cab984c839df" class="builder-wire" />
 <path d="M56,13074 L56,13096" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,13074 L305,13096" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="13089.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">13</text>
 <text x="62" y="13089.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Right Position +ve</text>
 <path d="M311,13085.0 L641,13085.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="13082.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="f1c0cab984c839df-a" class="builder-wire">LGHT22SH02A / — | —</text>
+<text x="356" y="13082.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="f1c0cab984c839df" class="builder-wire">LGHT22SH02A / — | —</text>
 <text x="511.4" y="13082.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Right Wing Root A:8</text>
 <rect x="20" y="13096" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-FlyLeds_Essentials_Controller-14" />
 <path d="M56,13096 L56,13118" stroke="#cbd5e1" stroke-width="0.5" />
@@ -3174,29 +3174,29 @@
 <text x="38.0" y="13505.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">P-</text>
 <text x="62" y="13505.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Position Neg</text>
 <path d="M311,13501.0 L345,13501.0" stroke="#475569" stroke-width="1.5" />
-<rect x="20" y="13468" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Left_Position___Strobe-P_" data-seg-id="35a6605732372faf-b" class="builder-wire" />
+<rect x="20" y="13468" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Left_Position___Strobe-P_" data-seg-id="35a6605732372faf" class="builder-wire" />
 <path d="M56,13468 L56,13490" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,13468 L305,13490" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="13483.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">P+</text>
 <text x="62" y="13483.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Position Pos</text>
 <path d="M311,13479.0 L641,13479.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="13476.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="35a6605732372faf-b" class="builder-wire">LGHT22SH01B / — | —</text>
+<text x="356" y="13476.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="35a6605732372faf" class="builder-wire">LGHT22SH01B / — | —</text>
 <text x="527.6" y="13476.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Left Wing Root:1</text>
-<rect x="20" y="13446" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Left_Position___Strobe-S_" data-seg-id="35a6605732372faf-b" class="builder-wire" />
+<rect x="20" y="13446" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Left_Position___Strobe-S_" data-seg-id="35a6605732372faf" class="builder-wire" />
 <path d="M56,13446 L56,13468" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,13446 L305,13468" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="13461.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S+</text>
 <text x="62" y="13461.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Pos</text>
 <path d="M311,13457.0 L641,13457.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="13454.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="35a6605732372faf-b" class="builder-wire">LGHT22SH01B / — | —</text>
+<text x="356" y="13454.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="35a6605732372faf" class="builder-wire">LGHT22SH01B / — | —</text>
 <text x="527.6" y="13454.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Left Wing Root:3</text>
-<rect x="20" y="13424" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Left_Position___Strobe-S-" data-seg-id="35a6605732372faf-b" class="builder-wire" />
+<rect x="20" y="13424" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Left_Position___Strobe-S-" data-seg-id="35a6605732372faf" class="builder-wire" />
 <path d="M56,13424 L56,13446" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,13424 L305,13446" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="13439.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S-</text>
 <text x="62" y="13439.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Neg</text>
 <path d="M311,13435.0 L641,13435.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="356" y="13432.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="35a6605732372faf-b" class="builder-wire">LGHT22SH01B / — | —</text>
+<text x="356" y="13432.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="35a6605732372faf" class="builder-wire">LGHT22SH01B / — | —</text>
 <text x="462.79999999999995" y="13432.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Left Wing Root:2 (Shield 10)</text>
 <rect x="20" y="13384" width="893" height="134" rx="6" fill="none" stroke="#334155" stroke-width="2" />
 <rect x="20" y="13532" width="893" height="152" rx="6" fill="#f8fafc" stroke="none" />
@@ -3246,29 +3246,29 @@
 <text x="38.0" y="13819.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">P-</text>
 <text x="62" y="13819.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Position Neg</text>
 <path d="M311,13815.0 L345,13815.0" stroke="#475569" stroke-width="1.5" />
-<rect x="20" y="13782" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Right_Position___Strobe-P_" data-seg-id="f1c0cab984c839df-b" class="builder-wire" />
+<rect x="20" y="13782" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Right_Position___Strobe-P_" data-seg-id="f1c0cab984c839df" class="builder-wire" />
 <path d="M56,13782 L56,13804" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,13782 L305,13804" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="13797.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">P+</text>
 <text x="62" y="13797.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Position Pos</text>
 <path d="M311,13793.0 L641,13793.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="13790.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="f1c0cab984c839df-b" class="builder-wire">LGHT22SH02B / — | —</text>
+<text x="356" y="13790.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="f1c0cab984c839df" class="builder-wire">LGHT22SH02B / — | —</text>
 <text x="511.4" y="13790.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Right Wing Root A:8</text>
-<rect x="20" y="13760" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Right_Position___Strobe-S_" data-seg-id="f1c0cab984c839df-b" class="builder-wire" />
+<rect x="20" y="13760" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Right_Position___Strobe-S_" data-seg-id="f1c0cab984c839df" class="builder-wire" />
 <path d="M56,13760 L56,13782" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,13760 L305,13782" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="13775.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S+</text>
 <text x="62" y="13775.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Pos</text>
 <path d="M311,13771.0 L641,13771.0" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="13768.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="f1c0cab984c839df-b" class="builder-wire">LGHT22SH02B / — | —</text>
+<text x="356" y="13768.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="f1c0cab984c839df" class="builder-wire">LGHT22SH02B / — | —</text>
 <text x="506.0" y="13768.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Right Wing Root A:10</text>
-<rect x="20" y="13738" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Right_Position___Strobe-S-" data-seg-id="f1c0cab984c839df-b" class="builder-wire" />
+<rect x="20" y="13738" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Right_Position___Strobe-S-" data-seg-id="f1c0cab984c839df" class="builder-wire" />
 <path d="M56,13738 L56,13760" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,13738 L305,13760" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="13753.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S-</text>
 <text x="62" y="13753.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Neg</text>
 <path d="M311,13749.0 L641,13749.0" stroke="#9ca3af" stroke-width="1.5" />
-<text x="356" y="13746.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="f1c0cab984c839df-b" class="builder-wire">LGHT22SH02B / — | —</text>
+<text x="356" y="13746.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="f1c0cab984c839df" class="builder-wire">LGHT22SH02B / — | —</text>
 <text x="446.6" y="13746.0" font-size="8" fill="#7c3aed" font-weight="bold" font-family="ui-monospace, monospace">Right Wing Root A:9 (Shield 12)</text>
 <rect x="20" y="13698" width="893" height="134" rx="6" fill="none" stroke="#334155" stroke-width="2" />
 <rect x="20" y="13846" width="893" height="128" rx="6" fill="#f8fafc" stroke="none" />
@@ -3319,13 +3319,13 @@
 <path d="M327,14073.0 L641,14073.0" stroke="#9ca3af" stroke-width="1.5" />
 <text x="331" y="14070.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="ca9e9b9570d56b83" class="builder-wire">AP22W15</text>
 <path d="M327,14039.0 L327,14073.0" stroke="#9ca3af" stroke-width="1.5" />
-<rect x="20" y="14110" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-2" data-seg-id="1e8b728deabc1c1c" class="builder-wire" />
+<rect x="20" y="14110" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-2" data-seg-id="1e8b728deabc1c1c-c2" class="builder-wire" />
 <path d="M56,14110 L56,14132" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,14110 L305,14132" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="14125.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
 <text x="62" y="14125.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Push to Talk</text>
 <path d="M311,14121.0 L641,14121.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="14118.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="1e8b728deabc1c1c" class="builder-wire">AUD22SH07</text>
+<text x="356" y="14118.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="1e8b728deabc1c1c-c2" class="builder-wire">AUD22SH07</text>
 <rect x="20" y="14154" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Copilot_Stick-3" data-seg-id="8fd2c69cb3aa02a0" class="builder-wire" />
 <path d="M56,14154 L56,14176" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,14154 L305,14176" stroke="#cbd5e1" stroke-width="0.5" />
@@ -3389,13 +3389,13 @@
 <text x="62" y="14409.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">AP Disconnect</text>
 <path d="M311,14405.0 L641,14405.0" stroke="#9ca3af" stroke-width="1.5" />
 <text x="315" y="14402.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="ca9e9b9570d56b83" class="builder-wire">AP22W15</text>
-<rect x="20" y="14442" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-2" data-seg-id="e535bca3fd5c3310" class="builder-wire" />
+<rect x="20" y="14442" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-2" data-seg-id="e535bca3fd5c3310-c2" class="builder-wire" />
 <path d="M56,14442 L56,14464" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,14442 L305,14464" stroke="#cbd5e1" stroke-width="0.5" />
 <text x="38.0" y="14457.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
 <text x="62" y="14457.0" font-size="10" fill="#1e293b" font-family="ui-monospace, monospace">Push to Talk</text>
 <path d="M311,14453.0 L641,14453.0" stroke="#f97316" stroke-width="1.5" stroke-dasharray="5,3" />
-<text x="356" y="14450.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="e535bca3fd5c3310" class="builder-wire">AUD22SH05</text>
+<text x="356" y="14450.0" font-size="7" fill="#94a3b8" font-family="ui-monospace, monospace" data-seg-id="e535bca3fd5c3310-c2" class="builder-wire">AUD22SH05</text>
 <rect x="20" y="14486" width="893" height="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" id="pr-Pilot_Stick-3" data-seg-id="1c0d6789e46da87c" class="builder-wire" />
 <path d="M56,14486 L56,14508" stroke="#cbd5e1" stroke-width="0.5" />
 <path d="M305,14486 L305,14508" stroke="#cbd5e1" stroke-width="0.5" />
@@ -3871,19 +3871,19 @@
 <text x="658.0" y="363.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">WHT</text>
 <text x="676" y="363.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">OAT Probe Power</text>
 <a href="#pr-GTP_59_-_OAT_Probe-WHT" target="_self" class="pin-link">
-<rect x="645" y="348" width="248" height="22" fill="none" data-seg-id="8bf142ca71841abf-a" class="builder-wire" pointer-events="all" />
+<rect x="645" y="348" width="248" height="22" fill="none" data-seg-id="8bf142ca71841abf" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,370 L893,370" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="385.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">BLU</text>
 <text x="676" y="385.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">OAT Probe Sense</text>
 <a href="#pr-GTP_59_-_OAT_Probe-BLU" target="_self" class="pin-link">
-<rect x="645" y="370" width="248" height="22" fill="none" data-seg-id="8bf142ca71841abf-a" class="builder-wire" pointer-events="all" />
+<rect x="645" y="370" width="248" height="22" fill="none" data-seg-id="8bf142ca71841abf" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,392 L893,392" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="407.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">ORN</text>
 <text x="676" y="407.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">OAT Probe Low</text>
 <a href="#pr-GTP_59_-_OAT_Probe-ORN" target="_self" class="pin-link">
-<rect x="645" y="392" width="248" height="22" fill="none" data-seg-id="8bf142ca71841abf-a" class="builder-wire" pointer-events="all" />
+<rect x="645" y="392" width="248" height="22" fill="none" data-seg-id="8bf142ca71841abf" class="builder-wire" pointer-events="all" />
 </a>
 <text x="649" y="445" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GTX 45R - Transponder · P3251</text>
 <rect x="645" y="448" width="248" height="66" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
@@ -3911,19 +3911,19 @@
 <text x="658.0" y="605.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">1</text>
 <text x="676" y="605.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">OAT Probe Power</text>
 <a href="#pr-GSU_25_-_Air_Data-J252-1" target="_self" class="pin-link">
-<rect x="645" y="590" width="248" height="22" fill="none" data-seg-id="8bf142ca71841abf-b" class="builder-wire" pointer-events="all" />
+<rect x="645" y="590" width="248" height="22" fill="none" data-seg-id="8bf142ca71841abf" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,612 L893,612" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="627.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
 <text x="676" y="627.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">OAT Probe High</text>
 <a href="#pr-GSU_25_-_Air_Data-J252-2" target="_self" class="pin-link">
-<rect x="645" y="612" width="248" height="22" fill="none" data-seg-id="8bf142ca71841abf-b" class="builder-wire" pointer-events="all" />
+<rect x="645" y="612" width="248" height="22" fill="none" data-seg-id="8bf142ca71841abf" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,634 L893,634" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="649.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">3</text>
 <text x="676" y="649.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">OAT Probe Low</text>
 <a href="#pr-GSU_25_-_Air_Data-J252-3" target="_self" class="pin-link">
-<rect x="645" y="634" width="248" height="22" fill="none" data-seg-id="8bf142ca71841abf-b" class="builder-wire" pointer-events="all" />
+<rect x="645" y="634" width="248" height="22" fill="none" data-seg-id="8bf142ca71841abf" class="builder-wire" pointer-events="all" />
 </a>
 <text x="649" y="1137" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GAD 27 - Flap &amp; Light Controller · J272</text>
 <rect x="645" y="1140" width="248" height="44" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
@@ -4137,13 +4137,13 @@
 <text x="658.0" y="3249.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
 <text x="676" y="3249.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Mic 1 In</text>
 <a href="#pr-GDU_116NC_-_PFD__Nav_Com-J1015-6" target="_self" class="pin-link">
-<rect x="645" y="3234" width="248" height="22" fill="none" data-seg-id="e535bca3fd5c3310" class="builder-wire" pointer-events="all" />
+<rect x="645" y="3234" width="248" height="22" fill="none" data-seg-id="e535bca3fd5c3310-c1" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,3256 L893,3256" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="3271.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">23</text>
 <text x="676" y="3271.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Mic 1 Low</text>
 <a href="#pr-GDU_116NC_-_PFD__Nav_Com-J1015-23" target="_self" class="pin-link">
-<rect x="645" y="3256" width="248" height="22" fill="none" data-seg-id="e535bca3fd5c3310" class="builder-wire" pointer-events="all" />
+<rect x="645" y="3256" width="248" height="22" fill="none" data-seg-id="e535bca3fd5c3310-c1" class="builder-wire" pointer-events="all" />
 </a>
 <text x="649" y="3351" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GDU 116NC - PFD, Nav/Com · J1015</text>
 <rect x="645" y="3354" width="248" height="132" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
@@ -4169,13 +4169,13 @@
 <text x="658.0" y="3457.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">7</text>
 <text x="676" y="3457.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Mic 2 In</text>
 <a href="#pr-GDU_116NC_-_PFD__Nav_Com-J1015-7" target="_self" class="pin-link">
-<rect x="645" y="3442" width="248" height="22" fill="none" data-seg-id="1e8b728deabc1c1c" class="builder-wire" pointer-events="all" />
+<rect x="645" y="3442" width="248" height="22" fill="none" data-seg-id="1e8b728deabc1c1c-c1" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,3464 L893,3464" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="3479.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">24</text>
 <text x="676" y="3479.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Mic 2 Low</text>
 <a href="#pr-GDU_116NC_-_PFD__Nav_Com-J1015-24" target="_self" class="pin-link">
-<rect x="645" y="3464" width="248" height="22" fill="none" data-seg-id="1e8b728deabc1c1c" class="builder-wire" pointer-events="all" />
+<rect x="645" y="3464" width="248" height="22" fill="none" data-seg-id="1e8b728deabc1c1c-c1" class="builder-wire" pointer-events="all" />
 </a>
 <text x="649" y="3559" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GDU 116NC - PFD, Nav/Com · J1012</text>
 <rect x="645" y="3562" width="248" height="88" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
@@ -4531,19 +4531,19 @@
 <text x="658.0" y="6263.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">21</text>
 <text x="676" y="6263.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">GP2 Positive</text>
 <a href="#pr-GEA24_-_Engine_Indication-J244-21" target="_self" class="pin-link">
-<rect x="645" y="6248" width="248" height="22" fill="none" data-seg-id="c85a6c07a26e33e0-b" class="builder-wire" pointer-events="all" />
+<rect x="645" y="6248" width="248" height="22" fill="none" data-seg-id="c85a6c07a26e33e0" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,6270 L893,6270" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="6285.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">22</text>
 <text x="676" y="6285.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">GP2</text>
 <a href="#pr-GEA24_-_Engine_Indication-J244-22" target="_self" class="pin-link">
-<rect x="645" y="6270" width="248" height="22" fill="none" data-seg-id="c85a6c07a26e33e0-b" class="builder-wire" pointer-events="all" />
+<rect x="645" y="6270" width="248" height="22" fill="none" data-seg-id="c85a6c07a26e33e0" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,6292 L893,6292" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="6307.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">23</text>
 <text x="676" y="6307.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">GP2 Ground</text>
 <a href="#pr-GEA24_-_Engine_Indication-J244-23" target="_self" class="pin-link">
-<rect x="645" y="6292" width="248" height="22" fill="none" data-seg-id="c85a6c07a26e33e0-b" class="builder-wire" pointer-events="all" />
+<rect x="645" y="6292" width="248" height="22" fill="none" data-seg-id="c85a6c07a26e33e0" class="builder-wire" pointer-events="all" />
 </a>
 <text x="649" y="6345" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GSA 28 - Roll Servo · J281</text>
 <rect x="645" y="6348" width="248" height="44" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
@@ -4738,7 +4738,7 @@
 <text x="658.0" y="7989.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">4</text>
 <text x="676" y="7989.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Elt RX</text>
 <a href="#pr-ACK_E-04_ELT-DIN-4" target="_self" class="pin-link">
-<rect x="645" y="7974" width="248" height="22" fill="none" data-seg-id="dc15fe4af5c69d89" class="builder-wire" pointer-events="all" />
+<rect x="645" y="7974" width="248" height="22" fill="none" data-seg-id="dc15fe4af5c69d89-c2" class="builder-wire" pointer-events="all" />
 </a>
 <text x="649" y="8027" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GDU 116NC Config</text>
 <rect x="645" y="8030" width="248" height="88" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
@@ -4900,13 +4900,13 @@
 <text x="658.0" y="9157.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">5</text>
 <text x="676" y="9157.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Mic High</text>
 <a href="#pr-Pilot_Lemo-5" target="_self" class="pin-link">
-<rect x="645" y="9142" width="248" height="22" fill="none" data-seg-id="e535bca3fd5c3310" class="builder-wire" pointer-events="all" />
+<rect x="645" y="9142" width="248" height="22" fill="none" data-seg-id="e535bca3fd5c3310-c1" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,9164 L893,9164" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="9179.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
 <text x="676" y="9179.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Mic Low</text>
 <a href="#pr-Pilot_Lemo-6" target="_self" class="pin-link">
-<rect x="645" y="9164" width="248" height="22" fill="none" data-seg-id="e535bca3fd5c3310" class="builder-wire" pointer-events="all" />
+<rect x="645" y="9164" width="248" height="22" fill="none" data-seg-id="e535bca3fd5c3310-c1" class="builder-wire" pointer-events="all" />
 </a>
 <text x="649" y="9203" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Pilot Stick</text>
 <rect x="645" y="9206" width="248" height="22" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
@@ -4914,7 +4914,7 @@
 <text x="658.0" y="9221.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
 <text x="676" y="9221.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Push to Talk</text>
 <a href="#pr-Pilot_Stick-2" target="_self" class="pin-link">
-<rect x="645" y="9206" width="248" height="22" fill="none" data-seg-id="e535bca3fd5c3310" class="builder-wire" pointer-events="all" />
+<rect x="645" y="9206" width="248" height="22" fill="none" data-seg-id="e535bca3fd5c3310-c2" class="builder-wire" pointer-events="all" />
 </a>
 <text x="649" y="9259" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Copilot Lemo</text>
 <rect x="645" y="9262" width="248" height="44" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
@@ -4922,13 +4922,13 @@
 <text x="658.0" y="9277.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">5</text>
 <text x="676" y="9277.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Mic High</text>
 <a href="#pr-Copilot_Lemo-5" target="_self" class="pin-link">
-<rect x="645" y="9262" width="248" height="22" fill="none" data-seg-id="1e8b728deabc1c1c" class="builder-wire" pointer-events="all" />
+<rect x="645" y="9262" width="248" height="22" fill="none" data-seg-id="1e8b728deabc1c1c-c1" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,9284 L893,9284" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="9299.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
 <text x="676" y="9299.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Mic Low</text>
 <a href="#pr-Copilot_Lemo-6" target="_self" class="pin-link">
-<rect x="645" y="9284" width="248" height="22" fill="none" data-seg-id="1e8b728deabc1c1c" class="builder-wire" pointer-events="all" />
+<rect x="645" y="9284" width="248" height="22" fill="none" data-seg-id="1e8b728deabc1c1c-c1" class="builder-wire" pointer-events="all" />
 </a>
 <text x="649" y="9323" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Copilot Stick</text>
 <rect x="645" y="9326" width="248" height="22" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
@@ -4936,7 +4936,7 @@
 <text x="658.0" y="9341.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
 <text x="676" y="9341.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Push to Talk</text>
 <a href="#pr-Copilot_Stick-2" target="_self" class="pin-link">
-<rect x="645" y="9326" width="248" height="22" fill="none" data-seg-id="1e8b728deabc1c1c" class="builder-wire" pointer-events="all" />
+<rect x="645" y="9326" width="248" height="22" fill="none" data-seg-id="1e8b728deabc1c1c-c2" class="builder-wire" pointer-events="all" />
 </a>
 <text x="649" y="9379" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GTR 205xR - Com Radio</text>
 <rect x="645" y="9382" width="248" height="154" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
@@ -5273,19 +5273,19 @@
 <text x="658.0" y="12309.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">Or</text>
 <text x="676" y="12309.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Position Positive</text>
 <a href="#pr-Roll_Trim-Or" target="_self" class="pin-link">
-<rect x="645" y="12294" width="248" height="22" fill="none" data-seg-id="c85a6c07a26e33e0-a" class="builder-wire" pointer-events="all" />
+<rect x="645" y="12294" width="248" height="22" fill="none" data-seg-id="c85a6c07a26e33e0" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,12316 L893,12316" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="12331.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">Gr</text>
 <text x="676" y="12331.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Position</text>
 <a href="#pr-Roll_Trim-Gr" target="_self" class="pin-link">
-<rect x="645" y="12316" width="248" height="22" fill="none" data-seg-id="c85a6c07a26e33e0-a" class="builder-wire" pointer-events="all" />
+<rect x="645" y="12316" width="248" height="22" fill="none" data-seg-id="c85a6c07a26e33e0" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,12338 L893,12338" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="12353.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">Bl</text>
 <text x="676" y="12353.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Position Ground</text>
 <a href="#pr-Roll_Trim-Bl" target="_self" class="pin-link">
-<rect x="645" y="12338" width="248" height="22" fill="none" data-seg-id="c85a6c07a26e33e0-a" class="builder-wire" pointer-events="all" />
+<rect x="645" y="12338" width="248" height="22" fill="none" data-seg-id="c85a6c07a26e33e0" class="builder-wire" pointer-events="all" />
 </a>
 <text x="649" y="12451" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GAP 26-20 - Regulated Pitot Heat</text>
 <rect x="645" y="12454" width="248" height="22" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
@@ -5311,7 +5311,7 @@
 <text x="658.0" y="12739.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">30</text>
 <text x="676" y="12739.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">RS232 2 Out</text>
 <a href="#pr-GDU_116NC_-_PFD__Nav_Com-J1012-30" target="_self" class="pin-link">
-<rect x="645" y="12724" width="248" height="22" fill="none" data-seg-id="dc15fe4af5c69d89" class="builder-wire" pointer-events="all" />
+<rect x="645" y="12724" width="248" height="22" fill="none" data-seg-id="dc15fe4af5c69d89-c2" class="builder-wire" pointer-events="all" />
 </a>
 <text x="649" y="12855" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">Left Position &amp; Strobe</text>
 <rect x="645" y="12858" width="248" height="88" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
@@ -5319,19 +5319,19 @@
 <text x="658.0" y="12873.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S-</text>
 <text x="676" y="12873.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Neg</text>
 <a href="#pr-Left_Position___Strobe-S-" target="_self" class="pin-link">
-<rect x="645" y="12858" width="248" height="22" fill="none" data-seg-id="35a6605732372faf-a" class="builder-wire" pointer-events="all" />
+<rect x="645" y="12858" width="248" height="22" fill="none" data-seg-id="35a6605732372faf" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,12880 L893,12880" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="12895.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S+</text>
 <text x="676" y="12895.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Pos</text>
 <a href="#pr-Left_Position___Strobe-S_" target="_self" class="pin-link">
-<rect x="645" y="12880" width="248" height="22" fill="none" data-seg-id="35a6605732372faf-a" class="builder-wire" pointer-events="all" />
+<rect x="645" y="12880" width="248" height="22" fill="none" data-seg-id="35a6605732372faf" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,12902 L893,12902" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="12917.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">P+</text>
 <text x="676" y="12917.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Position Pos</text>
 <a href="#pr-Left_Position___Strobe-P_" target="_self" class="pin-link">
-<rect x="645" y="12902" width="248" height="22" fill="none" data-seg-id="35a6605732372faf-a" class="builder-wire" pointer-events="all" />
+<rect x="645" y="12902" width="248" height="22" fill="none" data-seg-id="35a6605732372faf" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,12924 L893,12924" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="12939.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">P-</text>
@@ -5361,19 +5361,19 @@
 <text x="658.0" y="13045.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S-</text>
 <text x="676" y="13045.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Neg</text>
 <a href="#pr-Right_Position___Strobe-S-" target="_self" class="pin-link">
-<rect x="645" y="13030" width="248" height="22" fill="none" data-seg-id="f1c0cab984c839df-a" class="builder-wire" pointer-events="all" />
+<rect x="645" y="13030" width="248" height="22" fill="none" data-seg-id="f1c0cab984c839df" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,13052 L893,13052" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="13067.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">S+</text>
 <text x="676" y="13067.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Strobe Pos</text>
 <a href="#pr-Right_Position___Strobe-S_" target="_self" class="pin-link">
-<rect x="645" y="13052" width="248" height="22" fill="none" data-seg-id="f1c0cab984c839df-a" class="builder-wire" pointer-events="all" />
+<rect x="645" y="13052" width="248" height="22" fill="none" data-seg-id="f1c0cab984c839df" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,13074 L893,13074" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="13089.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">P+</text>
 <text x="676" y="13089.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Position Pos</text>
 <a href="#pr-Right_Position___Strobe-P_" target="_self" class="pin-link">
-<rect x="645" y="13074" width="248" height="22" fill="none" data-seg-id="f1c0cab984c839df-a" class="builder-wire" pointer-events="all" />
+<rect x="645" y="13074" width="248" height="22" fill="none" data-seg-id="f1c0cab984c839df" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,13096 L893,13096" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="13111.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">P-</text>
@@ -5413,19 +5413,19 @@
 <text x="658.0" y="13439.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">3</text>
 <text x="676" y="13439.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Left Strobe -ve</text>
 <a href="#pr-FlyLeds_Essentials_Controller-3" target="_self" class="pin-link">
-<rect x="645" y="13424" width="248" height="22" fill="none" data-seg-id="35a6605732372faf-b" class="builder-wire" pointer-events="all" />
+<rect x="645" y="13424" width="248" height="22" fill="none" data-seg-id="35a6605732372faf" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,13446 L893,13446" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="13461.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">11</text>
 <text x="676" y="13461.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Left Strobe +ve</text>
 <a href="#pr-FlyLeds_Essentials_Controller-11" target="_self" class="pin-link">
-<rect x="645" y="13446" width="248" height="22" fill="none" data-seg-id="35a6605732372faf-b" class="builder-wire" pointer-events="all" />
+<rect x="645" y="13446" width="248" height="22" fill="none" data-seg-id="35a6605732372faf" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,13468 L893,13468" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="13483.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">4</text>
 <text x="676" y="13483.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Left Position +ve</text>
 <a href="#pr-FlyLeds_Essentials_Controller-4" target="_self" class="pin-link">
-<rect x="645" y="13468" width="248" height="22" fill="none" data-seg-id="35a6605732372faf-b" class="builder-wire" pointer-events="all" />
+<rect x="645" y="13468" width="248" height="22" fill="none" data-seg-id="35a6605732372faf" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,13490 L893,13490" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="13505.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">2</text>
@@ -5457,19 +5457,19 @@
 <text x="658.0" y="13753.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">6</text>
 <text x="676" y="13753.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Right Strobe -ve</text>
 <a href="#pr-FlyLeds_Essentials_Controller-6" target="_self" class="pin-link">
-<rect x="645" y="13738" width="248" height="22" fill="none" data-seg-id="f1c0cab984c839df-b" class="builder-wire" pointer-events="all" />
+<rect x="645" y="13738" width="248" height="22" fill="none" data-seg-id="f1c0cab984c839df" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,13760 L893,13760" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="13775.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">12</text>
 <text x="676" y="13775.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Right Strobe +ve</text>
 <a href="#pr-FlyLeds_Essentials_Controller-12" target="_self" class="pin-link">
-<rect x="645" y="13760" width="248" height="22" fill="none" data-seg-id="f1c0cab984c839df-b" class="builder-wire" pointer-events="all" />
+<rect x="645" y="13760" width="248" height="22" fill="none" data-seg-id="f1c0cab984c839df" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,13782 L893,13782" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="13797.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">13</text>
 <text x="676" y="13797.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Right Position +ve</text>
 <a href="#pr-FlyLeds_Essentials_Controller-13" target="_self" class="pin-link">
-<rect x="645" y="13782" width="248" height="22" fill="none" data-seg-id="f1c0cab984c839df-b" class="builder-wire" pointer-events="all" />
+<rect x="645" y="13782" width="248" height="22" fill="none" data-seg-id="f1c0cab984c839df" class="builder-wire" pointer-events="all" />
 </a>
 <path d="M645,13804 L893,13804" stroke="#bfdbfe" stroke-width="0.5" />
 <text x="658.0" y="13819.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">14</text>
@@ -5521,7 +5521,7 @@
 <text x="658.0" y="14125.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">41</text>
 <text x="676" y="14125.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Mic 2 PTT (Copilot)</text>
 <a href="#pr-GDU_116NC_-_PFD__Nav_Com-J1015-41" target="_self" class="pin-link">
-<rect x="645" y="14110" width="248" height="22" fill="none" data-seg-id="1e8b728deabc1c1c" class="builder-wire" pointer-events="all" />
+<rect x="645" y="14110" width="248" height="22" fill="none" data-seg-id="1e8b728deabc1c1c-c2" class="builder-wire" pointer-events="all" />
 </a>
 <text x="649" y="14151" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GDU 116NC - PFD, Nav/Com · J1013</text>
 <rect x="645" y="14154" width="248" height="44" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
@@ -5583,7 +5583,7 @@
 <text x="658.0" y="14457.0" font-size="10" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace">40</text>
 <text x="676" y="14457.0" font-size="9" fill="#1e293b" font-family="ui-monospace, monospace">Mic 1 PTT (Pilot, Audio Panel)/Com PTT</text>
 <a href="#pr-GDU_116NC_-_PFD__Nav_Com-J1015-40" target="_self" class="pin-link">
-<rect x="645" y="14442" width="248" height="22" fill="none" data-seg-id="e535bca3fd5c3310" class="builder-wire" pointer-events="all" />
+<rect x="645" y="14442" width="248" height="22" fill="none" data-seg-id="e535bca3fd5c3310-c2" class="builder-wire" pointer-events="all" />
 </a>
 <text x="649" y="14483" font-size="8" fill="#1e3a5f" font-weight="bold" font-family="ui-monospace, monospace">GDU 116NC - PFD, Nav/Com · J1013</text>
 <rect x="645" y="14486" width="248" height="44" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />

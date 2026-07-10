@@ -10,7 +10,8 @@ the spec, expects a module-level `harness: Harness`, then renders SVG schematics
 schedules, or validation output.
 
 The package is source-layout under `src/loome`. Public API re-exports live in `src/loome/__init__.py`. User-facing
-documentation is in `README.md`; realistic usage is in `examples/minimal.py` and `examples/n14ev/`; known gaps and
+documentation is in `README.md`; realistic usage is in `examples/minimal.py`, `examples/n14ev_axis/`, and
+`examples/n14ev_g3x/`; known gaps and
 accepted future work are in `BACKLOG.md`. `manuals/` contains local, gitignored reference PDFs when present, useful for
 avionics pinout work but not something to commit.
 
@@ -36,12 +37,11 @@ All CLI commands load specs through `cli.py::_load_harness`:
 1. `exec()` the spec into a fresh namespace.
 2. Retrieve `harness`; exit with an error if missing.
 3. Call `harness.autodetect(namespace)`.
-4. Call `assign_wire_ids(harness, spec_path)`.
+4. Call `assign_wire_ids(harness, spec_path, persist=..., check=...)`.
 
-Important: `assign_wire_ids()` reads and writes `<spec>.wires.yaml` for every CLI command, including `bom`, `fuses`,
-`bundle`, `validate`, and `render`. This is intentional today. When running commands against fixtures or examples,
-inspect sidecar diffs before keeping them. For tests or scratch code that should not mutate a sidecar, call
-`assign_wire_ids(harness, None)` or put temporary specs under a temp directory.
+All CLI commands read an existing `<spec>.wires.yaml` when present, but leave it unchanged by default. Pass
+`--write-wire-ids` to persist generated IDs or `--check-wire-ids` to fail when the generated assignment would change the
+sidecar. For tests or scratch code that should not read or write a sidecar, call `assign_wire_ids(harness, None)`.
 
 `render -o <directory>` creates one SVG per rendered component using sanitized component labels. `render -o <file>`
 creates a whole-harness SVG. Full schematic SVGs get the sticky-header JavaScript injected; per-component SVGs do not.
@@ -224,9 +224,10 @@ tests often use helpers that call `assign_wire_ids(h, None)`.
 `README.md` is the public DSL reference. Update it when adding public APIs, CLI flags, port types, or user-visible
 semantics. Add new top-level exports to `src/loome/__init__.py` and `__all__`.
 
-`examples/minimal.py` mirrors the README quick start. `examples/n14ev/avionics_harness.py` is the best complex spec
-reference for systems, shields, ports, disconnects, fuses, local grounds, and CAN bus ordering. It explicitly passes
-many objects into `Harness(...)` and sets `default_system=None`, so missing `System(...)` coverage surfaces quickly.
+`examples/minimal.py` mirrors the README quick start. The `examples/n14ev_axis/avionics_harness.py` and
+`examples/n14ev_g3x/avionics_harness.py` variants are the best complex spec references for systems, shields, ports,
+disconnects, fuses, local grounds, and CAN bus ordering. They explicitly pass many objects into `Harness(...)` and set
+`default_system=None`, so missing `System(...)` coverage surfaces quickly.
 
 Generated SVGs are ignored by `.gitignore`, except already tracked fixtures/examples. Do not add generated render output
 unless it is an intentional fixture or documentation asset.
@@ -254,7 +255,7 @@ uv run loome render tests/fixtures/schematic_spec.py -o tests/fixtures/schematic
 ```
 
 Regenerate `tests/fixtures/schematic_golden.svg` only for intentional rendering changes, then inspect both the SVG and
-diff. This command can also touch `tests/fixtures/schematic_spec.wires.yaml` through CLI wire-ID persistence.
+diff. Wire-ID sidecars remain unchanged unless `--write-wire-ids` is passed.
 
 ## Coding Guidance
 
@@ -270,7 +271,7 @@ Be careful with side effects:
 - `exec()`ing a spec can run arbitrary user code.
 - `Harness.autodetect()` mutates the harness and freezes bundles.
 - `Harness.segments()` resolves disconnects.
-- CLI loading mutates wire ID sidecars.
+- CLI loading assigns wire IDs in memory and reads an existing sidecar; `--write-wire-ids` explicitly persists it.
 
 For renderer changes, run the smallest relevant layout/renderer tests first, then the golden test. For bundle or length
 changes, include validation tests. For wire IDs or BOM changes, include sidecar and CSV/markdown tests. For public DSL

@@ -22,7 +22,11 @@ from ._internal.endpoints import other_endpoint
 from ._internal.endpoints import pin_label as _pin_label
 from ._internal.endpoints import pin_owner_label as _class_owner_label
 from ._internal.endpoints import terminal_load_kind as _terminal_kind
-from ._internal.shields import segment_touches_single_oval_shield, segments_for_shield
+from ._internal.shields import (
+    bucket_segments_by_component_pair,
+    segment_touches_single_oval_shield,
+    segments_for_shield,
+)
 from ._internal.systems import resolve_system as _resolve_system
 from .disconnects import DisconnectPin
 from .model import (
@@ -273,17 +277,7 @@ def _segments_for_shield(sg: ShieldGroup, all_segments: list[WireSegment]) -> li
 
 def _bucket_by_instance_pair(segments: list[WireSegment]) -> list[list[WireSegment]]:
     """Group segments by (component_a, component_b) so each device-pair is one cable."""
-    buckets: dict[tuple[int, int], list[WireSegment]] = {}
-    order: list[tuple[int, int]] = []
-    for seg in segments:
-        a_comp = seg.end_a._component if isinstance(seg.end_a, Pin) else None
-        b_comp = seg.end_b._component if isinstance(seg.end_b, Pin) else None
-        key = (id(a_comp), id(b_comp))
-        if key not in buckets:
-            buckets[key] = []
-            order.append(key)
-        buckets[key].append(seg)
-    return [buckets[k] for k in order]
+    return bucket_segments_by_component_pair(segments)
 
 
 def _dominant(values: list, mixed: str = "mixed"):

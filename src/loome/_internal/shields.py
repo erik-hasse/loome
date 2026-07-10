@@ -60,6 +60,22 @@ def segments_for_shield(sg: ShieldGroup, all_segments: list[WireSegment]) -> lis
     return [seg for seg in all_segments if segment_source_shield_group(seg) is sg]
 
 
+def bucket_segments_by_component_pair(segments: list[WireSegment]) -> list[list[WireSegment]]:
+    """Group physical cable conductors by their unordered component pair."""
+
+    buckets: dict[tuple[int, int], list[WireSegment]] = {}
+    order: list[tuple[int, int]] = []
+    for seg in segments:
+        a_comp = seg.end_a._component if isinstance(seg.end_a, Pin) else None
+        b_comp = seg.end_b._component if isinstance(seg.end_b, Pin) else None
+        key = tuple(sorted((id(a_comp), id(b_comp))))
+        if key not in buckets:
+            buckets[key] = []
+            order.append(key)
+        buckets[key].append(seg)
+    return [buckets[key] for key in order]
+
+
 def is_single_oval_pin(endpoint: object) -> bool:
     sg = endpoint_shield_group(endpoint)
     return sg is not None and sg.single_oval

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .._internal.shields import bucket_segments_by_component_pair, segments_for_shield
 from ..model import Pin, WireEndpoint, WireSegment
 
 
@@ -26,9 +27,12 @@ def run_key_for_segment(harness, seg: WireSegment, local_pin: WireEndpoint | Non
     run_key = run_key_for_wire_id(harness, can_id or seg.wire_id)
     if run_key is None:
         return None
-    can_side = _can_disconnect_side(local_pin if isinstance(local_pin, Pin) else None)
-    if can_side:
-        return f"{run_key}-{can_side}"
+    if can_id is not None:
+        can_side = _can_disconnect_side(local_pin if isinstance(local_pin, Pin) else None)
+        return f"{run_key}-{can_side}" if can_side else run_key
+    shield_run_key = _shield_bucket_plan(harness)[0].get(id(seg))
+    if shield_run_key is not None:
+        return shield_run_key
     side = _disconnect_side(seg, local_pin)
     return f"{run_key}-{side}" if side else run_key
 
@@ -40,6 +44,7 @@ def builder_entries_for_script(harness) -> list[dict[str, str]]:
     entries: list[dict[str, str]] = []
     by_id = {entry.id: entry for entry in assignment.entries}
     split_ids: set[str] = set()
+    expanded_run_keys = _shield_bucket_plan(harness)[1]
 
     for wire_id in _can_disconnect_wire_ids(harness):
         entry = by_id.get(wire_id)
@@ -53,7 +58,7 @@ def builder_entries_for_script(harness) -> list[dict[str, str]]:
         if seg.disconnect_pin is None or seg.disconnect_pin._can_bus is not None or not seg.wire_id:
             continue
         entry = by_id.get(seg.wire_id)
-        if entry is None:
+        if entry is None or entry.kind != "segment":
             continue
         split_ids.add(entry.id)
         for side in ("a", "b"):
@@ -62,8 +67,49 @@ def builder_entries_for_script(harness) -> list[dict[str, str]]:
     for entry in assignment.entries:
         if entry.id in split_ids:
             continue
+        bucket_keys = expanded_run_keys.get(entry.run_key)
+        if bucket_keys is not None:
+            entries.extend(_entry_dict(entry, run_key) for run_key in bucket_keys)
+            continue
         entries.append(_entry_dict(entry, entry.run_key))
     return list({entry["run_key"]: entry for entry in entries}.values())
+
+
+def _shield_bucket_plan(harness) -> tuple[dict[int, str], dict[str, list[str]]]:
+    assignment = getattr(harness, "_wire_id_assignment", None)
+    if assignment is None:
+        return ({}, {})
+    cached = getattr(harness, "_builder_shield_bucket_plan", None)
+    if cached is not None and cached[0] is assignment:
+        return cached[1]
+
+    entries_by_id = {entry.id: entry for entry in assignment.entries if entry.kind == "shield"}
+    all_segments = harness.segments()
+    segment_run_keys: dict[int, str] = {}
+    expanded_run_keys: dict[str, list[str]] = {}
+    seen_groups: set[int] = set()
+
+    for sg in harness.shield_groups:
+        if id(sg) in seen_groups or sg.single_oval:
+            continue
+        seen_groups.add(id(sg))
+        entry = entries_by_id.get(getattr(sg, "wire_id", ""))
+        if entry is None:
+            continue
+        buckets = bucket_segments_by_component_pair(segments_for_shield(sg, all_segments))
+        if not buckets:
+            continue
+        run_keys = [
+            entry.run_key if len(buckets) == 1 else f"{entry.run_key}-c{index}" for index in range(1, len(buckets) + 1)
+        ]
+        expanded_run_keys[entry.run_key] = run_keys
+        for bucket, run_key in zip(buckets, run_keys):
+            for seg in bucket:
+                segment_run_keys[id(seg)] = run_key
+
+    result = (segment_run_keys, expanded_run_keys)
+    harness._builder_shield_bucket_plan = (assignment, result)  # type: ignore[attr-defined]
+    return result
 
 
 def _entry_dict(entry, run_key: str) -> dict[str, str]:

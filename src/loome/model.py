@@ -179,6 +179,7 @@ class FuseBlock:
             for attr_name, val in vars(cls).items():
                 if isinstance(val, Fuse):
                     fuse = copy.copy(val)
+                    fuse._connections = []
                     setattr(self, attr_name, fuse)
                     self.positions[attr_name] = fuse
 
@@ -213,6 +214,7 @@ class CircuitBreakerBank:
                         setattr(self, attr_name, self.positions[attr_name])
                         continue
                     breaker = copy.copy(val)
+                    breaker._connections = []
                     setattr(self, attr_name, breaker)
                     self.positions[attr_name] = breaker
 

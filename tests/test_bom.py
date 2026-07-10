@@ -152,6 +152,12 @@ def test_declarative_fuse_block_copies_fuses_per_instance():
     assert block_a.positions["pfd"] is block_a.pfd
     assert block_a.positions["mfd"] is block_a.mfd
 
+    load = _Load("Load")
+    load.J1.pwr.connect(block_a.pfd)
+
+    assert len(block_a.pfd._connections) == 1
+    assert block_b.pfd._connections == []
+
 
 def test_cb_bank_location_reported():
     load = _Load("L")
@@ -182,6 +188,12 @@ def test_declarative_cb_bank_copies_breakers_per_instance():
     assert bank_a.landing is not bank_b.landing
     assert bank_a.landing.name == "landing"
     assert bank_a.positions["landing"] is bank_a.landing
+
+    load = _Load("Load")
+    load.J1.pwr.connect(bank_a.landing)
+
+    assert len(bank_a.landing._connections) == 1
+    assert bank_b.landing._connections == []
 
 
 def test_terminal_to_terminal_connections_are_autodetected_from_one_named_endpoint():
@@ -272,6 +284,20 @@ def test_shielded_group_collapses_to_one_cable_row():
     assert bom.wires == []
     # And don't contribute to gauge totals.
     assert "22" not in bom.gauge_totals
+
+
+def test_shielded_group_ignores_conductor_endpoint_direction():
+    src = _Sig("SRC")
+    dst = _Sig("DST")
+    with Shield(label="DATA"):
+        src.J1.a.connect(dst.J1.a)
+        dst.J1.b.connect(src.J1.b)
+
+    bom = build_bom(_harness({"src": src, "dst": dst}))
+
+    assert len(bom.shielded_cables) == 1
+    assert bom.shielded_cables[0].cable_id == "DATA"
+    assert bom.shielded_cables[0].conductors == 2
 
 
 def test_shield_with_pin_drains_registers_drain_stubs():
