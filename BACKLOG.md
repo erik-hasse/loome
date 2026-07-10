@@ -78,6 +78,13 @@ Items are roughly in priority order within each section.
 
 ## Internal cleanup
 
+- **Reconcile builder vs BOM cable enumeration** — `builder_entries_for_script` and `build_bom`
+  count shielded cables differently, so the n14ev invariant test
+  (`test_builder_entry_count_matches_bom_rows_for_n14ev_example`) is currently `xfail`. The builder
+  splits a disconnect-crossing shield into a/b sections (one toggle per side), while the BOM buckets
+  a multi-device-pair shield into one cable per instance pair (`@component`). Both are defensible;
+  pick a canonical enumeration, make both sides agree, then drop the `xfail`.
+
 - **Split oversized modules** — `bom.py`, `renderers/wires.py`, `renderers/svg.py`,
   `disconnects.py`, and `ports.py` each carry several responsibilities. Break them into smaller
   collector, model, layout, and formatting helpers so future changes have narrower blast radius.
