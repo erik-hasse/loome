@@ -1,6 +1,6 @@
-from loome.components.switches import DPST, SPST, DPOnOnOnSwitch, OnOffOnSwitch, Rheostat
+from loome.components.switches import SPST, DPOnOnOnSwitch, OnOffOnSwitch, Rheostat
 
-toga = DPST("TO/GA", momentary=True, render=True)
+toga = SPST("TO/GA", momentary=True, render=True)
 
 flaps = OnOffOnSwitch("Flap Switch", momentary_up=True, momentary_down=True)
 

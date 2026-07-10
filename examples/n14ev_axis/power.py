@@ -16,7 +16,7 @@ class SingleFeedBlock(FuseBlock):
     GSA28_roll = Fuse("GSA28 Roll", amps=5)
     GSA28_pitch = Fuse("GSA28 Pitch", amps=5)
     GSA28_yaw = Fuse("GSA28 Yaw", amps=5)
-    GTR20 = Fuse("GTR20", amps=7.5)
+    GTR205xR = Fuse("GTR20", amps=10)
     GDL51R = Fuse("GDL51R", amps=3)
     LEMO_pilot = Fuse("LEMO Pilot", amps=0.5)
     LEMO_copilot = Fuse("LEMO Copilot", amps=0.5)

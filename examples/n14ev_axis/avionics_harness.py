@@ -35,12 +35,11 @@ from examples.n14ev_axis.lrus import (
     gsa28_yaw,
     gsu25,
     gtp59,
-    gtr20,
+    gtr205xr,
     gtx45r,
     gtx_usb_config,
     mfd,
     mfd_config,
-    music_in,
     pfd,
     pfd_config,
     pilot_lemo,
@@ -111,19 +110,18 @@ with System("AP"):
         c.aircraft_power_1 >> avionics_block_1.GMC507
         c.aircraft_power_2 >> avionics_block_2.GMC507
         c.ground >> gnd
-        c.remote_go_around >> toga.no2
 
     pilot_stick.ap_disconnect >> copilot_stick.ap_disconnect
     copilot_stick.ap_disconnect >> gsa28_pitch.J281.disconnect
     gsa28_pitch.J281.disconnect >> gsa28_yaw.J281.disconnect
     gsa28_yaw.J281.disconnect >> gsa28_roll.J281.disconnect
 
-    toga.no1 >> gea24.J244.discrete_in_1
-    toga.no1 >> gad27.J271.discrete_in_1
-    toga.no1 >> pfd.J1013.discrete_in_2
-    toga.no1 >> gmc507.J7001.remote_go_around
-    (toga.com1 >> toga.com2).color("B")
-    toga.com1 >> gnd
+    toga.com >> gnd
+    # Any one of these:
+    # toga.no >> gea24.J244.discrete_in_1
+    # toga.no >> gad27.J271.discrete_in_1
+    # toga.no >> pfd.J1013.discrete_in_2
+    toga.no >> gmc507.J7001.remote_go_around
 
 with System("AUD"):
     with pfd.J1015 as c:
@@ -147,20 +145,15 @@ with System("AUD"):
             c.mic_2_low >> copilot_lemo.mic_low
             c.mic_2_ptt >> copilot_stick.push_to_talk
 
-        with Shield(drain="block"):
-            c.stereo_music_in_left >> music_in.tip
-            c.stereo_music_in_right >> music_in.ring
-            c.stereo_music_in_low >> music_in.sleeve
-
-    # with gdl51r as c:
-    #     c.aircraft_power >> avionics_block_3.GDL51R
-    #     c.ground >> gnd
-    #     c.rs232_1 >> pfd.P4602.rs232_1
-    #     c.rs232_2 >> mfd.P4602.rs232_4
-    #     with Shield(drain_remote="block"):
-    #         c.music_out_left >> gma245.J2402.music_2_in_left
-    #         c.music_out_right >> gma245.J2402.music_2_in_right
-    #         c.music_out_common >> gma245.J2402.music_2_in_low
+    with gdl51r as c:
+        c.aircraft_power >> avionics_block_3.GDL51R
+        c.ground >> gnd
+        c.rs232_1 >> pfd.J1012.rs232_4
+        c.rs232_2 >> mfd.J1012.rs232_1
+        with Shield(drain_remote="block"):
+            c.music_out_left >> pfd.J1015.stereo_music_in_left
+            c.music_out_right >> pfd.J1015.stereo_music_in_right
+            c.music_out_common >> pfd.J1015.stereo_music_in_low
 
     with pfd.J1013 as c:
         c.discrete_in_1 >> pilot_stick.com_swap
@@ -171,17 +164,24 @@ with System("AUD"):
 
 
 with System("COM"):
-    with gtr20.J2001 as c:
-        (c.ground >> gnd).gauge(18)
-        (c.aircraft_power >> avionics_block_3.GTR20).gauge(18)
-        with Shield(drain="block"):
-            pfd.J1015.external_com_audio_in >> c.receiver_out_high
-            pfd.J1015.external_com_audio_in_low >> c.receiver_audio_low
+    with gtr205xr as c:
+        c.hsdb >> pfd.J1012.hsdb_3
+        c.ground_1 >> gnd
+        c.ground_2 >> gnd
+        c.ground_3 >> gnd
+        c.power_1 >> avionics_block_3.GTR205xR
+        c.power_2 >> avionics_block_3.GTR205xR
+        c.power_3 >> avionics_block_3.GTR205xR
 
         with Shield(drain="block"):
-            pfd.J1015.external_com_mic_audio_out >> c.pilot_mic_in
-            pfd.J1015.external_com_mic_audio_out_low >> c.pilot_mic_low
-            pfd.J1015.external_com_ptt_key_out >> c.pilot_ptt
+            pfd.J1015.external_com_audio_in >> c.com_audio_out_high
+            pfd.J1015.external_com_audio_in_low >> c.com_audio_out_low
+
+        with Shield(drain="block"):
+            pfd.J1015.external_com_mic_audio_out >> c.mic_1_audio_in_high
+            pfd.J1015.external_com_mic_audio_out_low >> c.mic_1_audio_in_low
+            pfd.J1015.external_com_ptt_key_out >> c.com_mic_1_key
+            (pfd.J1015.external_com_interlock_out >> c.disc_4).notes("Configure to TX Interlock")
 
     with gad27.J271 as c:
         c.discrete_in_7 >> pilot_stick.frequency_swap
@@ -433,16 +433,19 @@ with System("EMR"):
 can_bus = CanBusLine(
     name="CAN Bus",
     devices=[
+        # Wing
         gmu11.J441,
         gsa28_roll.J281,
+        # Panel
         mfd.J1012,
-        gtr20.J2001,
         g5.J51,
         gmc507.J7001,
         pfd.J1012,
+        # Behind Panel
         gea24.J241,
         gad27.J271,
         gsu25.J251,
+        # Tail
         gsa28_pitch.J281,
         gsa28_yaw.J281,
     ],
@@ -465,7 +468,7 @@ harness = Harness(
         gdl51r,
         pilot_lemo,
         copilot_lemo,
-        gtr20,
+        gtr205xr,
         gad27,
         landing_light_switch,
         flap_motor,

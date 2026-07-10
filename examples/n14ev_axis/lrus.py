@@ -2,7 +2,6 @@ from loome.components import (
     ACKE04,
     LEMO,
     SDSECU,
-    TRS,
     AithreShield3,
     Engine4Cyl,
     FlyLedsEssentialsController,
@@ -23,10 +22,10 @@ from loome.components.garmin import (
     GSA28,
     GSU25,
     GTP59,
-    GTR20,
     GTX45R,
     ConfigModule,
     GSA28RollServo,
+    GTR205xR,
 )
 from loome.constants import Axis
 
@@ -38,7 +37,7 @@ gmc507 = GMC507("GMC 507 - AP Controller")
 gsa28_pitch = GSA28("GSA 28 - Pitch Servo", axis=Axis.PITCH)
 gsa28_yaw = GSA28("GSA 28 - Yaw Servo", axis=Axis.YAW)
 gdl51r = GDL51R("GDL 51R - Sirius XM")
-gtr20 = GTR20("GTR 20 - Com Radio")
+gtr205xr = GTR205xR("GTR 205xR - Com Radio")
 gad27 = GAD27("GAD 27 - Flap & Light Controller")
 
 roll_trim = RayAllanTrim("Roll Trim")
@@ -56,7 +55,6 @@ copilot_stick = Stick("Copilot Stick")
 
 pilot_lemo = LEMO("Pilot Lemo")
 copilot_lemo = LEMO("Copilot Lemo")
-music_in = TRS("Music In")
 
 flap_motor = PHAviationFlapMotor("Flap Motor")
 
