@@ -717,3 +717,12 @@ class GTR205xR(Component):
 
     def can_terminate(self):
         self.can_bus_term_a >> self.can_bus_term_b
+
+
+class GCO14(Component):
+    """Carbon Monoxide Detector"""
+
+    ground = Pin(1, "Ground")
+    clock = Pin(2, "Clock")
+    data = Pin(3, "Data")
+    power = Pin(4, "Power")

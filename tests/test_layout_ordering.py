@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from loome import Component, Connector, GroundSymbol, Pin, Shield
+from loome import Component, Connector, Fuse, GroundSymbol, Pin, Shield
 from loome.layout.ordering import pin_sort_keys, sort_legs
 
 
@@ -57,6 +57,26 @@ def test_pin_sort_pairs_self_jumpers_by_remote_partner():
     ordered = _ordered_attrs(block, ["p1", "p2", "p3", "p4"])
 
     assert ordered == ["p1", "p4", "p2", "p3"]
+
+
+def test_pin_sort_keeps_jumpered_feed_pairs_together_in_external_target_group():
+    class FeedConnector(Component):
+        class J1(Connector):
+            power_1 = Pin(11, "Power 1")
+            power_2 = Pin(12, "Power 2")
+            power_3 = Pin(31, "Power 3")
+            power_4 = Pin(32, "Power 4")
+
+    block = FeedConnector("Display")
+    fuse = Fuse("shared external target", amps=7.5)
+    block.J1.power_1 >> fuse
+    block.J1.power_1 >> block.J1.power_2
+    block.J1.power_3 >> fuse
+    block.J1.power_3 >> block.J1.power_4
+
+    ordered = _ordered_attrs(block, ["power_1", "power_2", "power_3", "power_4"])
+
+    assert ordered == ["power_1", "power_2", "power_3", "power_4"]
 
 
 def test_sort_legs_places_terminal_before_pin_legs_and_orders_remote_pins():

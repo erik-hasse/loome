@@ -11,10 +11,10 @@ from .ordering import (
     _shield_ids as _pin_shield_ids,
 )
 from .ordering import (
-    pin_sort_keys as _sort_pin_attrs,
+    pin_group_target_key as _pin_group_target_key,
 )
 from .ordering import (
-    pin_target_key as _pin_target_key,
+    pin_sort_keys as _sort_pin_attrs,
 )
 from .ordering import (
     segment_target_key as _segment_target_key,
@@ -365,7 +365,7 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
             seg0 = segments[0] if len(segments) == 1 else None
             seg_sg = segment_shield_for_endpoint(seg0, inst_pin, class_pin) if seg0 is not None else None
             seg_shields = frozenset({id(seg_sg)}) if seg_sg is not None else pin_shields
-            key = _pin_target_key(class_pin, inst_pin)
+            key = _pin_group_target_key(class_pin, inst_pin)
             ctx = _RowCtx(
                 target_key=key,
                 shield_ids=seg_shields,
@@ -397,17 +397,18 @@ def layout(harness: Harness, show_unconnected: bool = False) -> LayoutResult:
         ctx: _RowCtx | None = None
         for i, seg in enumerate(segments):
             leg_key = _segment_target_key(seg, inst_pin, inst_pin)
+            group_key = _pin_group_target_key(class_pin, inst_pin) if leg_key == ("jumper",) else leg_key
             seg_sg = segment_shield_for_endpoint(seg, inst_pin, class_pin)
             seg_shields = frozenset({id(seg_sg)}) if seg_sg is not None else frozenset()
             ctx = _RowCtx(
-                target_key=leg_key,
+                target_key=group_key,
                 shield_ids=seg_shields,
                 is_drained=is_drained,
                 is_first_leg_of_pin=(i == 0),
             )
             y += _row_separator(prev_ctx, ctx)
-            if current_group is None or current_group.target_key != leg_key:
-                current_group = PinGroup(rows=[], target_key=leg_key, first_in_section=(prev_ctx is None))
+            if current_group is None or current_group.target_key != group_key:
+                current_group = PinGroup(rows=[], target_key=group_key, first_in_section=(prev_ctx is None))
                 pin_groups.append(current_group)
             # Jumper continuation legs have no independent visual; the jumper bar
             # drawn between the two pin rows is the only connection shown. Use

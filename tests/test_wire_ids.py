@@ -10,6 +10,7 @@ from loome import (
     CanBusLine,
     Component,
     Connector,
+    Fuse,
     GroundSymbol,
     Harness,
     Pin,
@@ -82,6 +83,17 @@ def test_wire_builder_fluent_modifiers_mutate_underlying_segment():
     assert seg.wire_id == "W-1"
     assert seg.notes == "route left"
     assert seg.system == "PWR"
+
+
+def test_automatic_fuse_color_propagates_across_pin_jumper():
+    a = _Box("A")
+    fuse = Fuse("F1", amps=5)
+
+    feed = a.J1.pwr.connect(fuse)
+    jumper = a.J1.pwr.connect(a.J1.gnd)
+
+    assert feed.effective_color == "R"
+    assert jumper.effective_color == "R"
 
 
 def test_component_default_system():

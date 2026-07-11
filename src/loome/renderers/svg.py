@@ -9,7 +9,18 @@ from .._internal.endpoints import component_key_for_pin, connector_key_for_pin, 
 from .._internal.shields import segment_shield_for_endpoint
 from ..harness import Harness
 from ..layout.engine import MARGIN, LayoutResult, PinRowInfo
-from ..model import Component, Pin, ShieldDrainTerminal, ShieldGroup, SpliceNode, Terminal, WireEndpoint
+from ..model import (
+    CircuitBreaker,
+    Component,
+    Fuse,
+    GroundSymbol,
+    Pin,
+    ShieldDrainTerminal,
+    ShieldGroup,
+    SpliceNode,
+    Terminal,
+    WireEndpoint,
+)
 from .assets import asset_text
 from .colors import _wire_attrs
 from .context import build_render_context
@@ -25,9 +36,81 @@ from .primitives import (
     _draw_connector_header,
     _draw_section_bg,
     _draw_shield_ovals,
+    _draw_terminal,
     _remote_label,
 )
 from .wires import _DRAIN_PIN_COLOR, _REMOTE_BOX_X, _draw_bullet_and_drop, _draw_pin_row, _draw_remote_box
+
+
+@dataclass
+class _SharedTerminalPlan:
+    terminal: Fuse | CircuitBreaker | GroundSymbol
+    rows: list[PinRowInfo]
+
+
+def _shared_terminal_plans(layout: LayoutResult, components: list[Component]) -> list[_SharedTerminalPlan]:
+    """Collect direct legs that share one terminal within a contiguous layout group."""
+    visible_component_ids = {id(component) for component in components}
+    plans: list[_SharedTerminalPlan] = []
+    for group in layout.pin_groups:
+        grouped: dict[int, tuple[Fuse | CircuitBreaker | GroundSymbol, list[PinRowInfo]]] = {}
+        for row in group.rows:
+            if row.rect.h == 0 or row.segment is None or row.pin._component is None:
+                continue
+            if id(row.pin._component) not in visible_component_ids:
+                continue
+            remote = other_endpoint(row.segment, row.pin, row.class_pin)
+            if not isinstance(remote, (Fuse, CircuitBreaker, GroundSymbol)) or (
+                isinstance(remote, GroundSymbol) and (remote.local or remote.style == "open")
+            ):
+                continue
+            if id(remote) not in grouped:
+                grouped[id(remote)] = (remote, [])
+            grouped[id(remote)][1].append(row)
+        plans.extend(
+            _SharedTerminalPlan(terminal, sorted(rows, key=lambda row: row.rect.y))
+            for terminal, rows in grouped.values()
+            if len(rows) > 1
+        )
+    return plans
+
+
+def _draw_shared_terminal(
+    dwg: draw.Drawing,
+    plan: _SharedTerminalPlan,
+    harness: Harness,
+    min_term_cx: float,
+    colored: bool,
+    pin_shield_palette: dict,
+) -> None:
+    """Join several terminal legs and draw their terminal symbol and label once."""
+    first = plan.rows[0]
+    last = plan.rows[-1]
+    top_cy = first.rect.y + first.rect.h / 2
+    bottom_cy = last.rect.y + last.rect.h / 2
+    symbol_cy = top_cy
+    label = _remote_label(plan.terminal, first.class_pin, harness, local_pin=first.pin)
+    term_cx = min_term_cx
+    if term_cx <= 0:
+        term_cx = first.wire_end_x - 4 - len(label) * _MONO_CHAR_W - _TERM_SYMBOL_W
+    term_cx = max(term_cx, first.wire_start_x + 20)
+    junction_x = term_cx - 20
+    tail_end_x = term_cx if isinstance(plan.terminal, GroundSymbol) else term_cx - 12
+    attrs = _wire_attrs(first.segment, pin_shield_palette, colored)
+
+    dwg.append(draw.Line(junction_x, top_cy, junction_x, bottom_cy, **attrs))
+    dwg.append(draw.Line(junction_x, symbol_cy, tail_end_x, symbol_cy, **attrs))
+    _draw_terminal(dwg, plan.terminal, term_cx, symbol_cy)
+    dwg.append(
+        draw.Text(
+            label,
+            9,
+            term_cx + 12,
+            symbol_cy + 4,
+            fill="#1e293b",
+            font_family="ui-monospace, monospace",
+        )
+    )
 
 
 def _compute_min_term_cx(layout: LayoutResult, harness: Harness) -> float:
@@ -412,6 +495,11 @@ def render(
         components_to_render = [c for c in harness.components if c.render]
         bg = draw.Rectangle(0, 0, layout.canvas_width, layout.canvas_height, fill="white")
 
+    shared_terminal_plans = _shared_terminal_plans(layout, components_to_render)
+    shared_terminal_segment_ids = {
+        id(row.segment) for plan in shared_terminal_plans for row in plan.rows if row.segment is not None
+    }
+
     builder_css = " .wire--done { opacity: 0.22; } .builder-wire:hover { opacity: 0.65; }" if builder else ""
     dwg.append(draw.Raw(f"<style>{asset_text('schematic.css').strip()}{builder_css}</style>"))
 
@@ -426,10 +514,30 @@ def render(
 
         def _draw_row_and_continuations(primary):
             sh = ctx.shield_for_row(primary)
-            _draw_pin_row(dwg, primary, harness, sh, min_term_cx, colored, ctx.pin_shield_palette, jumper_stubs)
+            _draw_pin_row(
+                dwg,
+                primary,
+                harness,
+                sh,
+                min_term_cx,
+                colored,
+                ctx.pin_shield_palette,
+                jumper_stubs,
+                shared_terminal_segment_ids,
+            )
             for cont in primary.continuation_rows:
                 csh = ctx.shield_for_row(cont)
-                _draw_pin_row(dwg, cont, harness, csh, min_term_cx, colored, ctx.pin_shield_palette, jumper_stubs)
+                _draw_pin_row(
+                    dwg,
+                    cont,
+                    harness,
+                    csh,
+                    min_term_cx,
+                    colored,
+                    ctx.pin_shield_palette,
+                    jumper_stubs,
+                    shared_terminal_segment_ids,
+                )
             # Drop lines drawn now; bullet glyph deferred until after jumper bars.
             pos = _draw_bullet_and_drop(dwg, primary, colored=colored, pin_shield_palette=ctx.pin_shield_palette)
             if pos is not None:
@@ -506,6 +614,10 @@ def render(
         if len(cys) == 2:
             attrs = _wire_attrs(seg, ctx.pin_shield_palette, colored)
             dwg.append(draw.Line(bar_x, min(cys), bar_x, max(cys), **attrs))
+
+    # ── shared fuse / circuit-breaker junctions ─────────────────────────────
+    for plan in shared_terminal_plans:
+        _draw_shared_terminal(dwg, plan, harness, min_term_cx, colored, ctx.pin_shield_palette)
 
     # ── bullets (on top of jumper bars) ──────────────────────────────────────
     for bullet_cx, bullet_cy in deferred_bullets:

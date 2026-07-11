@@ -32,8 +32,10 @@ Pin row rules (priority order, highest first):
 5. Within-shield order. Wire color depends on this position (svg.render walks
    ``sg.pins`` to assign palette entries); preserve source-pin order in the
    shield as the intra-shield sort.
-6. Self-jumper pairing. Inside a (``"jumper"``,) cluster, sort by
-   ``min(self, other)`` then ``self`` so each jumper pair is contiguous.
+6. Self-jumper pairing. A jumper-only pin inherits its partner's external
+   target, keeping feed pairs together inside that target cluster. Standalone
+   jumpers sort by ``min(self, other)`` then ``self`` so each pair is
+   contiguous.
 7. Numerical pin order. Final tiebreaker.
 
 ──────────────────────────────────────────────────────────────────────────────
@@ -167,6 +169,34 @@ def pin_target_key(class_pin: Pin, inst_pin: Pin | None) -> tuple:
     return segment_target_key(use._connections[0], use, inst_pin)
 
 
+def pin_group_target_key(class_pin: Pin, inst_pin: Pin | None) -> tuple:
+    """Return the external target shared by a pin and its self-jumper partner.
+
+    A common power-feed pattern connects one pin to a fuse and jumpers it to a
+    second pin.  The second pin must join the fuse cluster rather than a
+    separate jumper cluster, or multiple feed pairs interleave as 11, 31, 12,
+    32 instead of 11, 12, 31, 32.
+    """
+    use = _effective(class_pin, inst_pin)
+    for seg in use._connections:
+        key = segment_target_key(seg, use, inst_pin)
+        if key != ("jumper",):
+            return key
+
+    for seg in use._connections:
+        if not _is_self_jumper(seg, use, inst_pin):
+            continue
+        partner = other_endpoint(seg, use, inst_pin)
+        if not isinstance(partner, Pin):
+            continue
+        for partner_seg in partner._connections:
+            key = segment_target_key(partner_seg, partner, partner)
+            if key != ("jumper",):
+                return key
+
+    return pin_target_key(class_pin, inst_pin)
+
+
 def _self_jumper_pair_key(class_pin: Pin, inst_pin: Pin | None) -> tuple:
     """Sort key inside a ('jumper',) group: (min(self,other), self).
 
@@ -255,7 +285,7 @@ def _pin_group_key(class_pin: Pin, inst_pin: Pin | None, get_inst_pin) -> tuple:
         if len(targets) == 1:
             return next(iter(targets))
         return ("shield", id(sg))
-    return pin_target_key(class_pin, inst_pin)
+    return pin_group_target_key(class_pin, inst_pin)
 
 
 def pin_sort_keys(

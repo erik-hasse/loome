@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from loome import Harness
+from loome import Fuse, GroundSymbol, Harness, Pin
 from loome.layout.engine import layout
 from loome.model import Component, Connector, Shield
 from loome.ports import RS232
@@ -88,3 +88,90 @@ def test_svg_render_accepts_mutable_shield_groups(tmp_path):
     render(h, layout(h), output)
 
     assert output.exists()
+
+
+def test_svg_render_combines_shared_fuse_legs_into_one_terminal_junction(tmp_path):
+    class Display(Component):
+        class J1(Connector):
+            power_1 = Pin(11, "Power 1")
+            power_2 = Pin(12, "Power 2")
+            power_3 = Pin(31, "Power 3")
+            power_4 = Pin(32, "Power 4")
+
+    display = Display("Display")
+    fuse = Fuse("F1", amps=7.5)
+    display.J1.power_1 >> fuse
+    display.J1.power_1 >> display.J1.power_2
+    display.J1.power_3 >> fuse
+    display.J1.power_3 >> display.J1.power_4
+    h = Harness("h")
+    h.autodetect({"display": display, "fuse": fuse})
+
+    output = tmp_path / "out.svg"
+    result = layout(h)
+    render(h, result, output)
+    svg = output.read_text()
+
+    rows = [
+        result.pin_rows[id(pin)]
+        for pin in (display.J1.power_1, display.J1.power_2, display.J1.power_3, display.J1.power_4)
+    ]
+    assert all(current.rect.y + current.rect.h == following.rect.y for current, following in zip(rows, rows[1:]))
+
+    assert svg.count(">F1 7.5A</text>") == 1
+    assert svg.count('fill="#fef9c3"') == 1
+    assert svg.count('stroke="#dc2626"') >= 6
+    fuse_symbol = next(line for line in svg.splitlines() if 'fill="#fef9c3"' in line)
+    assert f'y="{rows[0].rect.y + rows[0].rect.h / 2 - 5}"' in fuse_symbol
+
+
+def test_svg_render_keeps_distinct_fuses_separate(tmp_path):
+    class Loads(Component):
+        class J1(Connector):
+            load_1 = Pin(1, "Load 1")
+            load_2 = Pin(2, "Load 2")
+
+    loads = Loads("Loads")
+    fuse_1 = Fuse("F1", amps=5)
+    fuse_2 = Fuse("F2", amps=5)
+    loads.J1.load_1 >> fuse_1
+    loads.J1.load_2 >> fuse_2
+    h = Harness("h")
+    h.autodetect({"loads": loads, "fuse_1": fuse_1, "fuse_2": fuse_2})
+
+    output = tmp_path / "out.svg"
+    render(h, layout(h), output)
+    svg = output.read_text()
+
+    assert svg.count('fill="#fef9c3"') == 2
+    assert svg.count(">F1 5A</text>") == 1
+    assert svg.count(">F2 5A</text>") == 1
+
+
+def test_svg_render_combines_shared_ground_legs_into_one_terminal_junction(tmp_path):
+    class Display(Component):
+        class J1(Connector):
+            ground_1 = Pin(9, "Ground 1")
+            ground_2 = Pin(10, "Ground 2")
+            ground_3 = Pin(15, "Ground 3")
+            ground_4 = Pin(16, "Ground 4")
+
+    display = Display("Display")
+    ground = GroundSymbol("GND")
+    for pin in (display.J1.ground_1, display.J1.ground_2, display.J1.ground_3, display.J1.ground_4):
+        pin >> ground
+    h = Harness("h")
+    h.autodetect({"display": display, "ground": ground})
+
+    output = tmp_path / "out.svg"
+    result = layout(h)
+    render(h, result, output)
+    svg = output.read_text()
+
+    rows = [
+        result.pin_rows[id(pin)]
+        for pin in (display.J1.ground_1, display.J1.ground_2, display.J1.ground_3, display.J1.ground_4)
+    ]
+    assert all(current.rect.y + current.rect.h == following.rect.y for current, following in zip(rows, rows[1:]))
+    assert svg.count(">GND</text>") == 1
+    assert svg.count('stroke="#111111"') >= 8

@@ -132,6 +132,7 @@ def _draw_connection(
     wire_end_x: float | None = None,
     shield_x_offset: float = 0,
     local_pin: Pin | None = None,
+    defer_terminal: bool = False,
 ) -> None:
     """Draw the leg of wire from ``wx + start_x_offset`` to the remote endpoint.
 
@@ -162,10 +163,15 @@ def _draw_connection(
             term_cx = max(term_cx, start_x + 20)
         # GroundSymbol drops downward from the wire, so the wire extends to term_cx.
         # Other terminals are sideways symbols that occupy the 12px gap before term_cx.
-        wire_end = term_cx if isinstance(remote, GroundSymbol) else term_cx - 12
+        if defer_terminal:
+            wire_end = term_cx - 20
+        else:
+            wire_end = term_cx if isinstance(remote, GroundSymbol) else term_cx - 12
         dwg.append(draw.Line(start_x, cy, wire_end, cy, **attrs))
         label_x1 = wx + _SHIELD_LEFT_CX + _SHIELD_RX + shield_x_offset if shield is not None else start_x
         _draw_wire_label(dwg, seg, label_x1, wire_end, cy, psp, colored, harness=harness, local_pin=local_pin)
+        if defer_terminal:
+            return
         _draw_terminal(dwg, remote, term_cx, cy)
         # Make CAN "To <neighbor>" labels clickable in the same way as remote
         # box pins: wrap the label text in an anchor pointing to the neighbor's
@@ -439,6 +445,7 @@ def _draw_pin_row(
     colored: bool = True,
     pin_shield_palette: dict | None = None,
     jumper_stubs: dict | None = None,
+    shared_terminal_segment_ids: set[int] | None = None,
 ) -> None:
     rect = row_info.rect
     pin = row_info.pin
@@ -545,6 +552,7 @@ def _draw_pin_row(
                     start_x_offset=_BULLET_CX,
                     wire_end_x=row_info.wire_end_x,
                     local_pin=pin,
+                    defer_terminal=id(seg) in (shared_terminal_segment_ids or set()),
                 )
             return
 
@@ -577,6 +585,7 @@ def _draw_pin_row(
                     start_x_offset=_BULLET_CX,
                     wire_end_x=row_info.wire_end_x,
                     local_pin=pin,
+                    defer_terminal=id(seg) in (shared_terminal_segment_ids or set()),
                 )
             return
 
@@ -610,6 +619,7 @@ def _draw_pin_row(
                 wire_end_x=row_info.wire_end_x,
                 shield_x_offset=_CAN_TERM_SHIELD_SHIFT if terminated else 0,
                 local_pin=pin,
+                defer_terminal=id(seg) in (shared_terminal_segment_ids or set()),
             )
         return
 
@@ -685,6 +695,7 @@ def _draw_pin_row(
                         psp,
                         wire_end_x=row_info.wire_end_x,
                         local_pin=pin,
+                        defer_terminal=id(seg) in (shared_terminal_segment_ids or set()),
                     )
 
 

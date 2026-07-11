@@ -3,9 +3,35 @@
 Items are roughly in priority order within each section.
 
 
+## Immediate priorities
+
+- **Require CI checks before merge** — after the `CI` workflow has been pushed and has run once,
+  configure the default branch's GitHub ruleset / branch protection to require both
+  `CI / pre-commit` and `CI / test`. Keep the release workflow dependent on the same reusable
+  checks so pull requests and published packages use identical gates.
+
+- **Broader semantic validation** — extend `loome validate` beyond bundle topology. Useful
+  checks include duplicate component labels / terminal IDs, duplicate connector pin numbers,
+  duplicate manual wire IDs, unsupported wire colors, unresolved systems when
+  `default_system=None`, orphan terminals, multiple protective devices feeding one branch,
+  and CAN buses with missing or extra terminations.
+
+- **Clean complex-example validation** — make the `n14ev_axis` and `n14ev_g3x` examples pass
+  `loome validate`, or explicitly model/suppress intentionally incomplete topology. They currently
+  produce warnings for unattached CAN devices and CAN-capable connectors omitted from their
+  `CanBusLine`, which makes it harder to use them as authoritative end-to-end fixtures.
+
 ## Low effort
 
 - Add optional `max_pins` to a disconnect's init
+
+- **Explicit splice/junction DSL** — connections such as
+  `power_1 >> power_2` intentionally render as a connector-adjacent splice, but read like a
+  pin-to-pin jumper in the spec. Add an explicit helper such as
+  `splice(power_1, power_2) >> fuse` (or an equivalent fluent API) that preserves the current
+  schematic/BOM topology while making the physical junction and shared feed unambiguous. It
+  should support more than two endpoints, conductor-wide modifiers such as gauge/color/system,
+  and an optional label; document when to use it instead of a named `SpliceNode`.
 
 - **Switch schematic symbols** — `SPST`, `SPDT`, `DPST`, `DPDT` all default to
   `render=False` and have no SVG symbol. Adding simple line-art symbols (single-pole
@@ -52,12 +78,6 @@ Items are roughly in priority order within each section.
   still needs an explicit design for terminal-only wires that are not anchored by a pin row.
   Bus/fuse feed chains should render visibly instead of existing only as metadata.
 
-- **Broader semantic validation** — extend `loome validate` beyond bundle topology. Useful
-  checks include duplicate component labels / terminal IDs, duplicate connector pin numbers,
-  duplicate manual wire IDs, unsupported wire colors, unresolved systems when
-  `default_system=None`, orphan terminals, multiple protective devices feeding one branch,
-  and CAN buses with missing or extra terminations.
-
 - **Machine-readable exports** — add JSON output for BOM, fuse schedules, and a normalized
   netlist (`components`, `connectors`, `pins`, `segments`, `terminals`, `bundles`). This would
   make loome easier to integrate with spreadsheets, CAD/electrical tools, custom QA scripts,
@@ -78,14 +98,27 @@ Items are roughly in priority order within each section.
 
 ## Internal cleanup
 
+- **Normalized harness / fabrication model** — introduce one explicit intermediate representation
+  after autodetection and disconnect resolution. Wire IDs, physical cable buckets, disconnect
+  sides, BOM rows, builder entries, cut lists, and machine-readable exports should consume that
+  shared model instead of independently deriving overlapping state from mutable `Harness` objects.
+
+- **Harden spec loading** — give executed specs normal script context (`__file__`, `__name__`, and
+  imports relative to the spec directory), clearly document that specs are trusted executable code,
+  and report execution errors without burying them behind CLI-only `sys.exit()` behavior.
+
+- **Separate spec loading from side effects** — CLI commands currently load a spec, autodetect the
+  harness, and assign wire IDs through one path. Split these into explicit load, normalize, assign,
+  and persist steps so read-only commands and tests can exercise each stage independently.
+
+- **Coverage and invariant testing** — publish test coverage in CI and add focused invariants for
+  wire-ID uniqueness, BOM/builder/netlist parity, endpoint-direction independence, declaration-order
+  independence, class-vs-instance wiring, and isolation of mutable state across component/container
+  instances.
+
 - **Split oversized modules** — `bom.py`, `renderers/wires.py`, `renderers/svg.py`,
   `disconnects.py`, and `ports.py` each carry several responsibilities. Break them into smaller
   collector, model, layout, and formatting helpers so future changes have narrower blast radius.
-
-- **Separate spec loading from side effects** — CLI commands currently load a spec, autodetect the
-  harness, assign wire IDs, and write the sidecar file through one path. Split these into explicit
-  load, normalize, assign, and persist steps so read-only commands and tests can exercise each stage
-  independently.
 
 - **Extract CLI command bodies** — move `loome` command behavior into testable functions that return
   structured results/status instead of printing and exiting directly. Keep the argparse layer thin.
@@ -103,7 +136,12 @@ Items are roughly in priority order within each section.
 - **Tighten typing around endpoints and attachments** — endpoint helper protocols and an
   `AttachmentTarget` alias now exist under `loome._internal`, but many call sites still accept broad
   `object`s. Continue by adding small shared types for renderable terminal-like objects and using the
-  helper types more consistently in bundle/layout APIs.
+  helper types more consistently in bundle/layout APIs. Replace dynamically attached harness state
+  such as wire-ID assignments and builder plans with explicit typed fields where practical.
+
+- **Context-local DSL state** — replace the module-global `System` and `Shield` stacks with
+  `contextvars.ContextVar` state so concurrent threads/tasks cannot leak active DSL context into one
+  another.
 
 ## Larger features
 

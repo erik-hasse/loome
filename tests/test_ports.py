@@ -36,9 +36,21 @@ class _GPIOSensor(Component):
     output = GPIO("R", "W", "B", name="Out")
 
 
+class _DirectPinDevice(Component):
+    numeric = Pin(14, "Numeric")
+    string = Pin("A", "String")
+
+
 class _ThermocoupleDevice(Component):
     class J1(Connector):
         tc = Thermocouple(1, 2, name="EGT", gauge=20)
+
+
+def test_component_pin_lookup_uses_pin_number_like_connector_lookup():
+    dev = _DirectPinDevice("Device")
+
+    assert dev[14] is dev.numeric
+    assert dev["A"] is dev.string
 
 
 def test_arinc429_direction_mismatch_raises_immediately():

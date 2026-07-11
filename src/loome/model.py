@@ -455,15 +455,39 @@ class WireSegment:
         """The wire's color code, defaulting to R for power feeds and B for grounds.
 
         Falls back to the explicit ``color`` attribute when set; otherwise looks
-        at endpoints — Fuse / CircuitBreaker → ``"R"``, GroundSymbol → ``"B"`` —
-        and returns ``"W"`` when neither applies. Shared by the BoM and the
-        renderer so a wire's color is decided in one place.
+        across the connected electrical node — Fuse / CircuitBreaker → ``"R"``,
+        GroundSymbol → ``"B"`` — and returns ``"W"`` when neither applies.
+        Pins, splices, and bus bars propagate the automatic color, so a jumper
+        fed by a fuse is red too. Shared by the BoM and renderer so a wire's
+        color is decided in one place.
         """
         if self.color:
             return self.color
-        if isinstance(self.end_a, (Fuse, CircuitBreaker)) or isinstance(self.end_b, (Fuse, CircuitBreaker)):
+
+        found_power = False
+        found_ground = False
+        seen_segments: set[int] = set()
+        seen_endpoints: set[int] = set()
+
+        def visit_segment(seg: WireSegment) -> None:
+            nonlocal found_power, found_ground
+            if id(seg) in seen_segments:
+                return
+            seen_segments.add(id(seg))
+            for endpoint in (seg.end_a, seg.end_b):
+                if isinstance(endpoint, (Fuse, CircuitBreaker)):
+                    found_power = True
+                elif isinstance(endpoint, GroundSymbol):
+                    found_ground = True
+                elif isinstance(endpoint, (Pin, SpliceNode, BusBar)) and id(endpoint) not in seen_endpoints:
+                    seen_endpoints.add(id(endpoint))
+                    for adjacent in endpoint._connections:
+                        visit_segment(adjacent)
+
+        visit_segment(self)
+        if found_power:
             return "R"
-        if isinstance(self.end_a, GroundSymbol) or isinstance(self.end_b, GroundSymbol):
+        if found_ground:
             return "B"
         return "W"
 
@@ -630,6 +654,7 @@ class Component:
         self._system: str | None = system if system is not None else type(self).system
         self._connectors: dict[str, Connector] = {}
         self._direct_pins: dict[str, Pin] = {}
+        self._direct_pins_by_number: dict[int | str, Pin] = {}
         for cls in reversed(type(self).__mro__):
             if not (isinstance(cls, type) and issubclass(cls, Component)):
                 continue
@@ -649,9 +674,10 @@ class Component:
                     pin._component = self
                     setattr(self, attr_name, pin)
                     self._direct_pins[attr_name] = pin
+                    self._direct_pins_by_number[pin.number] = pin
 
     def __getitem__(self, number: int | str) -> Pin:
-        return self._direct_pins[number]
+        return self._direct_pins_by_number[number]
 
     def __enter__(self) -> Self:
         return self

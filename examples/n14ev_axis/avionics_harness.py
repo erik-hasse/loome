@@ -16,7 +16,7 @@ from examples.n14ev_axis.lights import (
     tail_light,
 )
 from examples.n14ev_axis.lrus import (
-    co2_sensor,
+    co_sensor,
     copilot_lemo,
     copilot_stick,
     elt,
@@ -217,13 +217,13 @@ with System("FCTL"):
         c.copilot_roll_trim_right >> copilot_stick.trim_right
 
     with gad27.J272 as c:
+        c.pitch_trim_power_in >> avionics_block_3.GAD27_pitch_trim
         c.pitch_trim_power_gnd >> gnd
+        c.roll_trim_power_in >> avionics_block_3.GAD27_roll_trim
         c.roll_trim_power_gnd >> gnd
 
     with gad27.TB273 as c:
         c.keep_alive_power_in >> avionics_block_2.GAD27
-        c.keep_alive_power_out >> gad27.J272.pitch_trim_power_in
-        c.keep_alive_power_out >> gad27.J272.roll_trim_power_in
 
         (c.flap_power_in >> main_block.flaps).gauge(18)
         (c.flap_power_gnd >> gnd).gauge(18)
@@ -333,12 +333,12 @@ with System("ADSB"):
 
 with System("GPS"):
     with pfd.J1015 as c:
-        c.power_1 >> avionics_block_3.PFD_NAVCOM
-        c.power_2 >> avionics_block_3.PFD_NAVCOM
-        c.power_3 >> avionics_block_3.PFD_NAVCOM
-        c.ground_1 >> gnd
-        c.ground_2 >> gnd
-        c.ground_3 >> gnd
+        (c.power_1 >> avionics_block_3.PFD_NAVCOM).gauge(20)
+        (c.power_1 >> c.power_2).gauge(20)
+        (c.power_1 >> c.power_3).gauge(20)
+        (c.ground_1 >> gnd).gauge(20)
+        (c.ground_2 >> gnd).gauge(20)
+        (c.ground_3 >> gnd).gauge(20)
 
 
 with System("EFIS"):
@@ -349,9 +349,14 @@ with System("EFIS"):
         c.config_module_data >> pfd_config.data
         c.config_module_clock >> pfd_config.clock
 
-        c.power_1 >> avionics_block_3.PFD
-        c.power_2 >> avionics_block_3.PFD
-        c.power_3 >> avionics_block_3.PFD
+        (c.power_1 >> avionics_block_3.PFD).gauge(20)
+        (c.power_1 >> c.power_2).gauge(20)
+        (c.power_3 >> avionics_block_3.PFD).gauge(20)
+        (c.power_3 >> c.power_4).gauge(20)
+        (c.ground_1 >> gnd).gauge(20)
+        (c.ground_2 >> gnd).gauge(20)
+        (c.ground_3 >> gnd).gauge(20)
+        (c.ground_4 >> gnd).gauge(20)
 
     with mfd.J1012 as c:
         c.config_module_power_out >> mfd_config.power
@@ -359,9 +364,14 @@ with System("EFIS"):
         c.config_module_data >> mfd_config.data
         c.config_module_clock >> mfd_config.clock
 
-        c.power_1 >> avionics_block_3.MFD
-        c.power_2 >> avionics_block_3.MFD
-        c.power_3 >> avionics_block_3.MFD
+        (c.power_1 >> avionics_block_3.MFD).gauge(20)
+        (c.power_1 >> c.power_2).gauge(20)
+        (c.power_3 >> avionics_block_3.MFD).gauge(20)
+        (c.power_3 >> c.power_4).gauge(20)
+        (c.ground_1 >> gnd).gauge(20)
+        (c.ground_2 >> gnd).gauge(20)
+        (c.ground_3 >> gnd).gauge(20)
+        (c.ground_4 >> gnd).gauge(20)
 
 with System("EIS"):
     (pfd.J1012.rs232_1 >> gea24.J241.rs232).ground(False)
@@ -397,11 +407,6 @@ with System("EIS"):
         c.shunt_1_high >> Fuse("Alternator Side", amps=1)
         c.shunt_1_low >> Fuse("Load Side", amps=1)
 
-        with Shield(drain="block"):
-            c.gp_5v_out >> co2_sensor.power
-            c.gp6_high >> co2_sensor.signal
-            c.gp_gnd_1 >> co2_sensor.ground
-
         c.gp6_low.local_ground()
 
     with gea24.J244 as c:
@@ -429,6 +434,12 @@ with System("EMR"):
             c.elt_rx >> pfd.J1012.rs232_2.tx
 
         # TODO: c.rs232_test
+
+    with pfd.J1012 as c:
+        c.config_module_power_out >> co_sensor.power
+        c.config_module_ground >> co_sensor.ground
+        c.config_module_data >> co_sensor.data
+        c.config_module_clock >> co_sensor.clock
 
 can_bus = CanBusLine(
     name="CAN Bus",
