@@ -16,7 +16,6 @@ from examples.n14ev_axis.lights import (
     tail_light,
 )
 from examples.n14ev_axis.lrus import (
-    co_sensor,
     copilot_lemo,
     copilot_stick,
     elt,
@@ -26,6 +25,7 @@ from examples.n14ev_axis.lrus import (
     g5,
     gad27,
     gap26,
+    gco14,
     gdl51r,
     gea24,
     gmc507,
@@ -61,6 +61,7 @@ from examples.n14ev_axis.sensors import fuel_pressure, left_fuel, manifold_press
 from examples.n14ev_axis.switches import (
     backlight_rheo,
     cabin_light_rheo,
+    elt_switch,
     flaps,
     landing_light_switch,
     nav_strobe_switch,
@@ -72,7 +73,7 @@ from loome import CanBusLine, Fuse, Harness, Shield, System
 
 with System("AD"):
     with gsu25.J251 as c:
-        c.ground_a >> gnd
+        c.ground >> gnd
         c.aircraft_power_1 >> avionics_block_1.GSU25
         c.aircraft_power_2 >> avionics_block_2.GSU25
         c.rs232 >> pfd.J1012.rs232_3
@@ -83,7 +84,7 @@ with System("AD"):
             c.oat_probe_high >> gtp59.oat_probe_sense
             c.oat_probe_low >> gtp59.oat_probe_low
 
-    with gmu11.J441 as c:
+    with gmu11.J111 as c:
         c.aircraft_power_1 >> avionics_block_1.GMU11
         c.aircraft_power_2 >> avionics_block_2.GMU11
         c.ground >> gnd
@@ -138,12 +139,12 @@ with System("AUD"):
         with Shield(drain="block"):
             c.mic_1_in >> pilot_lemo.mic_high
             c.mic_1_low >> pilot_lemo.mic_low
-            c.mic_1_ptt >> pilot_stick.push_to_talk
+        c.mic_1_ptt >> pilot_stick.push_to_talk
 
         with Shield(drain="block"):
             c.mic_2_in >> copilot_lemo.mic_high
             c.mic_2_low >> copilot_lemo.mic_low
-            c.mic_2_ptt >> copilot_stick.push_to_talk
+        c.mic_2_ptt >> copilot_stick.push_to_talk
 
     with gdl51r as c:
         c.aircraft_power >> avionics_block_3.GDL51R
@@ -169,12 +170,12 @@ with System("AUD"):
 with System("COM"):
     with gtr205xr as c:
         c.hsdb >> pfd.J1012.hsdb_3
-        (c.ground_1 >> gnd).gauge(20)
-        (c.ground_1 >> c.ground_2).gauge(20)
-        (c.ground_1 >> c.ground_3).gauge(20)
-        (c.power_1 >> avionics_block_3.GTR205xR).gauge(20)
-        (c.power_1 >> c.power_2).gauge(20)
-        (c.power_1 >> c.power_3).gauge(20)
+        (c.ground_1 >> gnd).gauge(18)
+        (c.ground_1 >> c.ground_2).gauge(22)
+        (c.ground_1 >> c.ground_3).gauge(22)
+        (c.power_1 >> avionics_block_3.GTR205xR).gauge(18)
+        (c.power_1 >> c.power_2).gauge(22)
+        (c.power_1 >> c.power_3).gauge(22)
 
         with Shield(drain="block"):
             pfd.J1015.external_com_audio_in >> c.com_audio_out_high
@@ -246,7 +247,7 @@ with System("FCTL"):
 with System("LGHT"):
     with gad27.J271 as c:
         landing_light_switch.com2 >> gnd
-        landing_light_switch.com1 >> main_block.taxi_lights
+        (landing_light_switch.com1 >> main_block.taxi_lights).gauge(20)
         (landing_light_switch.no1 >> left_7_stars.taxi).gauge(20).color("R")
         (landing_light_switch.no1 >> right_7_stars.taxi).gauge(20).color("R")
 
@@ -257,14 +258,14 @@ with System("LGHT"):
     with gad27.TB273 as c:
         (c.light_1_output >> left_7_stars.landing).gauge(14).color("R")
         (c.light_2_output >> right_7_stars.landing).gauge(14).color("R")
-        (c.light_1_power >> main_block.landing_lights).gauge(18)
-        (c.light_2_power >> main_block.landing_lights).gauge(18)
+        (c.light_1_power >> main_block.left_landing_light).gauge(18)
+        (c.light_2_power >> main_block.right_landing_light).gauge(18)
 
-    nav_strobe_switch.com1 >> main_block.nav_lights
-    nav_strobe_switch.com2 >> main_block.strobe_lights
+    (nav_strobe_switch.com1 >> main_block.nav_lights).gauge(20)
+    (nav_strobe_switch.com2 >> main_block.strobe_lights).gauge(20)
 
     with flyleds_controller as c:
-        c.ground >> gnd
+        (c.ground >> gnd).gauge(20)
         with Shield(drain=c.left_shield, drain_remote=left_pos_strobe.position_neg):
             c.left_strobe_neg >> left_pos_strobe.strobe_neg
             c.left_strobe_pos >> left_pos_strobe.strobe_pos
@@ -279,8 +280,8 @@ with System("LGHT"):
             c.right_strobe_pos >> right_pos_strobe.strobe_pos
             c.right_position_pos >> right_pos_strobe.position_pos
 
-        c.strobe_12v_in >> nav_strobe_switch.no1
-        c.position_12v_in >> nav_strobe_switch.no2
+        (c.position_12v_in >> nav_strobe_switch.no1).gauge(20).color("R")
+        (c.strobe_12v_in >> nav_strobe_switch.no2).gauge(20).color("R")
 
     (left_7_stars.ground >> left_wing_gnd).gauge(14)
     (right_7_stars.ground >> right_wing_gnd).gauge(14)
@@ -328,10 +329,11 @@ with System("ADSB"):
         c.aircraft_power_2a >> avionics_block_2.GTX45R
         c.aircraft_power_2a >> c.aircraft_power_2b
 
-        c.usb_vbus_power >> gtx_usb_config.power
-        c.usb_ground >> gtx_usb_config.ground
-        c.usb_data_high >> gtx_usb_config.data_high
-        c.usb_data_low >> gtx_usb_config.data_low
+        with Shield(drain="block"):
+            c.usb_vbus_power >> gtx_usb_config.power
+            c.usb_ground >> gtx_usb_config.ground
+            c.usb_data_high >> gtx_usb_config.data_high
+            c.usb_data_low >> gtx_usb_config.data_low
         c.rs232_1 >> gsu25.J252.rs232_3
 
     with gtx45r.P3252 as c:
@@ -380,7 +382,7 @@ with System("EFIS"):
         (c.ground_4 >> gnd).gauge(20)
 
 with System("EIS"):
-    (pfd.J1012.rs232_1 >> gea24.J241.rs232).ground(False)
+    pfd.J1012.rs232_1 >> gea24.J241.rs232
 
     with gea24.J241 as c:
         c.ground >> gnd
@@ -410,17 +412,22 @@ with System("EIS"):
             c.oil_temp_high >> oil_temp.high
             c.oil_temp_low >> oil_temp.low
 
-        c.shunt_1_high >> Fuse("Alternator Side", amps=1)
-        c.shunt_1_low >> Fuse("Load Side", amps=1)
+        with Shield(drain="block"):
+            c.shunt_1_high >> Fuse("Alternator Side", amps=1)
+            c.shunt_1_low >> Fuse("Load Side", amps=1)
 
         c.gp6_low.local_ground()
 
     with gea24.J244 as c:
-        c.fuel_quantity_1.signal >> left_fuel.power
-        c.fuel_quantity_2.signal >> right_fuel.power
+        with Shield(drain="block", drain_remote=gnd):
+            c.fuel_quantity_1.signal >> left_fuel.power
+        with Shield(drain="block", drain_remote=gnd):
+            c.fuel_quantity_2.signal >> right_fuel.power
 
-        c.volts_1 >> Fuse("Main Bus", amps=1)
-        c.volts_2 >> Fuse("Engine Bus", amps=1)
+        with Shield(drain="block"):
+            c.volts_1 >> Fuse("Main Bus", amps=1)
+        with Shield(drain="block"):
+            c.volts_2 >> Fuse("Engine Bus", amps=1)
 
         c.discrete_out_1 >> master_warning.ground
         c.discrete_out_2 >> master_caution.ground
@@ -434,24 +441,26 @@ with System("EMR"):
         c.can.note("Lightning Protection Module")
 
     with elt.DIN as c:
-        with Shield(drain_remote="block"):
-            c.remote_switch >> avionics_block_3.elt
+        elt_switch.com >> avionics_block_3.elt
+        with Shield(drain_remote=gnd):
+            c.remote_switch >> elt_switch.no
             c.ground >> gnd
-            c.elt_rx >> pfd.J1012.rs232_2.tx
+            c.rs232.rx >> pfd.J1012.rs232_2.tx
 
         # TODO: c.rs232_test
 
     with pfd.J1012 as c:
-        c.config_module_power_out >> co_sensor.power
-        c.config_module_ground >> co_sensor.ground
-        c.config_module_data >> co_sensor.data
-        c.config_module_clock >> co_sensor.clock
+        with Shield():
+            c.config_module_power_out >> gco14.power
+            c.config_module_ground >> gco14.ground
+            c.config_module_data >> gco14.data
+            c.config_module_clock >> gco14.clock
 
 can_bus = CanBusLine(
     name="CAN Bus",
     devices=[
         # Wing
-        gmu11.J441,
+        gmu11.J111,
         gsa28_roll.J281,
         # Panel
         mfd.J1012,

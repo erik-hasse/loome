@@ -196,10 +196,10 @@ class GEA24(Component):
 
     class J241(Connector):
         can = CanBus(1, 2)
-        rs232 = RS232(5, 4, 6)  # tx, rx, gnd
+        rs232 = RS232(5, 4, 9)  # tx, rx, gnd
         aircraft_power_1 = Pin(7, "Aircraft Power 1")
         aircraft_power_2 = Pin(8, "Aircraft Power 2")
-        ground = Pin(9, "Ground")
+        ground = Pin(6, "Ground")
 
     class J242(Connector):
         egt1 = Thermocouple(25, 13, "EGT 1")
@@ -308,9 +308,9 @@ class GMU11(Component):
     """Magnetometer"""
 
     def can_terminate(self):
-        self.J441.can.terminate()
+        self.J111.can.terminate()
 
-    class J441(Connector):
+    class J111(Connector):
         can = CanBus(1, 2)
         unit_id = Pin(3, "Unit ID")
         signal_ground = Pin(6, "Signal Ground")
@@ -387,11 +387,10 @@ class GSU25(Component):
 
     class J251(Connector):
         can = CanBus(1, 2)
-        rs232 = RS232(5, 4, None)
+        rs232 = RS232(5, 4, 9)
         aircraft_power_1 = Pin(7, "Aircraft Power 1")
         aircraft_power_2 = Pin(8, "Aircraft Power 2")
-        ground_a = Pin(6, "Ground A")
-        ground_b = Pin(9, "Ground B")
+        ground = Pin(6, "Ground A")
 
     class J252(Connector):
         oat_probe_power = Pin(1, "OAT Probe Power")
@@ -489,8 +488,8 @@ class GTR20(Component):
 
 
 class GDL51R(Component):
-    rs232_2 = RS232(5, 6, 11, name="RS 232 2")
-    rs232_1 = RS232(7, 8, 12, name="RS 232 1")
+    rs232_2 = RS232(5, 6, 12, name="RS 232 2")
+    rs232_1 = RS232(7, 8, 11, name="RS 232 1")
     ground = Pin(9, "Ground")
     aircraft_power = Pin(10, "Aircraft Power")
     music_out_left = Pin(13, "Music Out Left")
@@ -660,7 +659,7 @@ class GTR205xR(Component):
             self[14] >> self[35]
 
     config_module_clock = Pin(1, "Config Module Clock")
-    hsdb = HSDB(3, 2, 25, 24, name="HSDB")
+    hsdb = HSDB(4, 3, 25, 24, name="HSDB")
     rs232 = RS232(46, 5, 36, name="RS-232")
     mic_4_audio_in_high = Pin(6, "Mic 4 Audio In High")
     mic_3_audio_in_high = Pin(7, "Mic 3 Audio In High")

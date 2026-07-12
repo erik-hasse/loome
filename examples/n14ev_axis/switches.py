@@ -13,3 +13,5 @@ backlight_rheo = Rheostat("Backlight")
 cabin_light_rheo = Rheostat("Cabin Light")
 
 pitot_heat_switch = SPST("Pitot Heat")
+
+elt_switch = SPST("ELT Switch")

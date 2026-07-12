@@ -1,5 +1,5 @@
 from loome.model import Component, Connector, Pin
-from loome.ports import GPIO, Thermocouple
+from loome.ports import GPIO, RS232, Thermocouple
 
 
 class RayAllanTrim(Component):
@@ -47,7 +47,7 @@ class PHAviationFlapMotor(Component):
     extend = Pin("BRN", "Extend")
     retract = Pin("BLU", "Retract")
 
-    position = GPIO("YLW", "WHT", "RED", name="Position")
+    position = GPIO("YLW", "RED", "WHT", name="Position")
 
 
 class USBPort(Component):
@@ -66,9 +66,8 @@ class Fan(Component):
 class ACKE04(Component):
     class DIN(Connector):
         remote_switch = Pin(1, "Remote Switch")
-        rs232_test = Pin(2, "R232 Test")
+        rs232 = RS232(2, 4, None, name="RS232")
         ground = Pin(3, "Ground")
-        elt_rx = Pin(4, "Elt RX")
 
 
 class _Cylinder(Connector):

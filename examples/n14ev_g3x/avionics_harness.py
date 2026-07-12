@@ -77,7 +77,7 @@ from loome import CanBusLine, Fuse, Harness, Shield, System
 
 with System("AD"):
     with gsu25.J251 as c:
-        c.ground_a >> gnd
+        c.ground >> gnd
         c.aircraft_power_1 >> avionics_block_1.GSU25
         c.aircraft_power_2 >> avionics_block_2.GSU25
         (c.rs232 >> pfd.P4601.rs232).notes("Not Configured")
@@ -89,7 +89,7 @@ with System("AD"):
             c.oat_probe_low >> gtp59.oat_probe_low
         c.rs232_3 >> gtx45r.P3251.rs232_1
 
-    with gmu11.J441 as c:
+    with gmu11.J111 as c:
         c.aircraft_power_1 >> avionics_block_1.GMU11
         c.aircraft_power_2 >> avionics_block_2.GMU11
         c.ground >> gnd
@@ -502,7 +502,7 @@ with System("EMR"):
 can_bus = CanBusLine(
     name="CAN Bus",
     devices=[
-        gmu11.J441,
+        gmu11.J111,
         gsa28_roll.J281,
         mfd.P4602,
         gad29.J291,

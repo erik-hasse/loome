@@ -23,15 +23,15 @@ class SingleFeedBlock(FuseBlock):
     LEMO_copilot = Fuse("LEMO Copilot", amps=0.25)
     elt = Fuse("ELT", amps=1)
 
-    # TODO: verify amperages
-    PFD = Fuse("PFD", amps=7.5)
-    MFD = Fuse("MFD", amps=7.5)
+    PFD = Fuse("PFD", amps=5)
+    MFD = Fuse("MFD", amps=5)
     PFD_NAVCOM = Fuse("NAVCOM", amps=7.5)
     annunciator = Fuse("Annunciator", amps=1)
 
 
 class MainBus(FuseBlock):
-    landing_lights = Fuse("Landing Lights", amps=20)
+    left_landing_light = Fuse("Left Landing_light", amps=10)
+    right_landing_light = Fuse("Right Landing_light", amps=10)
     taxi_lights = Fuse("Taxi Lights", amps=5)
     flaps = Fuse("Flaps", amps=10)
     pitot_heat = Fuse("Pitot Heat", amps=15)

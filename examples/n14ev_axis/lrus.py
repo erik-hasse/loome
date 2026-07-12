@@ -59,7 +59,7 @@ copilot_lemo = LEMO("Copilot Lemo")
 flap_motor = PHAviationFlapMotor("Flap Motor")
 
 elt = ACKE04("ACK E-04 ELT")
-co_sensor = GCO14("GCO14 - CO Sensor")
+gco14 = GCO14("GCO14 - CO Sensor")
 
 engine = Engine4Cyl("IO390-EXP119")
 sds_ecu = SDSECU()

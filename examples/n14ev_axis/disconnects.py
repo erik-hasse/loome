@@ -29,9 +29,9 @@ right_wing_a_items = [
     # Power
     (gsa28_roll.J281.power, avionics_block_3.GSA28_roll),
     (gsa28_roll.J281.ground, gnd),
-    (gmu11.J441.aircraft_power_1, avionics_block_1.GMU11),
-    (gmu11.J441.aircraft_power_2, avionics_block_2.GMU11),
-    (gmu11.J441.ground, gnd),
+    (gmu11.J111.aircraft_power_1, avionics_block_1.GMU11),
+    (gmu11.J111.aircraft_power_2, avionics_block_2.GMU11),
+    (gmu11.J111.ground, gnd),
     # Lights
     (flyleds_controller.right_position_pos, right_pos_strobe.position_pos),
     (flyleds_controller.right_strobe_neg, right_pos_strobe.strobe_neg),

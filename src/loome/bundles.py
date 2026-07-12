@@ -141,7 +141,7 @@ class Bundle:
         pin is class-level (no connector/component instance), fall back to any
         attached instance of its connector/component class — resolving to a
         unique match, or None if zero or ambiguous. This is what lets
-        class-level ``GSU25.J252.x.connect(GMU11.J441.y)`` wires find their
+        class-level ``GSU25.J252.x.connect(GMU11.J111.y)`` wires find their
         physical endpoints via the attached instances.
         """
         if not self._frozen:
