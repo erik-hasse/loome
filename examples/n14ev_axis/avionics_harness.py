@@ -162,16 +162,19 @@ with System("AUD"):
         c.discrete_in_2 >> pilot_stick.replay
         c.discrete_in_2 >> copilot_stick.replay
 
+    avionics_block_3.LEMO_pilot >> pilot_lemo.power
+    avionics_block_3.LEMO_copilot >> copilot_lemo.power
+
 
 with System("COM"):
     with gtr205xr as c:
         c.hsdb >> pfd.J1012.hsdb_3
-        c.ground_1 >> gnd
-        c.ground_2 >> gnd
-        c.ground_3 >> gnd
-        c.power_1 >> avionics_block_3.GTR205xR
-        c.power_2 >> avionics_block_3.GTR205xR
-        c.power_3 >> avionics_block_3.GTR205xR
+        (c.ground_1 >> gnd).gauge(20)
+        (c.ground_1 >> c.ground_2).gauge(20)
+        (c.ground_1 >> c.ground_3).gauge(20)
+        (c.power_1 >> avionics_block_3.GTR205xR).gauge(20)
+        (c.power_1 >> c.power_2).gauge(20)
+        (c.power_1 >> c.power_3).gauge(20)
 
         with Shield(drain="block"):
             pfd.J1015.external_com_audio_in >> c.com_audio_out_high
@@ -237,6 +240,9 @@ with System("FCTL"):
 
     flaps.com >> gnd
 
+    pilot_stick.ground >> gnd
+    copilot_stick.ground >> gnd
+
 with System("LGHT"):
     with gad27.J271 as c:
         landing_light_switch.com2 >> gnd
@@ -295,14 +301,14 @@ with System("CAB"):
         c.lighting_bus_gnd >> cabin_light_rheo.ground
         c.lighting_control_in_2 >> cabin_light_rheo.out
 
-        c.pwm_lighting_1 >> cabin_lights.power
+        c.pwm_lighting_1 >> cabin_lights.ground
 
     gad27.J271.dc_lighting_1 >> mfd.J1012.lighting_bus_2
     mfd.J1012.lighting_bus_2 >> gmc507.J7001.lighting_bus_high
     gmc507.J7001.lighting_bus_high >> pfd.J1012.lighting_bus_2
-    cabin_lights.ground >> gnd
-    master_warning.ground >> gnd
-    master_caution.ground >> gnd
+    cabin_lights.power >> main_block.cabin_lights
+    master_warning.power >> avionics_block_3.annunciator
+    master_caution.power >> avionics_block_3.annunciator
 
 with System("POW"):
     # c.discrete_in_1 >> alt_regulator
@@ -314,13 +320,13 @@ with System("ADSB"):
     with gtx45r.P3251 as c:
         c.power_config.local_ground()
         c.ground_1 >> gnd
-        c.ground_2 >> gnd
+        c.ground_1 >> c.ground_2
         c.power_control.local_ground()
 
         c.aircraft_power_1a >> avionics_block_1.GTX45R
-        c.aircraft_power_1b >> avionics_block_1.GTX45R
+        c.aircraft_power_1a >> c.aircraft_power_1b
         c.aircraft_power_2a >> avionics_block_2.GTX45R
-        c.aircraft_power_2b >> avionics_block_2.GTX45R
+        c.aircraft_power_2a >> c.aircraft_power_2b
 
         c.usb_vbus_power >> gtx_usb_config.power
         c.usb_ground >> gtx_usb_config.ground
@@ -416,8 +422,8 @@ with System("EIS"):
         c.volts_1 >> Fuse("Main Bus", amps=1)
         c.volts_2 >> Fuse("Engine Bus", amps=1)
 
-        c.discrete_out_1 >> master_warning.power
-        c.discrete_out_2 >> master_caution.power
+        c.discrete_out_1 >> master_warning.ground
+        c.discrete_out_2 >> master_caution.ground
 
 
 with System("EMR"):
