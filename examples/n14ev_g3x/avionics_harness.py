@@ -495,7 +495,7 @@ with System("EMR"):
         with Shield(drain_remote="block"):
             c.remote_switch >> avionics_block_3.elt
             c.ground >> gnd
-            c.elt_rx >> gtn650xi.P1001.rs232_1.tx
+            c.rs232.rx >> gtn650xi.P1001.rs232_1.tx
 
         # TODO: c.rs232_test
 
