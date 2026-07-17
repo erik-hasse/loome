@@ -1,7 +1,6 @@
 from loome.components import (
     ACKE04,
     LEMO,
-    SDSECU,
     Engine4Cyl,
     FlyLedsEssentialsController,
     PHAviationFlapMotor,
@@ -27,6 +26,7 @@ from loome.components.garmin import (
     GSA28RollServo,
     GTR205xR,
 )
+from loome.components.sds import SDSEM6
 from loome.constants import Axis
 
 gsu25 = GSU25("GSU 25C - Air Data")
@@ -62,7 +62,8 @@ elt = ACKE04("ACK E-04 ELT")
 gco14 = GCO14("GCO14 - CO Sensor")
 
 engine = Engine4Cyl("IO390-EXP119")
-sds_ecu = SDSECU()
+sds_ecu_1 = SDSEM6("SDS EM-6 Top")
+sds_ecu_2 = SDSEM6("SDS EM-6 Bottom")
 
 flyleds_controller = FlyLedsEssentialsController("FlyLeds Essentials Controller")
 

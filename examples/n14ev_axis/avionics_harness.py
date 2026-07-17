@@ -46,7 +46,8 @@ from examples.n14ev_axis.lrus import (
     pilot_stick,
     pitch_trim,
     roll_trim,
-    sds_ecu,
+    sds_ecu_1,
+    sds_ecu_2,
 )
 from examples.n14ev_axis.power import (
     avionics_block_1,
@@ -403,11 +404,15 @@ with System("EIS"):
     with gea24.J243 as c:
         (c.fuel_pressure_5v >> fuel_pressure.gpio).drain()
         with Shield(drain="block", drain_remote="block"):
-            c.rpm_1.signal >> sds_ecu.tach
+            (c.rpm_1.signal >> sds_ecu_1.DB25.tach_5v).notes("EM-6: 5V tach, 2 pulses/rev (4 cylinder)")
+        with Shield(drain="block", drain_remote="block"):
+            (c.rpm_2.signal >> sds_ecu_2.DB25.tach_5v).notes("EM-6: 5V tach, 2 pulses/rev (4 cylinder)")
         (c.oil_pressure_5v >> oil_pressure.gpio).drain()
         (c.manifold_pressure_5v >> manifold_pressure.gpio).drain()
         with Shield(drain="block", drain_remote="block"):
-            c.fuel_flow.signal >> sds_ecu.fuel_flow
+            (c.fuel_flow.signal >> sds_ecu_1.Molex16.fuel_flow).notes(
+                "EM-6: configure fuel pulse output; Garmin K-factor 28,500; calibrate before use"
+            )
 
         with Shield(drain="block"):
             c.oil_temp_high >> oil_temp.high

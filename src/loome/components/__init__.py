@@ -107,11 +107,6 @@ class SingleInputSensor(Component):
     power = Pin(1, "Power")
 
 
-class SDSECU(Component):
-    tach = Pin("TBD1", "Tachometer")
-    fuel_flow = Pin("TBD2", "Fuel Flow")
-
-
 class AithreShield3(Component):
     power = Pin("RED", "Power")
     signal = Pin("WHT", "Signal")

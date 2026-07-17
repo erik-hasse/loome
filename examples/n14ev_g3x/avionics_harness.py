@@ -453,11 +453,13 @@ with System("EIS"):
     with gea24.J243 as c:
         (c.fuel_pressure_5v >> fuel_pressure.gpio).drain()
         with Shield(drain="block", drain_remote="block"):
-            c.rpm_1.signal >> sds_ecu.tach
+            (c.rpm_1.signal >> sds_ecu.DB25.tach_5v).notes("EM-6: 5V tach, 2 pulses/rev (4 cylinder)")
         (c.oil_pressure_5v >> oil_pressure.gpio).drain()
         (c.manifold_pressure_5v >> manifold_pressure.gpio).drain()
         with Shield(drain="block", drain_remote="block"):
-            c.fuel_flow.signal >> sds_ecu.fuel_flow
+            (c.fuel_flow.signal >> sds_ecu.Molex16.fuel_flow).notes(
+                "EM-6: configure fuel pulse output; Garmin K-factor 28,500; calibrate before use"
+            )
 
         with Shield(drain="block"):
             c.oil_temp_high >> oil_temp.high
