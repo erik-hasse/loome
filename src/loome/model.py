@@ -189,10 +189,20 @@ class FuseBlock:
 
 
 @dataclass
-class CircuitBreakerBank:
-    """A row of ``CircuitBreaker``s sharing a ``BusBar`` feed rail."""
+class CBBusBar:
+    """A bus bar of ``CircuitBreaker``s declared as class attributes.
 
-    id: str
+    ``CircuitBreakerBank`` remains available as a compatibility alias.
+    Subclasses use the same declarative style as ``FuseBlock``::
+
+        class MainBus(CBBusBar):
+            landing = CircuitBreaker("Landing Lights", amps=10)
+            pitot = CircuitBreaker("Pitot Heat", amps=15)
+
+    Each bus-bar instance receives its own copies of the declared breakers.
+    """
+
+    id: str | None = None
     label: str = ""
     bus: "BusBar | None" = None
     positions: dict[int | str, "CircuitBreaker"] = field(default_factory=dict)
@@ -204,9 +214,10 @@ class CircuitBreakerBank:
                 val.name = attr_name
 
     def __post_init__(self) -> None:
+        self.id = self.id or type(self).__name__
         self.label = self.label or self.id
         for cls in reversed(type(self).__mro__):
-            if not (isinstance(cls, type) and issubclass(cls, CircuitBreakerBank)):
+            if not (isinstance(cls, type) and issubclass(cls, CBBusBar)):
                 continue
             for attr_name, val in vars(cls).items():
                 if isinstance(val, CircuitBreaker):
@@ -221,6 +232,10 @@ class CircuitBreakerBank:
     def place(self, position: int | str, breaker: "CircuitBreaker") -> "CircuitBreaker":
         self.positions[position] = breaker
         return breaker
+
+
+# Compatibility name for the original API.
+CircuitBreakerBank = CBBusBar
 
 
 # ── splices ────────────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-from loome import Fuse, FuseBlock, GroundSymbol
+from loome import CBBusBar, CircuitBreaker, Fuse, FuseBlock, GroundSymbol
 
 
 class DualFeedBlock(FuseBlock):
@@ -22,10 +22,6 @@ class SingleFeedBlock(FuseBlock):
     LEMO_pilot = Fuse("LEMO Pilot", amps=0.25)
     LEMO_copilot = Fuse("LEMO Copilot", amps=0.25)
     elt = Fuse("ELT", amps=1)
-
-    PFD = Fuse("PFD", amps=5)
-    MFD = Fuse("MFD", amps=5)
-    PFD_NAVCOM = Fuse("NAVCOM", amps=7.5)
     annunciator = Fuse("Annunciator", amps=1)
 
 
@@ -40,10 +36,23 @@ class MainBus(FuseBlock):
     cabin_lights = Fuse("Cabin Lights", amps=1)
 
 
+class CircuitBreakers(CBBusBar):
+    # Left battery bus
+    PFD_1 = CircuitBreaker("PFD 1", amps=7.5)
+
+    # Right battery bus
+    PFD_2 = CircuitBreaker("PFD 2", amps=7.5)
+
+    # Diode-OR'd battery bus
+    MFD = CircuitBreaker("MFD", amps=7.5)
+    NAV_COM = CircuitBreaker("NAV COM", amps=7.5)
+
+
 avionics_block_1 = DualFeedBlock("Left Dual")
 avionics_block_2 = DualFeedBlock("Right Dual")
 avionics_block_3 = SingleFeedBlock()
 main_block = MainBus()
+circuit_breakers = CircuitBreakers()
 gnd = GroundSymbol("GND")
 left_wing_gnd = GroundSymbol("Left Wing GND")
 right_wing_gnd = GroundSymbol("Right Wing GND")

@@ -280,10 +280,10 @@ sp >> load_b.J1.power
 sp >> load_c.J1.power
 ```
 
-### Fuse blocks
+### Fuse blocks and circuit-breaker bus bars
 
 ```python
-from loome import Fuse, FuseBlock
+from loome import CBBusBar, CircuitBreaker, Fuse, FuseBlock
 
 # Declarative subclass (preferred for named blocks)
 class AvionicsBlock(FuseBlock):
@@ -293,6 +293,14 @@ class AvionicsBlock(FuseBlock):
 
 fb = AvionicsBlock()
 bus >> fb.PFD   # connect bus to each fuse
+
+# Circuit-breaker bus bars use the same declarative pattern.
+class MainBus(CBBusBar):
+    LANDING = CircuitBreaker("Landing Lights", amps=10)
+    PITOT   = CircuitBreaker("Pitot Heat", amps=15)
+
+main_bus = MainBus()
+main_bus.LANDING >> landing_light.J1.power
 ```
 
 ### Shields
@@ -371,7 +379,7 @@ from loome import (
     Component, Connector, Pin, WireColor,
     # Terminals
     GroundSymbol, OffPageReference, Fuse, FuseBlock,
-    CircuitBreaker, CircuitBreakerBank, BusBar, SpliceNode, Terminal,
+    CircuitBreaker, CBBusBar, BusBar, SpliceNode, Terminal,
     # Composite ports
     CanBus, RS232, GPIO, ARINC429, DifferentialPair, HSDB, Thermocouple,
     # Shields

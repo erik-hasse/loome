@@ -52,6 +52,7 @@ from examples.n14ev_axis.power import (
     avionics_block_1,
     avionics_block_2,
     avionics_block_3,
+    circuit_breakers,
     gnd,
     left_wing_gnd,
     main_block,
@@ -341,7 +342,7 @@ with System("ADSB"):
 
 with System("GPS"):
     with pfd.J1015 as c:
-        (c.power_1 >> avionics_block_3.PFD_NAVCOM).gauge(20)
+        (c.power_1 >> circuit_breakers.NAV_COM).gauge(20)
         (c.power_1 >> c.power_2).gauge(20)
         (c.power_1 >> c.power_3).gauge(20)
         (c.ground_1 >> gnd).gauge(20)
@@ -357,9 +358,9 @@ with System("EFIS"):
         c.config_module_data >> pfd_config.data
         c.config_module_clock >> pfd_config.clock
 
-        (c.power_1 >> avionics_block_3.PFD).gauge(20)
+        (c.power_1 >> circuit_breakers.PFD_1).gauge(20)
         (c.power_1 >> c.power_2).gauge(20)
-        (c.power_3 >> avionics_block_3.PFD).gauge(20)
+        (c.power_3 >> circuit_breakers.PFD_2).gauge(20)
         (c.power_3 >> c.power_4).gauge(20)
         (c.ground_1 >> gnd).gauge(20)
         (c.ground_2 >> gnd).gauge(20)
@@ -372,9 +373,9 @@ with System("EFIS"):
         c.config_module_data >> mfd_config.data
         c.config_module_clock >> mfd_config.clock
 
-        (c.power_1 >> avionics_block_3.MFD).gauge(20)
+        (c.power_1 >> circuit_breakers.MFD).gauge(20)
         (c.power_1 >> c.power_2).gauge(20)
-        (c.power_3 >> avionics_block_3.MFD).gauge(20)
+        (c.power_3 >> circuit_breakers.MFD).gauge(20)
         (c.power_3 >> c.power_4).gauge(20)
         (c.ground_1 >> gnd).gauge(20)
         (c.ground_2 >> gnd).gauge(20)

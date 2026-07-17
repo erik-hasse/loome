@@ -5,6 +5,7 @@ from .disconnects import Disconnect, DisconnectPin
 from .harness import Harness
 from .model import (
     BusBar,
+    CBBusBar,
     CircuitBreaker,
     CircuitBreakerBank,
     Component,
@@ -35,6 +36,7 @@ __all__ = [
     "SPDT",
     "SPST",
     "BusBar",
+    "CBBusBar",
     "CanBus",
     "CanBusLine",
     "CircuitBreaker",

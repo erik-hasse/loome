@@ -6,6 +6,7 @@ import io
 from loome import (
     BusBar,
     CanBusLine,
+    CBBusBar,
     CircuitBreaker,
     CircuitBreakerBank,
     Fuse,
@@ -194,6 +195,24 @@ def test_declarative_cb_bank_copies_breakers_per_instance():
 
     assert len(bank_a.landing._connections) == 1
     assert bank_b.landing._connections == []
+
+
+def test_declarative_cb_bus_bar_defaults_to_class_name_and_is_autodetected():
+    class MainBus(CBBusBar):
+        landing = CircuitBreaker("LAND", amps=15)
+        pitot = CircuitBreaker("PITOT", amps=10)
+
+    bus_bar = MainBus()
+    load = _Load("Load")
+    load.J1.pwr.connect(bus_bar.landing)
+
+    h = _harness({"load": load, "bus_bar": bus_bar})
+
+    assert bus_bar.id == "MainBus"
+    assert bus_bar.label == "MainBus"
+    assert h.cb_banks == [bus_bar]
+    assert bus_bar.positions == {"landing": bus_bar.landing, "pitot": bus_bar.pitot}
+    assert build_fuse_schedule(h)[0].location == "MainBus:landing"
 
 
 def test_terminal_to_terminal_connections_are_autodetected_from_one_named_endpoint():
