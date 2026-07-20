@@ -16,7 +16,9 @@ from loome.renderers.builder import builder_entries_for_script
 
 def _run_cli(*args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        [sys.executable, "-m", "loome.cli", *args],
+        # -P keeps the subprocess from implicitly adding the repository root
+        # to sys.path, matching an installed `loome` console entry point.
+        [sys.executable, "-P", "-m", "loome.cli", *args],
         check=False,
         capture_output=True,
         text=True,

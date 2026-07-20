@@ -91,7 +91,22 @@ def _add_wire_id_args(parser: argparse.ArgumentParser) -> None:
 
 
 def _load_harness(spec_path: Path, *, persist_wire_ids: bool = False, check_wire_ids: bool = False):
-    namespace: dict = {}
+    # Console-script entry points put their own bin directory on sys.path, not
+    # the directory where the command was invoked. Make spec imports behave
+    # like ordinary Python usage: sibling modules resolve from the spec's
+    # directory, while project-qualified imports resolve from the working
+    # directory.
+    for import_root in (Path.cwd().resolve(), spec_path.parent.resolve()):
+        import_path = str(import_root)
+        if import_path in sys.path:
+            sys.path.remove(import_path)
+        sys.path.insert(0, import_path)
+
+    namespace: dict = {
+        "__file__": str(spec_path),
+        "__name__": "__main__",
+        "__package__": None,
+    }
     exec(compile(spec_path.read_text(), str(spec_path), "exec"), namespace)
 
     harness = namespace.get("harness")
